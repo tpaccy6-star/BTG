@@ -923,6 +923,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Socket client disconnected:', socket.id);
+  });
 });
 
 // --- Serve Static Frontend Assets in Production ---
