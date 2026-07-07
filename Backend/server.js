@@ -820,6 +820,67 @@ app.delete('/api/admin/cohorts/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// 27. Chatbot Query Route (All Authenticated Users)
+app.post('/api/chatbot/query', authenticateToken, (req, res) => {
+  const { query } = req.body;
+  const { role, name } = req.user;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required.' });
+  }
+
+  const q = query.toLowerCase().trim();
+  let response = '';
+
+  if (role === 'scholar') {
+    if (q.includes('homework') || q.includes('submit') || q.includes('task') || q.includes('assignment')) {
+      response = `Hi ${name}, to submit homework, visit the **Catalog** tab, open a lesson, and use the **Task Submission** box on the right. You can upload PDF, DOCX, or PNG files up to 5MB.`;
+    } else if (q.includes('attendance') || q.includes('check') || q.includes('scan') || q.includes('log')) {
+      response = `Hi ${name}, you can log attendance under the **Attendance** tab by clicking the **Check In Now** button. This simulates a QR code check-in at your classroom.`;
+    } else if (q.includes('streak') || q.includes('points') || q.includes('days')) {
+      response = `Your academic streak grows when you log in and check in regularly. Keep up the active streak to earn recognition!`;
+    } else if (q.includes('chat') || q.includes('mentor') || q.includes('message')) {
+      response = `Need help? Go to the **Mentor Chat** tab to message your mentor, Sarah Miller, directly.`;
+    } else {
+      response = `Hi ${name}! As a Scholar, I can help you with homework submissions, logging attendance, tracking your streak, or messaging your mentor. What would you like to know?`;
+    }
+  } else if (role === 'mentor') {
+    if (q.includes('grade') || q.includes('score') || q.includes('review') || q.includes('mark')) {
+      response = `Hello Mentor ${name}, you can evaluate submissions in the **Grading** tab. Select a pending task, review the attached file preview, specify a score (0-100), write feedback remarks, and submit.`;
+    } else if (q.includes('scholar') || q.includes('roster') || q.includes('student')) {
+      response = `You can see progress logs and checklist completions for all your assigned scholars under the **My Scholars** tab.`;
+    } else if (q.includes('chat') || q.includes('message') || q.includes('dm')) {
+      response = `You can chat with scholars under the **Messages** tab. Select any scholar's direct channel to reply to their queries.`;
+    } else {
+      response = `Hello Mentor ${name}! You have privileges to grade tasks, view scholar metrics, and communicate in the chat rooms. How can I assist you with your mentoring duties today?`;
+    }
+  } else if (role === 'teacher') {
+    if (q.includes('cohort') || q.includes('class')) {
+      response = `Hello Teacher ${name}, you can manage simple cohorts (Cohort 1 to Cohort 4) under the **All Cohorts** tab. You can inspect enrollment sizes and attendance ratios there.`;
+    } else if (q.includes('curriculum') || q.includes('lesson') || q.includes('edit') || q.includes('create')) {
+      response = `You can customize courses, edit lecture notes, or upload handouts under the **Curriculum** tab.`;
+    } else if (q.includes('broadcast') || q.includes('announce') || q.includes('news')) {
+      response = `Post global notifications or extend deadlines under the **Broadcasts** tab. All scholars will see these bulletins on their dashboards.`;
+    } else {
+      response = `Hello Teacher ${name}! You can manage cohorts, modify curriculum lessons, or send broadcasts. What operations would you like assistance with?`;
+    }
+  } else if (role === 'admin') {
+    if (q.includes('reset') || q.includes('database') || q.includes('seed')) {
+      response = `Hello Admin ${name}, you can reset the SQLite database under **System Config** ➔ **Database Administration** by clicking **Reset Database to Default Seed**. This drops tables and recreates seed profiles.`;
+    } else if (q.includes('user') || q.includes('directory') || q.includes('create') || q.includes('role')) {
+      response = `You can add, edit, or delete users (Scholars, Mentors, Teachers, Admins) inside the **User Directory** view.`;
+    } else if (q.includes('compliance') || q.includes('ssl') || q.includes('security')) {
+      response = `Toggle security protocols, Mock SSL Sandboxing, and weekly NGO Compliance logging under the **System Config** parameters tab in System settings.`;
+    } else {
+      response = `Hello Admin ${name}! You have full super-user authorization. I can assist with database resets, user directory CRUD operations, and security sandbox variables.`;
+    }
+  } else {
+    response = `Hello ${name}! How can I assist you today?`;
+  }
+
+  res.json({ response });
+});
+
 // --- WebSockets Event Handlers ---
 io.on('connection', (socket) => {
   console.log('Socket client connected:', socket.id);

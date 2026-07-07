@@ -29,6 +29,7 @@ import CurriculumView from './views/CurriculumView';
 import AnnouncementsView from './views/AnnouncementsView';
 import UsersDirectoryView from './views/UsersDirectoryView';
 import SettingsView from './views/SettingsView';
+import AIChatbot from './components/AIChatbot';
 
 // View transitions animation helper
 const viewVariants = {
@@ -388,6 +389,9 @@ export default function App() {
         {/* Mobile bottom nav layout */}
         <MobileNavbar />
       </main>
+
+      {/* Floating Role-Customized AI Chatbot Assistant */}
+      {currentUser && <AIChatbot currentUser={currentUser} />}
     </div>
   );
 }
