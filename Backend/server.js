@@ -918,6 +918,17 @@ io.on('connection', (socket) => {
   });
 });
 
+// Serve frontend static build files in production
+const frontendDistPath = path.join(path.resolve(), '../Frontend/dist');
+app.use(express.static(frontendDistPath));
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
+
 // --- Server Initialization ---
 const initApp = async () => {
   try {
