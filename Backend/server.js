@@ -28,6 +28,14 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    message: 'Generation Rise REST API Server',
+    timestamp: new Date()
+  });
+});
+
 // HTTP server and WebSocket setup
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -916,17 +924,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Socket client disconnected:', socket.id);
   });
-});
-
-// Serve frontend static build files in production
-const frontendDistPath = path.join(path.resolve(), '../Frontend/dist');
-app.use(express.static(frontendDistPath));
-
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-    return next();
-  }
-  res.sendFile(path.join(frontendDistPath, 'index.html'));
 });
 
 // --- Server Initialization ---
