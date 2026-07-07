@@ -923,7 +923,22 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Socket client disconnected:', socket.id);
-  });
+});
+
+// --- Serve Static Frontend Assets in Production ---
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, '../Frontend/dist')));
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+  // Check if file exists in dist, otherwise send index.html
+  const filePath = path.join(__dirname, '../Frontend/dist', req.path);
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    return res.sendFile(filePath);
+  }
+  res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
 });
 
 // --- Server Initialization ---
