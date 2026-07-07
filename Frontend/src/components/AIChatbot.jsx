@@ -109,7 +109,7 @@ export default function AIChatbot({ currentUser }) {
       {/* Floating Action Button (FAB) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-40 p-4 bg-blue-900 hover:bg-blue-850 dark:bg-yellow-400 dark:hover:bg-yellow-350 text-white dark:text-blue-955 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center border border-blue-800 dark:border-yellow-300"
+        className="fixed bottom-20 sm:bottom-6 right-6 z-40 p-4 bg-blue-900 hover:bg-blue-850 dark:bg-yellow-400 dark:hover:bg-yellow-350 text-white dark:text-blue-955 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center border border-blue-800 dark:border-yellow-300"
         title="AI Assistant Chatbot"
       >
         {isOpen ? <X size={20} /> : <Sparkles size={20} className="animate-pulse" />}
@@ -122,7 +122,7 @@ export default function AIChatbot({ currentUser }) {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-24 right-6 z-50 w-[90vw] sm:w-[380px] h-[520px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl rounded-3xl flex flex-col overflow-hidden backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
+            className="fixed bottom-[92px] sm:bottom-24 right-6 z-50 w-[90vw] sm:w-[380px] h-[520px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl rounded-3xl flex flex-col overflow-hidden backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
           >
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-blue-900 to-indigo-950 dark:from-slate-800 dark:to-slate-900 text-white border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
