@@ -1,26 +1,50 @@
 import React from 'react';
-import { Flame, GraduationCap, Users, BookOpen, Award, MapPin, Globe, Zap, CheckCircle2 } from 'lucide-react';
+import { Flame, GraduationCap, Users, BookOpen, Award, MapPin, Phone, Mail, CheckCircle2, ChevronRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const mockEvents = [
-  { id: 1, title: 'Leadership Workshop', type: 'f2f', date: 'Today', time: '2:00 PM', location: 'Main Hall', attendees: 42 },
-  { id: 2, title: 'Financial Literacy 101', type: 'online', date: 'Tomorrow', time: '10:00 AM', location: 'Zoom', attendees: 156 },
-  { id: 3, title: 'Community Service Day', type: 'f2f', date: 'Oct 25', time: '8:00 AM', location: 'City Park', attendees: 85 },
-];
-
 export default function LandingPage({ onEnterPortal }) {
+  // Real Impact numbers
+  const impactData = [
+    { value: '80%', suffix: 'Graduation Rate', desc: 'Graduate High School compared to 33% nationally', color: 'text-indigo-650' },
+    { value: '400+', suffix: 'Enrolled Girls', desc: 'Active scholars in leadership development programs', color: 'text-yellow-600' },
+    { value: '95%', suffix: 'Alumni Score', desc: 'Alumni would recommend the program to other girls', color: 'text-green-600' },
+    { value: '3,000', suffix: 'Parents Engaged', desc: 'Advancing their daughters\' education at home', color: 'text-blue-600' }
+  ];
+
+
+
+  // Programs list
+  const programList = [
+    { title: 'Her Voice Matters', desc: 'Focuses on communication, public expression, and digital presence.', icon: GraduationCap },
+    { title: 'Ignite Program', desc: 'Drives leadership skills and confidence in young change-makers.', icon: Flame },
+    { title: 'Be That Girl (BTG)', desc: 'Prepares university scholars with English, life, and tech skills.', icon: Award },
+    { title: 'Empowering Women Scholars', desc: 'Supports young women pursuing higher education and careers.', icon: Users }
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans relative overflow-x-hidden selection:bg-yellow-400 selection:text-blue-955">
-      {/* Premium Background Decorations */}
+      {/* Glow decorations */}
       <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-900/5 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-yellow-400/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 px-6 lg:px-16 py-4 flex items-center justify-between">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 px-6 lg:px-16 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <img src="/Logo.png" alt="Generation Rise" className="w-12 h-12 object-contain logo-sharp shrink-0" />
-          <span className="font-black text-base text-blue-900 tracking-wide">Generation Rise</span>
+          <img src="/Logo.png" alt="Generation Rise" className="w-10 h-10 object-contain shrink-0" />
+          <div>
+            <span className="font-black text-sm tracking-wide text-blue-900 block leading-none">Generation Rise</span>
+            <span className="text-[8px] text-slate-400 uppercase tracking-widest font-black block mt-1">Inspiring & Empowering</span>
+          </div>
         </div>
+        
+        {/* Desktop Nav links */}
+        <nav className="hidden lg:flex items-center space-x-8 text-xs font-black uppercase tracking-wider text-slate-500">
+          <a href="#about" className="hover:text-blue-900 transition-colors">About Us</a>
+          <a href="#programs" className="hover:text-blue-900 transition-colors">Our Programs</a>
+          <a href="#impact" className="hover:text-blue-900 transition-colors">Our Impact</a>
+          <a href="#contact" className="hover:text-blue-900 transition-colors">Contact</a>
+        </nav>
+
         <button 
           onClick={onEnterPortal} 
           className="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl shadow-lg shadow-blue-900/10 text-xs uppercase tracking-widest transition-all"
@@ -30,22 +54,22 @@ export default function LandingPage({ onEnterPortal }) {
       </header>
 
       {/* Hero Section */}
-      <section className="relative max-w-7xl mx-auto px-6 lg:px-16 pt-20 pb-22 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="relative max-w-7xl mx-auto px-6 lg:px-16 pt-20 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
-          <span className="text-xs font-black text-blue-900 uppercase tracking-[0.25em] bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
-            Building The Generation Rise
+          <span className="text-xs font-black text-blue-900 uppercase tracking-[0.2em] bg-blue-50 px-4 py-2 rounded-full border border-blue-100 inline-block">
+            Empowerment Ecosystem
           </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-blue-955 leading-tight tracking-tight">
-            Empowering Scholars,<br />
-            <span className="text-blue-900 bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">Creating Impact.</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-blue-950 leading-tight tracking-tight">
+            Inspiring & empowering <br />
+            <span className="text-blue-900 bg-gradient-to-r from-blue-900 to-indigo-750 bg-clip-text text-transparent">young women.</span>
           </h1>
           <p className="text-slate-500 text-base sm:text-lg font-medium leading-relaxed max-w-xl">
-            An advanced, user-centered NGO learning and operations ecosystem. Connecting scholars with dedicated mentors to foster professional growth, career readiness, entrepreneurship, and compliant global reporting.
+            Embracing an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in Rwanda.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <button 
@@ -54,14 +78,12 @@ export default function LandingPage({ onEnterPortal }) {
             >
               Access Portal
             </button>
-            <button 
-              onClick={() => {
-                document.getElementById('pillars-section')?.scrollIntoView({ behavior: 'smooth' });
-              }} 
-              className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 font-black rounded-2xl transition-all text-sm uppercase tracking-widest border border-slate-200 shadow-sm"
+            <a 
+              href="#about"
+              className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 font-black rounded-2xl transition-all text-sm uppercase tracking-widest border border-slate-200 shadow-sm flex items-center justify-center"
             >
               Learn More
-            </button>
+            </a>
           </div>
         </motion.div>
 
@@ -72,8 +94,8 @@ export default function LandingPage({ onEnterPortal }) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="bg-white border border-slate-200/60 p-8 rounded-[3rem] shadow-xl relative"
         >
-          <div className="absolute top-4 right-4 w-3 h-3 bg-green-500 rounded-full animate-ping" />
-          <h3 className="font-black text-xl text-blue-950 mb-6">Scholar Hub Dashboard</h3>
+          <div className="absolute top-6 right-6 w-3.5 h-3.5 bg-green-500 rounded-full animate-ping" />
+          <h3 className="font-black text-xl text-blue-950 mb-6 flex items-center"><TrendingUp className="mr-2 text-blue-900" /> Scholar Hub Dashboard</h3>
           <div className="space-y-6 text-sm">
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <div className="flex items-center space-x-3">
@@ -110,53 +132,156 @@ export default function LandingPage({ onEnterPortal }) {
         </motion.div>
       </section>
 
-      {/* Metrics Banner */}
-      <section className="bg-blue-955 py-16 px-6 lg:px-16 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,#1e3a8a,transparent)] opacity-40" />
-        <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {[
-            { label: 'Total Scholars Active', val: '245+' },
-            { label: 'Certified Mentors', val: '24' },
-            { label: 'Scholar Engagement', val: '92%' },
-            { label: 'NGO Compliance', val: '100%' }
-          ].map((metric, i) => (
-            <div key={i} className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-black text-white">{metric.val}</p>
-              <p className="text-[10px] sm:text-xs font-bold text-blue-200 uppercase tracking-widest">{metric.label}</p>
+      {/* About Us Section */}
+      <section id="about" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 border-t border-slate-200/40 bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-5 space-y-4">
+            <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg">Our Roots</span>
+            <h2 className="text-3xl lg:text-4xl font-black text-blue-955 tracking-tight leading-tight">About Generation Rise</h2>
+            <p className="text-slate-500 leading-relaxed text-sm font-medium">
+              We are a community-based and community-driven organization – founded and led by a team of passionate young women, including previous program graduates.
+            </p>
+          </div>
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
+              <h4 className="font-black text-blue-950 text-base">Innovative Philosophy</h4>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                Generation Rise embraces an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in the region.
+              </p>
             </div>
-          ))}
+            <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
+              <h4 className="font-black text-blue-950 text-base">Impact Focus</h4>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                We implement an impressive portfolio of educational and career development programs to provide young women and girls with the opportunities and resources they need to be what they want to be.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Pillars Section */}
-      <section id="pillars-section" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 space-y-12">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <h2 className="text-3xl font-black text-blue-955 tracking-tight">Ecosystem Learning Pillars</h2>
-          <p className="text-slate-500 font-medium">Equipping future leaders with critical readiness and sustainable real-world competencies.</p>
+      {/* Programs List */}
+      <section id="programs" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 space-y-12">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Active Development</span>
+          <h2 className="text-3xl font-black text-blue-955 tracking-tight">Our Popular Programs</h2>
+          <p className="text-slate-500 font-medium text-sm">Promoting education, health, and economic empowerment for girls.</p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {[
-            { title: 'Career Readiness', desc: 'CV development, interview simulator tools, resume reviews, and internship prep.', icon: GraduationCap, color: 'border-blue-200 bg-white hover:border-blue-500 hover:shadow-lg text-blue-700' },
-            { title: 'Entrepreneurship', desc: 'Value proposition design, ideation, business model canvas, and seed financials.', icon: Users, color: 'border-yellow-200 bg-white hover:border-yellow-500 hover:shadow-lg text-yellow-600' },
-            { title: 'Professional English', desc: 'Email etiquettes, written documentation, public speaking, and debate exercises.', icon: BookOpen, color: 'border-slate-200 bg-white hover:border-slate-500 hover:shadow-lg text-slate-600' },
-            { title: 'Life Skills', desc: 'Goal setting, time management logs, budgeting, and emotional intelligence.', icon: Award, color: 'border-blue-200 bg-white hover:border-blue-400 hover:shadow-lg text-blue-600' }
-          ].map((p, i) => (
-            <div key={i} className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border ${p.color} flex flex-col justify-between hover:-translate-y-1 transition-all`}>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {programList.map((prog, i) => (
+            <div key={i} className="bg-white border border-slate-200/50 hover:border-blue-900 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group">
               <div>
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-50 flex items-center justify-center mb-4 sm:mb-6">
-                  <p.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <prog.icon size={22} />
                 </div>
-                <h4 className="text-sm sm:text-lg font-bold text-blue-955 mb-1 sm:mb-2">{p.title}</h4>
-                <p className="text-[10px] sm:text-xs text-slate-500 leading-normal sm:leading-relaxed">{p.desc}</p>
+                <h3 className="font-black text-base text-blue-950 mb-2">{prog.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">{prog.desc}</p>
+              </div>
+              <div className="flex items-center text-blue-900 font-black text-[10px] uppercase tracking-wider mt-6 cursor-pointer">
+                <span>Read program specs</span> <ChevronRight size={12} className="ml-1" />
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Landing Page Footer */}
-      <footer className="text-center py-12 border-t border-slate-200 bg-white text-slate-400 text-xs">
-        <p>© 2026 Building The Generation Rise. All rights reserved.</p>
+      {/* Impact Statistics */}
+      <section id="impact" className="bg-blue-955 py-24 px-6 lg:px-16 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,#1e3a8a,transparent)] opacity-40" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto space-y-16">
+          <div className="text-center max-w-xl mx-auto space-y-3">
+            <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Measurable Results</span>
+            <h2 className="text-3xl font-black text-white tracking-tight">Our Direct Work in Numbers</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {impactData.map((data, i) => (
+              <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl text-center space-y-2">
+                <span className="text-4xl font-black tracking-tight block text-yellow-400">{data.value}</span>
+                <span className="text-xs font-black block uppercase tracking-wider text-slate-205">{data.suffix}</span>
+                <p className="text-[11px] text-slate-400 leading-relaxed font-medium pt-2 border-t border-slate-800/40">{data.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* FAQs Section */}
+      <section className="bg-white border-t border-slate-200/40 py-24 px-6 lg:px-16">
+        <div className="max-w-3xl mx-auto space-y-10">
+          <div className="text-center space-y-2">
+            <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Support Guides</span>
+            <h2 className="text-3xl font-black text-blue-955 tracking-tight">Frequently Asked Questions</h2>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { q: 'How to Make a Donation?', a: 'Generation Rise empowers young girls through educational donations. Please reach out to info@generationrise.org to support our leadership programs.' },
+              { q: 'How to Become a Volunteer?', a: 'We accept active, passionate community volunteers to coordinate peer workshops and curriculum training modules.' },
+              { q: 'How to Raise Funds for our Programs?', a: 'You can help by organizing fundraising events, starting a crowdfunding campaign, or securing sponsorships. We provide resources to ensure your efforts are successful and impactful.' }
+            ].map((faq, i) => (
+              <div key={i} className="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-2 text-xs">
+                <h4 className="font-black text-blue-955 text-sm">{faq.q}</h4>
+                <p className="text-slate-500 font-medium leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Contact Info */}
+      <footer id="contact" className="bg-slate-900 text-slate-300 py-16 px-6 lg:px-16 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          <div className="lg:col-span-5 space-y-4">
+            <div className="flex items-center space-x-3">
+              <img src="/Logo.png" alt="Generation Rise Logo" className="w-10 h-10 object-contain invert brightness-0" />
+              <span className="font-black text-sm text-white uppercase tracking-wider">Generation Rise</span>
+            </div>
+            <p className="text-xs text-slate-450 leading-relaxed font-medium max-w-sm">
+              Inspiring & empowering young people through education. Promoting adolescent health, social gender equity, and economic empowerment.
+            </p>
+          </div>
+
+          <div className="lg:col-span-4 space-y-4">
+            <h4 className="text-[10px] font-black uppercase text-white tracking-widest">Contacts</h4>
+            <div className="space-y-2.5 text-xs text-slate-400">
+              <div className="flex items-center space-x-2">
+                <Phone size={14} className="text-blue-400" />
+                <span>+250793767051</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail size={14} className="text-blue-400" />
+                <span>info@generationrise.org</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin size={14} className="text-blue-400 shrink-0" />
+                <span>31 KG 213 Street, Kigali, Rwanda</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-3 space-y-4">
+            <h4 className="text-[10px] font-black uppercase text-white tracking-widest">Useful Links</h4>
+            <ul className="space-y-2 text-xs text-slate-400 font-bold">
+              <li><a href="#about" className="hover:text-yellow-400 transition-colors">Her Voice Matters</a></li>
+              <li><a href="#programs" className="hover:text-yellow-400 transition-colors">Ignite Program</a></li>
+              <li><a href="#impact" className="hover:text-yellow-400 transition-colors">Empowering Women Scholars</a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-8 mt-12 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+          <p>© 2026 Building The Generation Rise. All rights reserved.</p>
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <a href="#" className="hover:underline">Imprint</a>
+            <a href="#" className="hover:underline">Privacy Policy</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
