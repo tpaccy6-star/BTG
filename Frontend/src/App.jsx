@@ -209,7 +209,8 @@ export default function App() {
 
   // --- Auth layout guards ---
   if (!isLoggedIn) {
-    if (showPortalLogin) {
+    const isMobile = window.innerWidth < 1024;
+    if (showPortalLogin || isMobile) {
       return (
         <LoginPage 
           onLoginSuccess={handleLoginSuccess} 
