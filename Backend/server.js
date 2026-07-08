@@ -291,8 +291,8 @@ app.get('/api/roster', authenticateToken, async (req, res) => {
 
 // 8. Attendance Checkpoint Route
 app.post('/api/attendance/mark', authenticateToken, async (req, res) => {
-  if (req.user.role === 'scholar') {
-    return res.status(403).json({ error: 'Access denied.' });
+  if (req.user.role === 'scholar' && req.body.scholarId !== req.user.id) {
+    return res.status(403).json({ error: 'Access denied. Scholars can only log their own attendance.' });
   }
 
   const { scholarId, date, status } = req.body;
