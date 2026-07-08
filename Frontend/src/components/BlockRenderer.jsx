@@ -33,7 +33,7 @@ export default function BlockRenderer({ blocksData }) {
           return <MarkdownRenderer key={block.id || idx} content={block.content} className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-sm space-y-4" />;
         }
         if (block.type === 'flipcard') {
-          return <FlipCard key={block.id || idx} front={block.front} back={block.back} />;
+          return <FlipCard key={block.id || idx} frontContent={block.front} backContent={block.back} />;
         }
         if (block.type === 'accordion') {
           return (

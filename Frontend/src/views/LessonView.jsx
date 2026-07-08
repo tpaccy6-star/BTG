@@ -249,7 +249,7 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
       return { type: 'iframe-raw', html: urlTrim };
     }
 
-    const ytReg = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(mbed)?)\/||user\/(?:[^\/]+)\/|shorts\/)|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/;
+    const ytReg = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\/\s]{11})/;
     const ytMatch = url.match(ytReg);
     if (ytMatch && ytMatch[1]) {
       return { type: 'youtube', src: `https://www.youtube.com/embed/${ytMatch[1]}` };

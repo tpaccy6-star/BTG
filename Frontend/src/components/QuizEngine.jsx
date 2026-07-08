@@ -19,11 +19,15 @@ export default function QuizEngine({ quizData, onComplete }) {
     setSelectedAnswer(index);
     setIsAnswered(true);
 
-    const isCorrect = isMultipleChoice 
-      ? index === currentQuestion.correctAnswer 
-      : index === currentQuestion.correctAnswer;
+    let correctIdx;
+    if (isMultipleChoice) {
+      correctIdx = parseInt(currentQuestion.correctAnswer, 10);
+    } else {
+      const val = currentQuestion.correctAnswer;
+      correctIdx = (val === true || String(val).toLowerCase() === 'true') ? 0 : 1;
+    }
 
-    if (isCorrect) {
+    if (index === correctIdx) {
       setScore(prev => prev + 1);
     }
   };
@@ -89,9 +93,13 @@ export default function QuizEngine({ quizData, onComplete }) {
     ? currentQuestion.options 
     : ['True', 'False'];
 
-  const correctIndex = isMultipleChoice 
-    ? currentQuestion.correctAnswer 
-    : (currentQuestion.correctAnswer === true ? 0 : 1);
+  let correctIndex;
+  if (isMultipleChoice) {
+    correctIndex = parseInt(currentQuestion.correctAnswer, 10);
+  } else {
+    const val = currentQuestion.correctAnswer;
+    correctIndex = (val === true || String(val).toLowerCase() === 'true') ? 0 : 1;
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto shadow-sm">
