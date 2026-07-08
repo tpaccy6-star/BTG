@@ -277,7 +277,7 @@ export default function ChatView({ currentUser, userRole }) {
                       : 'bg-white dark:bg-slate-900 text-blue-950 dark:text-white rounded-tl-none border border-slate-100 dark:border-slate-800'
                   }`}>
                     {!isSelf && <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">{msg.senderName}</p>}
-                    <p className="font-medium">{msg.content}</p>
+                    <p className="font-medium whitespace-pre-wrap">{msg.content}</p>
                     <span className={`text-[8px] font-bold block mt-1.5 text-right uppercase ${
                       isSelf ? 'text-blue-200 dark:text-slate-450' : 'text-slate-400 dark:text-slate-500'
                     }`}>
@@ -291,19 +291,25 @@ export default function ChatView({ currentUser, userRole }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Message Input Form */}
-        <form onSubmit={handleSendMessage} className="p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex items-center space-x-4 shrink-0">
-          <input
-            type="text"
+        {/* Message Input */}
+        <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex items-center space-x-4 shrink-0">
+          <textarea
             value={localChatInput}
             onChange={(e) => setLocalChatInput(e.target.value)}
-            placeholder="Type your message here..."
-            className="flex-1 px-5 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 font-medium text-xs text-blue-955 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 transition-all"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            placeholder="Type your message here... (Enter for new line, Shift+Enter to send)"
+            className="flex-1 px-5 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 font-medium text-xs text-blue-955 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 transition-all resize-y min-h-[50px] max-h-[150px]"
+            rows="1"
           />
-          <button type="submit" className="p-4 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-2xl shadow-lg dark:shadow-none shadow-blue-200/50 hover:scale-105 active:scale-95 transition-all">
+          <button onClick={handleSendMessage} className="p-4 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-2xl shadow-lg dark:shadow-none shadow-blue-200/50 hover:scale-105 active:scale-95 transition-all">
             <Send size={18} />
           </button>
-        </form>
+        </div>
       </div>
     </motion.div>
   );

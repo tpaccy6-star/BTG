@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, PanelLeftClose, PanelLeftOpen, User, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationBell from './NotificationBell';
 
 export default function Header({ 
   currentUser, 
@@ -45,13 +46,8 @@ export default function Header({
       </div>
 
       <div className="flex items-center space-x-4">
-        {/* Notifications Icon */}
-        <button className={`relative p-2 transition-colors ${
-          isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600'
-        }`}>
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-yellow-400 rounded-full border border-slate-50"></span>
-        </button>
+        {/* Real Notification Bell */}
+        <NotificationBell />
         
         {/* Profile Dropdown Corner */}
         <div className={`flex items-center space-x-3 pl-4 border-l relative ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>

@@ -327,7 +327,7 @@ export default function App() {
         {/* Scrollable Workspace */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           <div className="flex-1 p-4 lg:p-10 pb-20 lg:pb-6">
-            <div className="max-w-[1400px] mx-auto h-full">
+            <div className="w-full h-full">
               <AnimatePresence mode="wait">
                 {currentView === 'dashboard' && userRole === 'scholar' && (
                   <ScholarDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholar-dash" />

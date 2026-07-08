@@ -10,7 +10,7 @@ import bcrypt from 'bcryptjs';
 import { Op } from 'sequelize';
 
 import sequelize from './database.js';
-import { User, Lesson, Submission, Message, Attendance, Announcement, Cohort } from './models.js';
+import { User, Lesson, Submission, Message, Attendance, Announcement, Notification, Cohort } from './models.js';
 import seedDatabase from './seed.js';
 
 const JWT_SECRET = 'generation_rise_super_secret_key_2026';
@@ -537,10 +537,22 @@ app.put('/api/users/update-profile', authenticateToken, async (req, res) => {
   }
 });
 
-// 12. Get Announcements Route (Authenticated Users)
+// 12. Announcements Route
 app.get('/api/announcements', authenticateToken, async (req, res) => {
   try {
+    const whereClause = {};
+    if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+      whereClause[Op.or] = [
+        { targetRole: 'all' },
+        { targetRole: req.user.role }
+      ];
+      if (req.user.cohortId) {
+        whereClause[Op.or].push({ targetCohortId: req.user.cohortId });
+      }
+    }
+
     const announcements = await Announcement.findAll({
+      where: whereClause,
       order: [['date', 'DESC'], ['createdAt', 'DESC']]
     });
     res.json(announcements);
@@ -555,7 +567,7 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
     return res.status(403).json({ error: 'Access denied.' });
   }
 
-  const { title, content } = req.body;
+  const { title, content, targetRole, targetCohortId } = req.body;
 
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required.' });
@@ -566,11 +578,62 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
       title,
       content,
       author: req.user.name,
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      targetRole: targetRole || 'all',
+      targetCohortId: targetCohortId ? parseInt(targetCohortId, 10) : null
     });
+    
+    // Create notifications for targeted users
+    const userWhereClause = {};
+    if (targetRole && targetRole !== 'all') {
+      userWhereClause.role = targetRole;
+    }
+    if (targetCohortId) {
+      userWhereClause.cohortId = targetCohortId;
+    }
+    
+    const targetUsers = await User.findAll({ where: userWhereClause });
+    const notifications = targetUsers.map(u => ({
+      userId: u.id,
+      title: `New Announcement: ${title}`,
+      message: content,
+      type: 'announcement',
+      link: '#/announcements'
+    }));
+    await Notification.bulkCreate(notifications);
+
     res.json({ success: true, announcement });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to create announcement.' });
+  }
+});
+
+// 13b. Notifications Routes
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: req.user.id },
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load notifications.' });
+  }
+});
+
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const notification = await Notification.findOne({
+      where: { id: req.params.id, userId: req.user.id }
+    });
+    if (!notification) return res.status(404).json({ error: 'Not found.' });
+    
+    notification.isRead = true;
+    await notification.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark notification as read.' });
   }
 });
 

@@ -209,6 +209,43 @@ export const Announcement = sequelize.define('Announcement', {
   date: {
     type: DataTypes.DATEONLY,
     allowNull: false
+  },
+  targetRole: {
+    type: DataTypes.STRING, // 'all', 'scholar', 'mentor', 'teacher'
+    defaultValue: 'all'
+  },
+  targetCohortId: {
+    type: DataTypes.INTEGER, // specific cohort or null for all cohorts
+    allowNull: true
+  }
+});
+
+// --- Notification Model ---
+export const Notification = sequelize.define('Notification', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  isRead: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  type: {
+    type: DataTypes.STRING, // e.g., 'announcement', 'grading', 'system'
+    defaultValue: 'system'
+  },
+  link: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 
@@ -258,4 +295,7 @@ Attendance.belongsTo(User, { foreignKey: 'scholarId', as: 'scholar' });
 Cohort.hasMany(User, { foreignKey: 'cohortId', as: 'scholarsList' });
 User.belongsTo(Cohort, { foreignKey: 'cohortId', as: 'cohort' });
 
-export default { User, Lesson, Submission, Message, Attendance, Announcement, Cohort };
+User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+export default { User, Lesson, Submission, Message, Attendance, Announcement, Notification, Cohort };

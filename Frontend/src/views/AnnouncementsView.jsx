@@ -10,6 +10,9 @@ export default function AnnouncementsView({ userRole }) {
   // Broadcast fields
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [targetRole, setTargetRole] = useState('all');
+  const [targetCohortId, setTargetCohortId] = useState('');
+  const [cohorts, setCohorts] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -17,7 +20,25 @@ export default function AnnouncementsView({ userRole }) {
 
   useEffect(() => {
     fetchAnnouncements();
+    if (isTeacherOrAdmin) {
+      fetchCohorts();
+    }
   }, []);
+
+  const fetchCohorts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/cohorts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCohorts(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchAnnouncements = async () => {
     setLoading(true);
@@ -57,7 +78,12 @@ export default function AnnouncementsView({ userRole }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify({ 
+          title, 
+          content, 
+          targetRole, 
+          targetCohortId: targetCohortId ? parseInt(targetCohortId) : null 
+        })
       });
 
       const data = await response.json();
@@ -68,6 +94,8 @@ export default function AnnouncementsView({ userRole }) {
       setMessage('Announcement broadcasted successfully!');
       setTitle('');
       setContent('');
+      setTargetRole('all');
+      setTargetCohortId('');
       setIsFormOpen(false);
       fetchAnnouncements();
     } catch (err) {
@@ -191,6 +219,36 @@ export default function AnnouncementsView({ userRole }) {
                     className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:border-blue-900 dark:focus:border-yellow-455 text-slate-850 dark:text-white"
                     rows="5"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Target Role</label>
+                    <select
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 text-slate-800 dark:text-white"
+                    >
+                      <option value="all">Everyone</option>
+                      <option value="scholar">Scholars Only</option>
+                      <option value="mentor">Mentors Only</option>
+                      <option value="teacher">Teachers Only</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Target Cohort</label>
+                    <select
+                      value={targetCohortId}
+                      onChange={(e) => setTargetCohortId(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 text-slate-800 dark:text-white"
+                    >
+                      <option value="">All Cohorts</option>
+                      {cohorts.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex space-x-3 pt-4 justify-end">

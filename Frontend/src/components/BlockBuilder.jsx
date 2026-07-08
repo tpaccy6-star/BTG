@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, ChevronUp, ChevronDown, AlignLeft, Layers, Columns, Image } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, AlignLeft, Layers, Columns, Image, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function BlockBuilder({ blocks, setBlocks }) {
@@ -10,6 +10,7 @@ export default function BlockBuilder({ blocks, setBlocks }) {
     if (type === 'accordion') { newBlock.title = ''; newBlock.content = ''; }
     if (type === 'tabs') { newBlock.tabs = [{ label: '', content: '' }]; }
     if (type === 'markdown') { newBlock.content = ''; }
+    if (type === 'video') { newBlock.url = ''; }
     setBlocks([...(blocks || []), newBlock]);
   };
 
@@ -63,6 +64,7 @@ export default function BlockBuilder({ blocks, setBlocks }) {
                 {block.type === 'flipcard' && <Layers size={14} />}
                 {block.type === 'accordion' && <Columns size={14} />}
                 {block.type === 'tabs' && <Columns size={14} />}
+                {block.type === 'video' && <Image size={14} />}
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {block.type} Block
@@ -86,6 +88,20 @@ export default function BlockBuilder({ blocks, setBlocks }) {
                 placeholder="Legacy Markdown text..."
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-sm font-mono focus:border-blue-500 text-slate-800 dark:text-white min-h-[150px]"
               />
+            )}
+
+            {block.type === 'video' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Video URL (YouTube)</label>
+                  <input
+                    value={block.url}
+                    onChange={(e) => updateBlock(block.id, 'url', e.target.value)}
+                    placeholder="E.g. https://www.youtube.com/watch?v=..."
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm focus:border-blue-500 text-slate-800 dark:text-white"
+                  />
+                </div>
+              </div>
             )}
 
             {block.type === 'flipcard' && (
@@ -194,6 +210,9 @@ export default function BlockBuilder({ blocks, setBlocks }) {
         <div className="flex flex-wrap justify-center gap-2">
           <button type="button" onClick={() => addBlock('paragraph')} className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center space-x-1 shadow-sm">
             <AlignLeft size={14} /> <span>Paragraph</span>
+          </button>
+          <button type="button" onClick={() => addBlock('video')} className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center space-x-1 shadow-sm">
+            <Video size={14} /> <span>Video</span>
           </button>
           <button type="button" onClick={() => addBlock('flipcard')} className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center space-x-1 shadow-sm">
             <Layers size={14} /> <span>Flip Card</span>

@@ -53,6 +53,35 @@ export default function BlockRenderer({ blocksData }) {
             </Tabs>
           );
         }
+        if (block.type === 'video') {
+          if (!block.url) return null;
+          
+          let embedSrc = block.url;
+          // Basic YouTube URL parsing
+          const ytReg = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\/\s]{11})/;
+          const ytMatch = block.url.match(ytReg);
+          if (ytMatch && ytMatch[1]) {
+            embedSrc = `https://www.youtube.com/embed/${ytMatch[1]}`;
+          } else if (block.url.includes('<iframe')) {
+            const match = block.url.match(/src="([^"]+)"/);
+            if (match && match[1]) {
+              embedSrc = match[1];
+            }
+          }
+
+          return (
+            <div key={block.id || idx} className="w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 my-4">
+              <iframe
+                src={embedSrc}
+                title="Video Block"
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          );
+        }
         return null;
       })}
     </div>

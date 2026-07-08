@@ -175,6 +175,15 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
         });
         notesHTML += `</ul></div>`;
       }
+      if (block.type === 'video') {
+        let embedSrc = block.url || '';
+        const ytReg = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\/\s]{11})/;
+        const ytMatch = embedSrc.match(ytReg);
+        if (ytMatch && ytMatch[1]) {
+          embedSrc = `https://www.youtube.com/embed/${ytMatch[1]}`;
+        }
+        notesHTML += `<div class="widget"><span class="widget-title">Video Resource</span><iframe width="560" height="315" src="${embedSrc}" frameborder="0" allowfullscreen></iframe></div>`;
+      }
     });
 
     const htmlContent = `
