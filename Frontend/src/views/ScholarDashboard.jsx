@@ -141,6 +141,66 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
         </div>
 
         <div className="space-y-10">
+          {/* Gamification widget */}
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-base font-black text-slate-850 dark:text-white tracking-tight">Leaderboard & XP</h2>
+              <span className="text-[10px] font-black text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40 px-2.5 py-1 rounded-full">Level 4</span>
+            </div>
+            
+            {/* XP progress bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                <span>1,250 XP earned</span>
+                <span>2,000 XP Goal</span>
+              </div>
+              <div className="w-full h-2.5 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full" style={{ width: '62.5%' }}></div>
+              </div>
+            </div>
+
+            {/* Achievements/Badges Row */}
+            <div className="space-y-3">
+              <p className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest leading-none">Unlocked Badges</p>
+              <div className="flex gap-2">
+                {[
+                  { emoji: '🔥', title: '14-Day Streak', desc: 'Active check-ins' },
+                  { emoji: '📚', title: 'Catalog Devourer', desc: 'Completed 5 lessons' },
+                  { emoji: '🎓', title: 'Verified Graduate', desc: 'Graduation checklist complete' }
+                ].map((b, idx) => (
+                  <div key={idx} className="flex-1 bg-slate-50 dark:bg-slate-950/20 border border-slate-150 dark:border-slate-800 p-2.5 rounded-2xl text-center group cursor-pointer hover:scale-105 transition-all" title={`${b.title}: ${b.desc}`}>
+                    <span className="text-xl block">{b.emoji}</span>
+                    <span className="text-[8px] font-black text-slate-650 dark:text-slate-350 block mt-1 leading-tight truncate">{b.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Leaderboard */}
+            <div className="space-y-3 pt-4 border-t border-slate-50 dark:border-slate-800">
+              <p className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest leading-none">Weekly Leaderboard</p>
+              <div className="space-y-2">
+                {[
+                  { rank: 1, name: 'Diane Tuyisingize', xp: 1450, active: false },
+                  { rank: 2, name: 'Alex Johnson (You)', xp: 1250, active: true },
+                  { rank: 3, name: 'Faith Umwari', xp: 1100, active: false }
+                ].map((user, idx) => (
+                  <div key={idx} className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold ${
+                    user.active ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-900 dark:text-yellow-450 border border-blue-100 dark:border-blue-900/30' : 'text-slate-600 dark:text-slate-350'
+                  }`}>
+                    <div className="flex items-center space-x-2.5">
+                      <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black ${
+                        user.rank === 1 ? 'bg-yellow-400 text-blue-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                      }`}>{user.rank}</span>
+                      <span className="truncate">{user.name}</span>
+                    </div>
+                    <span>{user.xp} XP</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
             <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-6 tracking-tight">NGO Impact Feed</h2>
             <div className="space-y-5">

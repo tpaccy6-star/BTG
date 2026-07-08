@@ -82,6 +82,31 @@ export default function TeacherDashboard({ currentUser, setCurrentView }) {
         </div>
 
         <div className="space-y-8">
+          {/* Quick Tool Belt for Creators */}
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <h2 className="text-base font-black text-slate-850 dark:text-white tracking-tight border-b border-slate-50 dark:border-slate-800 pb-3">Creator Toolbox</h2>
+            <div className="grid grid-cols-1 gap-2.5">
+              {[
+                { title: 'Create & Modify Lessons', desc: 'Add handouts, study notes & covers', action: 'curriculum', url: '#/curriculum' },
+                { title: 'Grade Student Tasks', desc: 'Score homework & write feedback comments', action: 'tasks', url: '#/tasks' },
+                { title: 'Log Daily Attendance', desc: 'Register attendance rosters', action: 'attendance', url: '#/attendance' },
+                { title: 'Broadcast Bulletins', desc: 'Post push-alerts to scholar dashboards', action: 'announcements', url: '#/announcements' }
+              ].map((tool, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setCurrentView(tool.action);
+                    window.location.hash = tool.url;
+                  }}
+                  className="w-full text-left p-3.5 bg-slate-50 dark:bg-slate-950/20 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 transition-all flex flex-col group"
+                >
+                  <span className="text-xs font-black text-blue-900 dark:text-yellow-450 group-hover:underline">{tool.title}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">{tool.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
             <h2 className="text-base font-bold text-slate-800 dark:text-white mb-6 tracking-tight">Attendance Monitor</h2>
             <div className="h-48 flex items-end justify-around px-4">
