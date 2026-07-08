@@ -95,12 +95,6 @@ export default function AIChatbot({ currentUser }) {
       // Append bot response
       const botMsgId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, { id: botMsgId, sender: 'bot', text: data.response || "I couldn't process that query. Please try again.", timestamp: new Date() }]);
-      
-      if (data.suggestions && Array.isArray(data.suggestions)) {
-        setActiveSuggestions(data.suggestions.map(s => ({ text: s, query: s })));
-      } else {
-        setActiveSuggestions(getSuggestions());
-      }
     } catch (err) {
       const errorMsgId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, { id: errorMsgId, sender: 'bot', text: "Network connection error. Please make sure the server is online.", timestamp: new Date() }]);

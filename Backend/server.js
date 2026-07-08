@@ -8,6 +8,9 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { Op } from 'sequelize';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import sequelize from './database.js';
 import { User, Lesson, Submission, Message, Attendance, Announcement, Notification, Cohort } from './models.js';
