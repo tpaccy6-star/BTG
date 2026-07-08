@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Flame, GraduationCap, Users, BookOpen, Award, MapPin, Phone, Mail, 
   CheckCircle2, ChevronRight, TrendingUp, Search, Printer, FileText, 
-  ChevronDown, ChevronUp, AlertCircle, ThumbsUp, HelpCircle, CheckSquare, Square
+  ChevronDown, ChevronUp, AlertCircle, ThumbsUp, HelpCircle, CheckSquare, Square,
+  Database, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
