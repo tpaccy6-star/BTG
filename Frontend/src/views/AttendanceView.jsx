@@ -106,6 +106,21 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
   const absentCount = attendanceRecords.filter(r => r.status === 'absent').length;
   const rate = totalSessions > 0 ? Math.round(((presentCount + lateCount) / totalSessions) * 100) : 92;
 
+  const handleDownloadAttendanceCSV = () => {
+    if (attendanceRecords.length === 0) return;
+    const headers = 'Date,Verified By,Status\n';
+    const rows = attendanceRecords.map(r => `"${r.date}","${r.verifiedBy || 'Self-Registered'}","${r.status}"`).join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance_records_${currentUser.name.replace(/\s+/g, '_')}_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   if (isScholar) {
     return (
       <motion.div 
@@ -137,7 +152,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
               <h3 className="text-xl font-black text-blue-955 dark:text-white">Session History</h3>
-              <button className="text-blue-600 dark:text-yellow-455 font-bold text-sm flex items-center"><Download size={14} className="mr-2" /> Download Record</button>
+              <button onClick={handleDownloadAttendanceCSV} className="text-blue-600 dark:text-yellow-455 font-bold text-sm flex items-center hover:underline"><Download size={14} className="mr-2" /> Download Record</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">

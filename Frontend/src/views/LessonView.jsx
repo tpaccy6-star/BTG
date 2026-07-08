@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, BookOpen, PlayCircle, FileText, Download, CheckCircle2, Upload, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 
 export default function LessonView({ currentUser, lessons, selectedLessonId, setCurrentView, onUpdateUser }) {
   const lesson = lessons?.find(l => l.id === selectedLessonId);
@@ -305,9 +306,9 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
           {lesson.notes && (
             <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 animate-fade-in">
               <h3 className="text-lg font-bold text-slate-850 dark:text-white tracking-tight">Class Study Notes</h3>
-              <div 
-                className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-xs space-y-4 rich-notes-render"
-                dangerouslySetInnerHTML={{ __html: lesson.notes }}
+              <MarkdownRenderer 
+                content={lesson.notes} 
+                className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-xs space-y-4"
               />
             </div>
           )}

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, X, Send, Bot, MessageSquare } from 'lucide-react';
+import { Sparkles, X, Send, Bot, MessageSquare, Copy, Check, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import MarkdownRenderer from './MarkdownRenderer';
 
 export default function AIChatbot({ currentUser }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
   const messagesEndRef = useRef(null);
 
   const role = currentUser?.role || 'scholar';
@@ -35,7 +37,7 @@ export default function AIChatbot({ currentUser }) {
         ];
       case 'admin':
         return [
-          { text: 'Reset SQLite Database', query: 'How to reset database?' },
+          { text: 'Backup SQLite Database', query: 'How to backup database?' },
           { text: 'Add/Edit platform users', query: 'How to edit users?' },
           { text: 'Toggle compliance settings', query: 'How to change compliance security?' }
         ];
@@ -45,6 +47,8 @@ export default function AIChatbot({ currentUser }) {
         ];
     }
   };
+
+  const [activeSuggestions, setActiveSuggestions] = useState([]);
 
   // Initialize welcome message
   useEffect(() => {
@@ -62,6 +66,7 @@ export default function AIChatbot({ currentUser }) {
     setMessages([
       { id: 'welcome', sender: 'bot', text: welcomeText, timestamp: new Date() }
     ]);
+    setActiveSuggestions(getSuggestions());
   }, [currentUser]);
 
   // Scroll to bottom on new messages
@@ -71,31 +76,66 @@ export default function AIChatbot({ currentUser }) {
     }
   }, [messages, isOpen]);
 
+  const handleCopy = (id, text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleExportHistory = () => {
+    const logs = messages
+      .map(m => `[${m.sender === 'user' ? 'USER' : 'AI ASSISTANT'} - ${new Date(m.timestamp).toLocaleTimeString()}]\n${m.text}\n`)
+      .join('\n');
+    const blob = new Blob([logs], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `generation_rise_chat_history_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleSend = async (textToSend) => {
     const queryText = textToSend || input;
     if (!queryText.trim()) return;
 
     // Append user message
     const userMsgId = Date.now().toString();
-    setMessages(prev => [...prev, { id: userMsgId, sender: 'user', text: queryText, timestamp: new Date() }]);
+    const newMessages = [...messages, { id: userMsgId, sender: 'user', text: queryText, timestamp: new Date() }];
+    setMessages(newMessages);
     setInput('');
     setLoading(true);
 
     try {
       const token = localStorage.getItem('token');
+      const history = newMessages
+        .filter(m => m.id !== 'welcome')
+        .map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.text
+        }));
+
       const res = await fetch('/api/chatbot/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ query: queryText })
+        body: JSON.stringify({ query: queryText, history })
       });
       const data = await res.json();
       
       // Append bot response
       const botMsgId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, { id: botMsgId, sender: 'bot', text: data.response || "I couldn't process that query. Please try again.", timestamp: new Date() }]);
+      
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        setActiveSuggestions(data.suggestions.map(s => ({ text: s, query: s })));
+      } else {
+        setActiveSuggestions(getSuggestions());
+      }
     } catch (err) {
       const errorMsgId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, { id: errorMsgId, sender: 'bot', text: "Network connection error. Please make sure the server is online.", timestamp: new Date() }]);
@@ -135,12 +175,21 @@ export default function AIChatbot({ currentUser }) {
                   <p className="text-[9px] text-slate-300 font-medium">Online • Role: {role}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
-              >
-                <X size={16} />
-              </button>
+              <div className="flex items-center space-x-1.5">
+                <button
+                  onClick={handleExportHistory}
+                  className="p-1 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
+                  title="Export Chat History"
+                >
+                  <Download size={14} />
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
 
             {/* Messages Area */}
@@ -148,18 +197,26 @@ export default function AIChatbot({ currentUser }) {
               {messages.map(msg => (
                 <div
                   key={msg.id}
-                  className={`flex flex-col max-w-[85%] ${
+                  className={`flex flex-col max-w-[85%] group relative ${
                     msg.sender === 'user' ? 'self-end ml-auto' : 'self-start'
                   }`}
                 >
                   <div
-                    className={`p-3 text-xs leading-relaxed shadow-sm rounded-2xl ${
+                    className={`p-3 text-xs leading-relaxed shadow-sm rounded-2xl relative ${
                       msg.sender === 'user'
                         ? 'bg-blue-900 dark:bg-yellow-400 text-white dark:text-blue-950 font-semibold rounded-tr-none'
                         : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-100 dark:border-slate-750/30'
                     }`}
                   >
-                    {msg.text}
+                    <MarkdownRenderer content={msg.text} />
+                    
+                    <button 
+                      onClick={() => handleCopy(msg.id, msg.text)}
+                      className="absolute bottom-1 right-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 dark:text-slate-500 transition-opacity"
+                      title="Copy to clipboard"
+                    >
+                      {copiedId === msg.id ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
+                    </button>
                   </div>
                   <span className="text-[8px] text-slate-400 dark:text-slate-500 font-medium mt-1 px-1">
                     {msg.sender === 'user' ? 'Sent' : 'AI Assistant'}
@@ -182,7 +239,7 @@ export default function AIChatbot({ currentUser }) {
             <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900 shrink-0">
               <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Suggested Questions</span>
               <div className="flex flex-wrap gap-1.5">
-                {getSuggestions().map((sug, i) => (
+                {activeSuggestions.map((sug, i) => (
                   <button
                     key={i}
                     onClick={() => handleSend(sug.query)}

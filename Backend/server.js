@@ -21,6 +21,10 @@ const uploadsDir = './uploads';
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
+const backupsDir = './backups';
+if (!fs.existsSync(backupsDir)) {
+  fs.mkdirSync(backupsDir);
+}
 
 // Express app setup
 const app = express();
@@ -547,17 +551,80 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
   }
 });
 
-// 14. Admin Database Reset Route (Admin Only)
-app.post('/api/admin/reset', authenticateToken, async (req, res) => {
+// 14. Admin Database Backup Route (Admin Only)
+app.post('/api/admin/backup', authenticateToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
   }
   try {
-    await seedDatabase();
-    res.json({ success: true, message: 'Database reset and default seeds restored successfully.' });
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `database_backup_${timestamp}.sqlite`;
+    const destPath = path.join(backupsDir, filename);
+    const sourcePath = './database.sqlite';
+
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, destPath);
+      res.json({
+        success: true,
+        message: 'Database backup created successfully.',
+        backup: {
+          filename,
+          timestamp: new Date(),
+          size: (fs.statSync(destPath).size / 1024).toFixed(1) + ' KB'
+        }
+      });
+    } else {
+      res.status(404).json({ error: 'Source database file not found.' });
+    }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to reset and re-seed database.' });
+    res.status(500).json({ error: 'Failed to create database backup.' });
+  }
+});
+
+// 14b. Download Database Backup (Admin Only)
+app.get('/api/admin/backup/download/:filename', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+  }
+  const { filename } = req.params;
+  const filePath = path.join(backupsDir, filename);
+
+  // Prevent directory traversal attacks
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return res.status(400).json({ error: 'Invalid backup file name.' });
+  }
+
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, filename);
+  } else {
+    res.status(404).json({ error: 'Backup file not found.' });
+  }
+});
+
+// 14c. Get Backups List (Admin Only)
+app.get('/api/admin/backups', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Administrator privileges required.' });
+  }
+  try {
+    const files = fs.readdirSync(backupsDir);
+    const backups = files
+      .filter(file => file.startsWith('database_backup_') && file.endsWith('.sqlite'))
+      .map(file => {
+        const filePath = path.join(backupsDir, file);
+        const stats = fs.statSync(filePath);
+        return {
+          filename: file,
+          timestamp: stats.mtime,
+          size: (stats.size / 1024).toFixed(1) + ' KB'
+        };
+      })
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json(backups);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to list backups.' });
   }
 });
 
@@ -830,7 +897,7 @@ app.delete('/api/admin/cohorts/:id', authenticateToken, async (req, res) => {
 
 // 27. Chatbot Query Route (All Authenticated Users)
 app.post('/api/chatbot/query', authenticateToken, (req, res) => {
-  const { query } = req.body;
+  const { query, history } = req.body;
   const { role, name } = req.user;
 
   if (!query) {
@@ -838,55 +905,163 @@ app.post('/api/chatbot/query', authenticateToken, (req, res) => {
   }
 
   const q = query.toLowerCase().trim();
-  let response = '';
-
-  if (role === 'scholar') {
-    if (q.includes('homework') || q.includes('submit') || q.includes('task') || q.includes('assignment')) {
-      response = `Hi ${name}, to submit homework, visit the **Catalog** tab, open a lesson, and use the **Task Submission** box on the right. You can upload PDF, DOCX, or PNG files up to 5MB.`;
-    } else if (q.includes('attendance') || q.includes('check') || q.includes('scan') || q.includes('log')) {
-      response = `Hi ${name}, you can log attendance under the **Attendance** tab by clicking the **Check In Now** button. This simulates a QR code check-in at your classroom.`;
-    } else if (q.includes('streak') || q.includes('points') || q.includes('days')) {
-      response = `Your academic streak grows when you log in and check in regularly. Keep up the active streak to earn recognition!`;
-    } else if (q.includes('chat') || q.includes('mentor') || q.includes('message')) {
-      response = `Need help? Go to the **Mentor Chat** tab to message your mentor, Sarah Miller, directly.`;
-    } else {
-      response = `Hi ${name}! As a Scholar, I can help you with homework submissions, logging attendance, tracking your streak, or messaging your mentor. What would you like to know?`;
+  
+  // Find context from history
+  let lastAssistantMsg = '';
+  if (history && history.length > 0) {
+    const botMsgs = history.filter(h => h.role === 'assistant');
+    if (botMsgs.length > 0) {
+      lastAssistantMsg = botMsgs[botMsgs.length - 1].content.toLowerCase();
     }
-  } else if (role === 'mentor') {
-    if (q.includes('grade') || q.includes('score') || q.includes('review') || q.includes('mark')) {
-      response = `Hello Mentor ${name}, you can evaluate submissions in the **Grading** tab. Select a pending task, review the attached file preview, specify a score (0-100), write feedback remarks, and submit.`;
-    } else if (q.includes('scholar') || q.includes('roster') || q.includes('student')) {
-      response = `You can see progress logs and checklist completions for all your assigned scholars under the **My Scholars** tab.`;
-    } else if (q.includes('chat') || q.includes('message') || q.includes('dm')) {
-      response = `You can chat with scholars under the **Messages** tab. Select any scholar's direct channel to reply to their queries.`;
-    } else {
-      response = `Hello Mentor ${name}! You have privileges to grade tasks, view scholar metrics, and communicate in the chat rooms. How can I assist you with your mentoring duties today?`;
-    }
-  } else if (role === 'teacher') {
-    if (q.includes('cohort') || q.includes('class')) {
-      response = `Hello Teacher ${name}, you can manage simple cohorts (Cohort 1 to Cohort 4) under the **All Cohorts** tab. You can inspect enrollment sizes and attendance ratios there.`;
-    } else if (q.includes('curriculum') || q.includes('lesson') || q.includes('edit') || q.includes('create')) {
-      response = `You can customize courses, edit lecture notes, or upload handouts under the **Curriculum** tab.`;
-    } else if (q.includes('broadcast') || q.includes('announce') || q.includes('news')) {
-      response = `Post global notifications or extend deadlines under the **Broadcasts** tab. All scholars will see these bulletins on their dashboards.`;
-    } else {
-      response = `Hello Teacher ${name}! You can manage cohorts, modify curriculum lessons, or send broadcasts. What operations would you like assistance with?`;
-    }
-  } else if (role === 'admin') {
-    if (q.includes('reset') || q.includes('database') || q.includes('seed')) {
-      response = `Hello Admin ${name}, you can reset the SQLite database under **System Config** ➔ **Database Administration** by clicking **Reset Database to Default Seed**. This drops tables and recreates seed profiles.`;
-    } else if (q.includes('user') || q.includes('directory') || q.includes('create') || q.includes('role')) {
-      response = `You can add, edit, or delete users (Scholars, Mentors, Teachers, Admins) inside the **User Directory** view.`;
-    } else if (q.includes('compliance') || q.includes('ssl') || q.includes('security')) {
-      response = `Toggle security protocols, Mock SSL Sandboxing, and weekly NGO Compliance logging under the **System Config** parameters tab in System settings.`;
-    } else {
-      response = `Hello Admin ${name}! You have full super-user authorization. I can assist with database resets, user directory CRUD operations, and security sandbox variables.`;
-    }
-  } else {
-    response = `Hello ${name}! How can I assist you today?`;
   }
 
-  res.json({ response });
+  let response = '';
+  let suggestions = [];
+
+  // Determine active topic context
+  const isAboutDatabase = q.includes('database') || q.includes('backup') || q.includes('sqlite') || q.includes('restore') || q.includes('seed') || (lastAssistantMsg.includes('backup') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
+  const isAboutHomework = q.includes('homework') || q.includes('submit') || q.includes('task') || q.includes('assignment') || q.includes('grade') || q.includes('score') || (lastAssistantMsg.includes('homework') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
+  const isAboutAttendance = q.includes('attendance') || q.includes('check') || q.includes('scan') || q.includes('log') || (lastAssistantMsg.includes('attendance') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
+  const isAboutUsers = q.includes('user') || q.includes('directory') || q.includes('create') || q.includes('role') || q.includes('scholar') || q.includes('mentor') || q.includes('teacher') || q.includes('admin') || (lastAssistantMsg.includes('user') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
+  const isAboutCurriculum = q.includes('curriculum') || q.includes('lesson') || q.includes('edit') || q.includes('create') || q.includes('cover') || q.includes('photo') || (lastAssistantMsg.includes('curriculum') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
+
+  if (isAboutDatabase) {
+    response = `### 💾 Database Backup & Recovery Guide
+As an **Administrator**, you can create database backups of the system's SQLite database.
+
+**Step-by-Step Instructions:**
+1. Navigate to the **System Settings** module (cog icon).
+2. Open the **System Param** tab.
+3. Locate the **Database Backup & Recovery** panel.
+4. Click **Create Full Backup**.
+5. Once created, click the **Download** button to download the backup file (e.g. \`database_backup_...\`).
+
+Here is a quick summary of database specifications:
+| Component | Engine | Location | Format |
+|---|---|---|---|
+| Main Storage | SQLite 3 | \`Backend/database.sqlite\` | Relational DB |
+| Backups Folder | File System | \`Backend/backups/\` | \`.sqlite\` file copies |
+
+*Best Practice:* Generate database backups weekly or prior to introducing bulk changes to user rosters.`;
+    suggestions = ['How to add platform users?', 'Toggle compliance settings', 'How to check task grades?'];
+  } else if (isAboutHomework) {
+    if (role === 'scholar') {
+      response = `### 📝 Scholar Task Submission Guide
+To submit your course homework, follow these instructions:
+
+1. Click on the **Catalog** tab in the sidebar menu.
+2. Select the **Curriculum Lesson** you wish to work on.
+3. Review the video lecture and read the attached study handouts.
+4. Use the **Task Submission** panel on the right side of the lesson desk.
+5. Drag and drop or click to upload your assignment.
+
+**Allowed File Specs:**
+* **Formally supported types:** \`.pdf\`, \`.docx\`, \`.png\`, \`.jpg\`
+* **Maximum File Size Limit:** \`5 MB\`
+
+Your mentor will grade the work and write constructive feedback notes.`;
+      suggestions = ['How to log attendance?', 'Tell me about streak points', 'Message my mentor'];
+    } else {
+      response = `### 🧑&#8205;🏫 Grading & Submissions Management
+As a **Mentor** or **Teacher**, you can review student tasks:
+
+1. Go to the **Grading** (or **Submissions CRUD**) tab.
+2. Select any student submission card.
+3. Open/download the attached file to inspect the work.
+4. Fill in the grading form:
+   - **Score:** Enter a value between \`0\` and \`100\`.
+   - **Feedback Remarks:** Write comments explaining the evaluation.
+5. Click **Submit Evaluation**.
+
+*Grading Status Lifecycle:*
+* **Pending:** Scholar has uploaded a file but no mentor has graded it yet.
+* **Graded:** Score is registered and feedback is instantly visible on the scholar's profile.`;
+      suggestions = ['How to view scholar roster?', 'How to manage cohorts?', 'Where to message scholars?'];
+    }
+  } else if (isAboutAttendance) {
+    if (role === 'scholar') {
+      response = `### 📅 Classroom Attendance Check-In
+Keeping high attendance is critical for graduation and leader evaluation.
+
+**How to log presence:**
+1. Click the **Attendance** tab in the main sidebar.
+2. Click the **Check In Now** button to record presence for today.
+3. Once completed, your dashboard statistics and streak count will update.
+
+*System Policy Check:*
+* Scholars can only log attendance for *the current calendar date*.
+* The system uses your timezone to ensure check-ins correspond to active class days.`;
+      suggestions = ['Tell me about streak points', 'How to submit homework', 'Message my mentor'];
+    } else {
+      response = `### 📋 Monitoring Attendance
+As a **Mentor**, **Teacher**, or **Admin**, you can log presence for scholars:
+
+1. Click the **Attendance** tab.
+2. Select the specific student on the roster.
+3. Pick a status from the selection options:
+   - **Present:** Student attended the session.
+   - **Absent:** Student missed the session.
+   - **Excused:** Student notified in advance.
+4. Save the entry to immediately sync attendance logs.`;
+      suggestions = ['How to view scholar roster?', 'How to manage cohorts?', 'How to backup database?'];
+    }
+  } else if (isAboutUsers) {
+    response = `### 👥 User Roles & Access Hierarchy
+The Generation Rise Platform supports four roles. Each has distinct permissions:
+
+| Role | Primary Tab Access | Allowed Actions |
+|---|---|---|
+| **Scholar** | Dashboard, Catalog, Tasks, Attendance, Chat | Access study materials, submit homework, log daily attendance. |
+| **Mentor** | Mentor Hub, My Scholars, Submissions, Chat | Grade scholar tasks, inspect roster progress, message scholars. |
+| **Teacher** | Global Hub, Cohorts, Curriculum, Broadcasts | Edit lessons, view cohorts, post announcements. |
+| **Admin** | Overview, User Directory, Reports, System Config | Full system override, SQLite backups, user CRUD accounts. |
+
+*How to add a new account:* Go to **User Directory** tab (Admins only), click **Add User**, fill in email, password, and specify the role.`;
+    suggestions = ['How to backup database?', 'How to customize courses?', 'Toggle compliance settings'];
+  } else if (isAboutCurriculum) {
+    response = `### 📖 Curriculum & Lesson Management
+Curriculum managers can construct or modify courses inside the **Curriculum** tab.
+
+**Lesson Details Checklist:**
+- **Lesson ID:** Unique slug identifier (e.g., \`financial-literacy-2026\`).
+- **Pillar:** Organize under *Career*, *Entrepreneur*, *English*, or *Life Skills*.
+- **Study Notes:** Formatted markdown-like study guide materials.
+- **Cover Photo:** Direct image URL or file uploader to set a splash visual on the video player.
+
+*To add handout attachments:* Click **Upload Handout Document** inside the edit dialog (supporting files up to 10MB).`;
+    suggestions = ['How to manage cohorts?', 'Post global broadcasts', 'How to add platform users?'];
+  } else {
+    // Default welcome fallback based on role
+    if (role === 'scholar') {
+      response = `Hello ${name}! As a **Scholar**, here are some topics I can explain:
+* **Homework Submissions:** How to upload PNG/PDF handouts for grading.
+* **Class Attendance:** Logging daily presence and growing streak points.
+* **Mentor Chat:** Accessing direct messaging channels.
+
+*Please select one of the suggested follow-up chips below to learn more!*`;
+      suggestions = ['How do I submit homework?', 'How to log attendance?', 'Tell me about streak points'];
+    } else if (role === 'mentor') {
+      response = `Hello Mentor ${name}! How can I assist you with your class administration today?
+* **Grading Tasks:** How to evaluate homework and write feedback.
+* **Scholars Roster:** How to track streaks and completion charts.
+* **Direct Messages:** Coordinating study chats.`;
+      suggestions = ['How do I grade homework?', 'How to view scholar roster?', 'Where to message scholars?'];
+    } else if (role === 'teacher') {
+      response = `Hello Teacher ${name}! I can guide you through the following tasks:
+* **Curriculum Edits:** Adding cover photos, handout attachments, and formatting study notes.
+* **Cohort Audits:** Monitoring Cohort 1-4 enrollment sizes and statistics.
+* **Broadcast Alerts:** Sending push notifications and bulletin board posts.`;
+      suggestions = ['How to customize courses?', 'How to manage cohorts?', 'How to send broadcasts?'];
+    } else {
+      response = `Hello Admin ${name}! As an **Administrator**, you have super-user controls:
+* **Database Management:** Making SQLite file copies and downloading backups.
+* **Roster Control:** Setting up user accounts and assigning credentials.
+* **Parameters Toggles:** Tweaking sandbox compliance logging settings.`;
+      suggestions = ['How to backup database?', 'How to edit users?', 'Toggle compliance settings'];
+    }
+  }
+
+  res.json({ response, suggestions });
 });
 
 // --- WebSockets Event Handlers ---

@@ -15,7 +15,8 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   const [modalError, setModalError] = useState('');
 
   // Tab: General / System states
-  const [resetting, setResetting] = useState(false);
+  const [backups, setBackups] = useState([]);
+  const [backingUp, setBackingUp] = useState(false);
   const [isComplianceEnabled, setIsComplianceEnabled] = useState(true);
   const [isSSLMockActive, setIsSSLMockActive] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -83,7 +84,9 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   useEffect(() => {
     if (userRole !== 'admin') return;
 
-    if (activeTab === 'users') {
+    if (activeTab === 'general') {
+      fetchBackups();
+    } else if (activeTab === 'users') {
       fetchUsers();
       fetchCohorts();
     } else if (activeTab === 'lessons') {
@@ -203,34 +206,67 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
     }
   };
 
-  // --- Core DB reset ---
-  const handleResetDatabase = async () => {
-    if (!window.confirm('WARNING: Are you sure you want to reset the database? This deletes all current live submissions, lessons, custom profiles, and attendance records, and restores the original seed dataset.')) {
-      return;
-    }
-
-    setResetting(true);
-    setMessage('');
-    setError('');
-
+  // --- SQLite Backup Managers ---
+  const fetchBackups = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/reset', {
+      const response = await fetch('/api/admin/backups', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBackups(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    setBackingUp(true);
+    setMessage('');
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/backup', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      
       if (response.ok) {
-        setMessage('Database seed records restored successfully!');
-        if (onUpdateUser) onUpdateUser();
+        setMessage('Database backup created successfully!');
+        fetchBackups();
       } else {
-        throw new Error(data.error || 'Failed to reset database.');
+        throw new Error(data.error || 'Failed to create database backup.');
       }
     } catch (err) {
       setError(err.message);
     } finally {
-      setResetting(false);
+      setBackingUp(false);
+    }
+  };
+
+  const handleDownloadBackup = async (filename) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/backup/download/${filename}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        throw new Error('Failed to download backup.');
+      }
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -798,21 +834,48 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-6">
               
-              {/* Reset database */}
+              {/* Database backups */}
               <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
-                <div className="flex items-center space-x-3 text-red-600 dark:text-red-400 border-b border-slate-50 dark:border-slate-800 pb-3">
+                <div className="flex items-center space-x-3 text-blue-900 dark:text-yellow-450 border-b border-slate-50 dark:border-slate-800 pb-3">
                   <Database size={18} />
-                  <h3 className="text-base font-bold text-slate-800 dark:text-white">Database Administration</h3>
+                  <h3 className="text-base font-bold text-slate-800 dark:text-white">Database Backup & Recovery</h3>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">Perform a full seeder drop-and-recreate operation. This resets SQLite database structures to clear all test records and re-sync initial student and mentor profiles.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                  Generate secure copies of the system's SQLite database. You can download backups locally to preserve student registries, grades, and logs.
+                </p>
+                
                 <button
-                  onClick={handleResetDatabase}
-                  disabled={resetting}
-                  className="px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-955/20 dark:hover:bg-red-955/40 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center transition-all disabled:opacity-50"
+                  onClick={handleCreateBackup}
+                  disabled={backingUp}
+                  className="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center transition-all disabled:opacity-50"
                 >
-                  <RefreshCcw size={12} className={`mr-2 ${resetting ? 'animate-spin' : ''}`} />
-                  <span>{resetting ? 'Resetting Tables...' : 'Reset Database to Default Seed'}</span>
+                  <RefreshCcw size={12} className={`mr-2 ${backingUp ? 'animate-spin' : ''}`} />
+                  <span>{backingUp ? 'Creating Backup...' : 'Create Full Backup'}</span>
                 </button>
+
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Available Backups</h4>
+                  {backups.length === 0 ? (
+                    <p className="text-xs text-slate-400 dark:text-slate-505 italic py-2">No backups created yet.</p>
+                  ) : (
+                    <div className="max-h-[220px] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800 pr-1 space-y-2.5">
+                      {backups.map((b, idx) => (
+                        <div key={idx} className="flex justify-between items-center py-2 text-xs">
+                          <div>
+                            <p className="font-bold text-slate-750 dark:text-slate-300">{b.filename}</p>
+                            <p className="text-[10px] text-slate-450 dark:text-slate-550 font-medium mt-0.5">Created: {new Date(b.timestamp).toLocaleString()} • Size: {b.size}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadBackup(b.filename)}
+                            className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-blue-900 dark:text-yellow-450 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Compliance toggles */}
