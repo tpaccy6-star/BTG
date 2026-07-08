@@ -1,13 +1,26 @@
-import { PlayCircle, Flame, CheckCircle2, Activity, Clock, MapPin, Globe, Zap, Share2, BookOpen } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { PlayCircle, Flame, CheckCircle2, Activity, Clock, MapPin, Globe, Zap, Share2, BookOpen, Award, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import LevelUpModal from '../components/LevelUpModal';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const mockEvents = [
   { id: 1, title: 'Leadership Workshop', type: 'f2f', date: 'Today', time: '2:00 PM', location: 'Main Hall', attendees: 42 },
-  { id: 2, title: 'Financial Literacy 101', type: 'online', date: 'Tomorrow', time: '10:00 AM', location: 'Zoom', attendees: 156 },
+  { id: 2, title: 'Financial Literacy 101', type: 'online', date: 'Tomorrow', time: '10:00 PM', location: 'Zoom', attendees: 156 },
   { id: 3, title: 'Community Service Day', type: 'f2f', date: 'Oct 25', time: '8:00 AM', location: 'City Park', attendees: 85 },
 ];
 
 export default function ScholarDashboard({ currentUser, setCurrentView, lessons }) {
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [currentLevelState, setCurrentLevelState] = useState(1);
+  const [justUnlockedBadge, setJustUnlockedBadge] = useState(null);
+  const certificateRef = useRef(null);
+
   // Dynamic stats calculation
   const attendanceRecords = currentUser?.attendanceRecords || [];
   const totalAttendance = attendanceRecords.length;
@@ -23,6 +36,53 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
 
   // Streak
   const streak = currentUser?.streakDays !== undefined ? currentUser.streakDays : 14;
+
+  const totalXP = (completedCount * 100) + (presentAttendance * 20) + (streak * 10);
+  const actualLevel = Math.floor(totalXP / 500) + 1;
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      const savedLevel = localStorage.getItem(`level_${currentUser.id}`);
+      if (savedLevel && parseInt(savedLevel) < actualLevel) {
+        setCurrentLevelState(actualLevel);
+        setShowLevelUpModal(true);
+      } else if (!savedLevel) {
+        // Just save it if not present
+        localStorage.setItem(`level_${currentUser.id}`, actualLevel);
+      }
+    }
+  }, [actualLevel, currentUser?.id]);
+
+  const handleModalClose = () => {
+    setShowLevelUpModal(false);
+    if (currentUser?.id) {
+      localStorage.setItem(`level_${currentUser.id}`, actualLevel);
+    }
+  };
+
+  const handleDownloadCertificate = async () => {
+    if (!certificateRef.current) return;
+    
+    // Temporarily make it visible for canvas capture
+    certificateRef.current.style.display = 'block';
+    
+    try {
+      const canvas = await html2canvas(certificateRef.current, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${currentUser?.name}_GenerationRise_Certificate.pdf`);
+    } catch (err) {
+      console.error('Error generating certificate:', err);
+    } finally {
+      // Hide it again
+      certificateRef.current.style.display = 'none';
+    }
+  };
 
   // Count of due tasks (total lessons - completed tasks)
   const dueCount = Math.max(0, totalLessons - completedCount);
@@ -48,6 +108,30 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
     };
   });
 
+  const chartData = {
+    labels: ['Completed', 'Due', 'Pending'],
+    datasets: [
+      {
+        data: [completedCount, dueCount, totalLessons - completedCount - dueCount > 0 ? totalLessons - completedCount - dueCount : 0],
+        backgroundColor: ['#22c55e', '#ef4444', '#cbd5e1'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }
+    ]
+  };
+
+  const chartOptions = {
+    cutout: '75%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => ` ${context.label}: ${context.raw} Lessons`
+        }
+      }
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }} 
@@ -55,6 +139,13 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
       exit={{ opacity: 0, scale: 0.98 }} 
       className="space-y-8"
     >
+      {showLevelUpModal && (
+        <LevelUpModal 
+          level={currentLevelState} 
+          newBadge={justUnlockedBadge}
+          onClose={handleModalClose} 
+        />
+      )}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Welcome Back, {currentUser?.name}!</h1>
@@ -138,6 +229,40 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
               </div>
             ))}
           </div>
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all mt-6">
+            <h2 className="text-lg font-bold text-slate-850 dark:text-white tracking-tight mb-6">Learning Analytics</h2>
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="w-32 h-32 shrink-0 relative">
+                <Doughnut data={chartData} options={chartOptions} />
+                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                  <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{overallProgress}%</span>
+                </div>
+              </div>
+              <div className="flex-1 w-full space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Completed Lessons</span>
+                  </div>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">{completedCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Tasks Due</span>
+                  </div>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">{dueCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300"></span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Upcoming / Pending</span>
+                  </div>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">{Math.max(0, totalLessons - completedCount - dueCount)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-10">
@@ -145,17 +270,17 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
           <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-base font-black text-slate-850 dark:text-white tracking-tight">Leaderboard & XP</h2>
-              <span className="text-[10px] font-black text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40 px-2.5 py-1 rounded-full">Level 4</span>
+              <span className="text-[10px] font-black text-yellow-600 bg-yellow-50 dark:bg-yellow-950/40 px-2.5 py-1 rounded-full">Level {Math.floor(((completedCount * 100) + (presentAttendance * 20) + (streak * 10)) / 500) + 1}</span>
             </div>
             
             {/* XP progress bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                <span>1,250 XP earned</span>
-                <span>2,000 XP Goal</span>
+                <span>{((completedCount * 100) + (presentAttendance * 20) + (streak * 10))} XP earned</span>
+                <span>{(Math.floor(((completedCount * 100) + (presentAttendance * 20) + (streak * 10)) / 500) + 1) * 500} XP Goal</span>
               </div>
               <div className="w-full h-2.5 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full" style={{ width: '62.5%' }}></div>
+                <div className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-1000" style={{ width: `${((((completedCount * 100) + (presentAttendance * 20) + (streak * 10)) % 500) / 500) * 100}%` }}></div>
               </div>
             </div>
 
@@ -164,9 +289,9 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
               <p className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest leading-none">Unlocked Badges</p>
               <div className="flex gap-2">
                 {[
-                  { emoji: '🔥', title: '14-Day Streak', desc: 'Active check-ins' },
-                  { emoji: '📚', title: 'Catalog Devourer', desc: 'Completed 5 lessons' },
-                  { emoji: '🎓', title: 'Verified Graduate', desc: 'Graduation checklist complete' }
+                  (streak >= 14 ? { emoji: '🔥', title: '14-Day Streak', desc: 'Active check-ins' } : streak >= 7 ? { emoji: '🔥', title: '7-Day Streak', desc: 'Active check-ins' } : streak >= 3 ? { emoji: '🔥', title: '3-Day Streak', desc: 'Active check-ins' } : { emoji: '🌱', title: 'Seedling', desc: 'Just started' }),
+                  (completedCount >= 10 ? { emoji: '📚', title: 'Catalog Devourer', desc: 'Completed 10 lessons' } : completedCount >= 5 ? { emoji: '📖', title: 'Avid Reader', desc: 'Completed 5 lessons' } : { emoji: '📝', title: 'First Steps', desc: 'Completed a lesson' }),
+                  (overallProgress >= 100 ? { emoji: '🎓', title: 'Verified Graduate', desc: 'All lessons completed' } : overallProgress >= 50 ? { emoji: '🌟', title: 'Halfway There', desc: '50% completion' } : { emoji: '🎯', title: 'On Target', desc: 'Working on goals' })
                 ].map((b, idx) => (
                   <div key={idx} className="flex-1 bg-slate-50 dark:bg-slate-950/20 border border-slate-150 dark:border-slate-800 p-2.5 rounded-2xl text-center group cursor-pointer hover:scale-105 transition-all" title={`${b.title}: ${b.desc}`}>
                     <span className="text-xl block">{b.emoji}</span>
@@ -199,6 +324,19 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
                 ))}
               </div>
             </div>
+            
+            {/* Download Certificate Action */}
+            {overallProgress >= 100 && (
+              <div className="pt-4 border-t border-slate-50 dark:border-slate-800 mt-4">
+                <button 
+                  onClick={handleDownloadCertificate}
+                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white font-black py-3 rounded-xl shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 text-xs uppercase tracking-wider"
+                >
+                  <Download size={16} />
+                  <span>Download Certificate</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -227,6 +365,46 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
               <h4 className="text-lg font-bold mb-2">Mentor Chat</h4>
               <p className="text-blue-200 dark:text-slate-300 text-xs mb-6 font-medium leading-relaxed">Need help with your current lessons? Sarah is online and ready to help.</p>
               <button onClick={() => { setCurrentView('chat'); window.location.hash = '#/chat'; }} className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-350 text-blue-950 font-bold rounded-xl shadow transition-all text-[10px] uppercase tracking-widest">Message Sarah</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hidden Certificate Template for PDF Generation */}
+      <div 
+        ref={certificateRef} 
+        style={{ 
+          display: 'none', 
+          width: '800px', 
+          height: '600px', 
+          background: '#ffffff', 
+          padding: '40px', 
+          position: 'fixed', 
+          top: '-9999px', 
+          left: '-9999px',
+          border: '10px solid #1e3a8a'
+        }}
+      >
+        <div style={{ border: '2px solid #facc15', height: '100%', padding: '40px', textAlign: 'center', position: 'relative' }}>
+          <h1 style={{ fontSize: '40px', color: '#1e3a8a', marginBottom: '10px', textTransform: 'uppercase', fontWeight: '900' }}>Certificate of Completion</h1>
+          <p style={{ fontSize: '18px', color: '#64748b', marginBottom: '40px' }}>Generation Rise Leadership & Life Skills Program</p>
+          
+          <p style={{ fontSize: '16px', color: '#334155' }}>This is to certify that</p>
+          <h2 style={{ fontSize: '36px', color: '#0f172a', margin: '20px 0', borderBottom: '2px solid #cbd5e1', display: 'inline-block', paddingBottom: '10px', minWidth: '300px' }}>{currentUser?.name || 'Scholar'}</h2>
+          
+          <p style={{ fontSize: '16px', color: '#334155', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
+            Has successfully completed all academic requirements, demonstrating excellence, dedication, and leadership potential in the Generation Rise program.
+          </p>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', padding: '0 40px' }}>
+            <div style={{ borderTop: '2px solid #0f172a', width: '200px', paddingTop: '10px' }}>
+              <p style={{ fontWeight: 'bold', color: '#0f172a' }}>Director of Education</p>
+            </div>
+            <div style={{ width: '80px', height: '80px', background: '#facc15', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e3a8a', fontWeight: 'bold' }}>
+              SEAL
+            </div>
+            <div style={{ borderTop: '2px solid #0f172a', width: '200px', paddingTop: '10px' }}>
+              <p style={{ fontWeight: 'bold', color: '#0f172a' }}>Date: {new Date().toLocaleDateString()}</p>
             </div>
           </div>
         </div>

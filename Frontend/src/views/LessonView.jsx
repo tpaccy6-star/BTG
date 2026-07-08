@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, BookOpen, PlayCircle, FileText, Download, CheckCircle2, Upload, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import MarkdownRenderer from '../components/MarkdownRenderer';
+import BlockRenderer from '../components/BlockRenderer';
+import { marked } from 'marked';
+import QuizEngine from '../components/QuizEngine';
 
 export default function LessonView({ currentUser, lessons, selectedLessonId, setCurrentView, onUpdateUser }) {
   const lesson = lessons?.find(l => l.id === selectedLessonId);
@@ -116,6 +118,121 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
       setUploadMessage(err.message || 'Error uploading file.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDownloadHTML = (downloadAttachments = true) => {
+    if (!lesson.notes) return;
+    
+    // Ensure filename is extremely safe for Windows to prevent download.htm fallback
+    const safeTitle = lesson.title.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+
+    let attachmentsHTML = '';
+    if (resourcesList && resourcesList.length > 0) {
+      attachmentsHTML = `
+      <div style="padding: 0 3rem 3rem 3rem;">
+        <div style="border-top: 2px solid #e2e8f0; padding-top: 2rem;">
+          <h2 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 1rem;">Attached Handouts & Materials</h2>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            ${resourcesList.map(res => {
+              const absoluteLink = res.link.startsWith('http') ? res.link : window.location.origin + (res.link.startsWith('/') ? '' : '/') + res.link;
+              return `
+              <li style="margin-bottom: 0.75rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; color: #334155;">${res.name} <span style="font-weight: normal; color: #94a3b8; font-size: 0.85em; margin-left: 0.5rem;">(${res.size || '1.0 MB'})</span></span>
+                <a href="${absoluteLink}" target="_blank" download style="background: #eff6ff; color: #2563eb; padding: 0.5rem 1rem; border-radius: 0.375rem; text-decoration: none; font-weight: bold; font-size: 0.85rem; border: 1px solid #bfdbfe;">Download</a>
+              </li>
+            `}).join('')}
+          </ul>
+        </div>
+      </div>`;
+    }
+
+    let blocks = [];
+    try {
+      blocks = JSON.parse(lesson.notes);
+    } catch(e) {
+      blocks = [{ type: 'markdown', content: lesson.notes }];
+    }
+
+    let notesHTML = '';
+    blocks.forEach(block => {
+      if (block.type === 'paragraph') {
+        notesHTML += `<p>${block.content.replace(/\\n/g, '<br>')}</p>`;
+      }
+      if (block.type === 'markdown') {
+        notesHTML += `<div>${marked.parse(block.content)}</div>`;
+      }
+      if (block.type === 'flipcard') {
+        notesHTML += `<div class="widget"><span class="widget-title">Flashcard Note</span><strong>${block.front}</strong>: ${block.back}</div>`;
+      }
+      if (block.type === 'accordion') {
+        notesHTML += `<div class="widget"><span class="widget-title">Topic: ${block.title}</span><p>${block.content.replace(/\\n/g, '<br>')}</p></div>`;
+      }
+      if (block.type === 'tabs') {
+        notesHTML += `<div class="widget"><span class="widget-title">Tabbed Section</span><ul>`;
+        block.tabs?.forEach(t => {
+          notesHTML += `<li><strong>${t.label}:</strong> <br>${t.content.replace(/\\n/g, '<br>')}</li>`;
+        });
+        notesHTML += `</ul></div>`;
+      }
+    });
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${lesson.title} - Study Notes</title>
+  <style>
+    body { padding: 2rem; background: #fafafa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+    #wrapper { max-width: 800px; margin: 0 auto; background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    #content { padding: 3rem; line-height: 1.6; }
+    h1 { font-size: 2rem; font-weight: bold; margin-bottom: 1.5rem; color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 1rem; color: #1e293b; }
+    h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1.25rem; margin-bottom: 0.75rem; color: #334155; }
+    p { margin-bottom: 1rem; }
+    ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+    blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; color: #64748b; font-style: italic; background: #f8fafc; padding: 0.5rem; margin-bottom: 1rem; }
+    .widget { background: #f1f5f9; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 4px solid #facc15; }
+    .widget-title { font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: block; }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <div id="content">
+      <h1>${lesson.title}</h1>
+      ${notesHTML}
+    </div>
+    ${attachmentsHTML}
+  </div>
+</body>
+</html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = safeTitle + '_Notes.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Also trigger separate download for each attached resource directly
+    if (downloadAttachments && resourcesList && resourcesList.length > 0) {
+      resourcesList.forEach((res, index) => {
+        setTimeout(() => {
+          const absoluteLink = res.link.startsWith('http') ? res.link : window.location.origin + (res.link.startsWith('/') ? '' : '/') + res.link;
+          const resA = document.createElement('a');
+          resA.href = absoluteLink;
+          resA.download = res.name || 'Handout';
+          resA.target = '_blank';
+          document.body.appendChild(resA);
+          resA.click();
+          document.body.removeChild(resA);
+        }, (index + 1) * 500); // Stagger by 500ms to avoid browser blocking multiple rapid downloads
+      });
     }
   };
 
@@ -304,11 +421,52 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
 
           {/* Lesson Rich Notes Card */}
           {lesson.notes && (
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 animate-fade-in">
-              <h3 className="text-lg font-bold text-slate-850 dark:text-white tracking-tight">Class Study Notes</h3>
-              <MarkdownRenderer 
-                content={lesson.notes} 
-                className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-xs space-y-4"
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 animate-fade-in print:shadow-none print:border-none print:p-0">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-850 dark:text-white tracking-tight">Class Study Notes</h3>
+                <button 
+                  onClick={() => handleDownloadHTML(true)} 
+                  className="hidden md:flex items-center space-x-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-900 dark:text-yellow-450 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-colors print:hidden"
+                >
+                  <Download size={14} />
+                  <span>Download HTML Notes</span>
+                </button>
+              </div>
+              <div id="lesson-notes-content">
+                <BlockRenderer blocksData={lesson.notes} />
+              </div>
+            </div>
+          )}
+
+          {/* Interactive Quiz Component */}
+          {lesson.quizData && (
+            <div className="mt-8 animate-fade-in">
+              <QuizEngine 
+                quizData={JSON.parse(lesson.quizData)} 
+                onComplete={async (results) => {
+                  try {
+                    const token = localStorage.getItem('token');
+                    const formData = new FormData();
+                    formData.append('lessonId', lesson.id);
+                    formData.append('score', results.percentage);
+
+                    const res = await fetch('/api/tasks/submit', {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${token}`
+                      },
+                      body: formData
+                    });
+
+                    if (res.ok) {
+                      setLessonChecklist(prev => ({ ...prev, quiz: true }));
+                      // Trigger a refetch of the user data so the dashboard updates
+                      if (onUpdateUser) onUpdateUser();
+                    }
+                  } catch (err) {
+                    console.error('Failed to submit quiz score:', err);
+                  }
+                }}
               />
             </div>
           )}
@@ -403,9 +561,43 @@ export default function LessonView({ currentUser, lessons, selectedLessonId, set
 
           {/* Resources List */}
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
-            <h3 className="text-xl font-black text-blue-900 dark:text-yellow-400 tracking-tight">Handouts & Materials</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-black text-blue-900 dark:text-yellow-400 tracking-tight">Handouts & Materials</h3>
+              {(resourcesList.length > 0 || lesson.notes) && (
+                <button 
+                  onClick={() => handleDownloadHTML(true)} 
+                  className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 text-blue-900 dark:text-yellow-450 border border-blue-200 dark:border-slate-700 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-colors"
+                  title="Download HTML Notes and All Attachments"
+                >
+                  <Download size={14} />
+                  <span>Download All</span>
+                </button>
+              )}
+            </div>
             <div className="space-y-4">
-              {resourcesList.length === 0 ? (
+              {/* Inject HTML Study Notes as a downloadable item */}
+              {lesson.notes && (
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/25 border border-slate-100 dark:border-slate-800 rounded-2xl group hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2.5 bg-emerald-50 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+                      <FileText size={16} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-xs text-blue-900 dark:text-slate-200 line-clamp-1">Offline Study Notes</p>
+                      <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Interactive HTML</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDownloadHTML(false)}
+                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-900 dark:hover:text-yellow-450 transition-colors"
+                    title="Download Notes Document"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+              )}
+
+              {resourcesList.length === 0 && !lesson.notes ? (
                 <p className="text-xs text-slate-400 dark:text-slate-500">No handout attachments for this lesson.</p>
               ) : (
                 resourcesList.map((file, i) => (

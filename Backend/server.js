@@ -88,6 +88,25 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    // Update streak logic based on last login
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (user.lastLoginDate) {
+      const lastLogin = new Date(user.lastLoginDate);
+      const today = new Date(todayStr);
+      const diffTime = today - lastLogin;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        user.streakDays += 1;
+      } else if (diffDays > 1) {
+        user.streakDays = 1;
+      }
+    } else {
+      user.streakDays = 1;
+    }
+    user.lastLoginDate = todayStr;
+    await user.save();
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, name: user.name, cohortId: user.cohortId },
       JWT_SECRET,
@@ -205,7 +224,7 @@ const upload = multer({ storage });
 
 // 5. Submit Task Route
 app.post('/api/tasks/submit', authenticateToken, upload.single('file'), async (req, res) => {
-  const { lessonId } = req.body;
+  const { lessonId, score } = req.body;
 
   if (!lessonId) {
     return res.status(400).json({ error: 'Lesson ID is required for task submission.' });
@@ -218,11 +237,14 @@ app.post('/api/tasks/submit', authenticateToken, upload.single('file'), async (r
     });
 
     const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    const finalStatus = score !== undefined ? 'graded' : 'completed';
+    const finalScore = score !== undefined ? parseInt(score, 10) : null;
 
     if (submission) {
       // Update existing
       submission.fileUrl = fileUrl || submission.fileUrl;
-      submission.status = 'completed';
+      submission.status = finalStatus;
+      if (finalScore !== null) submission.score = finalScore;
       submission.submittedAt = new Date();
       await submission.save();
     } else {
@@ -231,7 +253,8 @@ app.post('/api/tasks/submit', authenticateToken, upload.single('file'), async (r
         scholarId: req.user.id,
         lessonId,
         fileUrl,
-        status: 'completed',
+        score: finalScore,
+        status: finalStatus,
         submittedAt: new Date()
       });
     }
@@ -896,7 +919,7 @@ app.delete('/api/admin/cohorts/:id', authenticateToken, async (req, res) => {
 });
 
 // 27. Chatbot Query Route (All Authenticated Users)
-app.post('/api/chatbot/query', authenticateToken, (req, res) => {
+app.post('/api/chatbot/query', authenticateToken, async (req, res) => {
   const { query, history } = req.body;
   const { role, name } = req.user;
 
@@ -904,164 +927,57 @@ app.post('/api/chatbot/query', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Query parameter is required.' });
   }
 
-  const q = query.toLowerCase().trim();
-  
-  // Find context from history
-  let lastAssistantMsg = '';
+  const systemMessage = {
+    role: "system",
+    content: `You are an AI learning assistant for the Generation Rise platform. You are talking to a user named ${name} who is a ${role}. You should explain concepts clearly, answer lesson-related questions, summarize lessons, generate practice questions, and suggest resources. Always maintain the conversation context and correctly render Markdown. Keep answers concise, friendly, and structured.`
+  };
+
+  const messages = [systemMessage];
   if (history && history.length > 0) {
-    const botMsgs = history.filter(h => h.role === 'assistant');
-    if (botMsgs.length > 0) {
-      lastAssistantMsg = botMsgs[botMsgs.length - 1].content.toLowerCase();
-    }
-  }
-
-  let response = '';
-  let suggestions = [];
-
-  // Determine active topic context
-  const isAboutDatabase = q.includes('database') || q.includes('backup') || q.includes('sqlite') || q.includes('restore') || q.includes('seed') || (lastAssistantMsg.includes('backup') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
-  const isAboutHomework = q.includes('homework') || q.includes('submit') || q.includes('task') || q.includes('assignment') || q.includes('grade') || q.includes('score') || (lastAssistantMsg.includes('homework') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
-  const isAboutAttendance = q.includes('attendance') || q.includes('check') || q.includes('scan') || q.includes('log') || (lastAssistantMsg.includes('attendance') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
-  const isAboutUsers = q.includes('user') || q.includes('directory') || q.includes('create') || q.includes('role') || q.includes('scholar') || q.includes('mentor') || q.includes('teacher') || q.includes('admin') || (lastAssistantMsg.includes('user') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
-  const isAboutCurriculum = q.includes('curriculum') || q.includes('lesson') || q.includes('edit') || q.includes('create') || q.includes('cover') || q.includes('photo') || (lastAssistantMsg.includes('curriculum') && (q.includes('how') || q.includes('explain') || q.includes('guide')));
-
-  if (isAboutDatabase) {
-    response = `### 💾 Database Backup & Recovery Guide
-As an **Administrator**, you can create database backups of the system's SQLite database.
-
-**Step-by-Step Instructions:**
-1. Navigate to the **System Settings** module (cog icon).
-2. Open the **System Param** tab.
-3. Locate the **Database Backup & Recovery** panel.
-4. Click **Create Full Backup**.
-5. Once created, click the **Download** button to download the backup file (e.g. \`database_backup_...\`).
-
-Here is a quick summary of database specifications:
-| Component | Engine | Location | Format |
-|---|---|---|---|
-| Main Storage | SQLite 3 | \`Backend/database.sqlite\` | Relational DB |
-| Backups Folder | File System | \`Backend/backups/\` | \`.sqlite\` file copies |
-
-*Best Practice:* Generate database backups weekly or prior to introducing bulk changes to user rosters.`;
-    suggestions = ['How to add platform users?', 'Toggle compliance settings', 'How to check task grades?'];
-  } else if (isAboutHomework) {
-    if (role === 'scholar') {
-      response = `### 📝 Scholar Task Submission Guide
-To submit your course homework, follow these instructions:
-
-1. Click on the **Catalog** tab in the sidebar menu.
-2. Select the **Curriculum Lesson** you wish to work on.
-3. Review the video lecture and read the attached study handouts.
-4. Use the **Task Submission** panel on the right side of the lesson desk.
-5. Drag and drop or click to upload your assignment.
-
-**Allowed File Specs:**
-* **Formally supported types:** \`.pdf\`, \`.docx\`, \`.png\`, \`.jpg\`
-* **Maximum File Size Limit:** \`5 MB\`
-
-Your mentor will grade the work and write constructive feedback notes.`;
-      suggestions = ['How to log attendance?', 'Tell me about streak points', 'Message my mentor'];
-    } else {
-      response = `### 🧑&#8205;🏫 Grading & Submissions Management
-As a **Mentor** or **Teacher**, you can review student tasks:
-
-1. Go to the **Grading** (or **Submissions CRUD**) tab.
-2. Select any student submission card.
-3. Open/download the attached file to inspect the work.
-4. Fill in the grading form:
-   - **Score:** Enter a value between \`0\` and \`100\`.
-   - **Feedback Remarks:** Write comments explaining the evaluation.
-5. Click **Submit Evaluation**.
-
-*Grading Status Lifecycle:*
-* **Pending:** Scholar has uploaded a file but no mentor has graded it yet.
-* **Graded:** Score is registered and feedback is instantly visible on the scholar's profile.`;
-      suggestions = ['How to view scholar roster?', 'How to manage cohorts?', 'Where to message scholars?'];
-    }
-  } else if (isAboutAttendance) {
-    if (role === 'scholar') {
-      response = `### 📅 Classroom Attendance Check-In
-Keeping high attendance is critical for graduation and leader evaluation.
-
-**How to log presence:**
-1. Click the **Attendance** tab in the main sidebar.
-2. Click the **Check In Now** button to record presence for today.
-3. Once completed, your dashboard statistics and streak count will update.
-
-*System Policy Check:*
-* Scholars can only log attendance for *the current calendar date*.
-* The system uses your timezone to ensure check-ins correspond to active class days.`;
-      suggestions = ['Tell me about streak points', 'How to submit homework', 'Message my mentor'];
-    } else {
-      response = `### 📋 Monitoring Attendance
-As a **Mentor**, **Teacher**, or **Admin**, you can log presence for scholars:
-
-1. Click the **Attendance** tab.
-2. Select the specific student on the roster.
-3. Pick a status from the selection options:
-   - **Present:** Student attended the session.
-   - **Absent:** Student missed the session.
-   - **Excused:** Student notified in advance.
-4. Save the entry to immediately sync attendance logs.`;
-      suggestions = ['How to view scholar roster?', 'How to manage cohorts?', 'How to backup database?'];
-    }
-  } else if (isAboutUsers) {
-    response = `### 👥 User Roles & Access Hierarchy
-The Generation Rise Platform supports four roles. Each has distinct permissions:
-
-| Role | Primary Tab Access | Allowed Actions |
-|---|---|---|
-| **Scholar** | Dashboard, Catalog, Tasks, Attendance, Chat | Access study materials, submit homework, log daily attendance. |
-| **Mentor** | Mentor Hub, My Scholars, Submissions, Chat | Grade scholar tasks, inspect roster progress, message scholars. |
-| **Teacher** | Global Hub, Cohorts, Curriculum, Broadcasts | Edit lessons, view cohorts, post announcements. |
-| **Admin** | Overview, User Directory, Reports, System Config | Full system override, SQLite backups, user CRUD accounts. |
-
-*How to add a new account:* Go to **User Directory** tab (Admins only), click **Add User**, fill in email, password, and specify the role.`;
-    suggestions = ['How to backup database?', 'How to customize courses?', 'Toggle compliance settings'];
-  } else if (isAboutCurriculum) {
-    response = `### 📖 Curriculum & Lesson Management
-Curriculum managers can construct or modify courses inside the **Curriculum** tab.
-
-**Lesson Details Checklist:**
-- **Lesson ID:** Unique slug identifier (e.g., \`financial-literacy-2026\`).
-- **Pillar:** Organize under *Career*, *Entrepreneur*, *English*, or *Life Skills*.
-- **Study Notes:** Formatted markdown-like study guide materials.
-- **Cover Photo:** Direct image URL or file uploader to set a splash visual on the video player.
-
-*To add handout attachments:* Click **Upload Handout Document** inside the edit dialog (supporting files up to 10MB).`;
-    suggestions = ['How to manage cohorts?', 'Post global broadcasts', 'How to add platform users?'];
+    history.forEach(msg => {
+      messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
+    });
   } else {
-    // Default welcome fallback based on role
-    if (role === 'scholar') {
-      response = `Hello ${name}! As a **Scholar**, here are some topics I can explain:
-* **Homework Submissions:** How to upload PNG/PDF handouts for grading.
-* **Class Attendance:** Logging daily presence and growing streak points.
-* **Mentor Chat:** Accessing direct messaging channels.
-
-*Please select one of the suggested follow-up chips below to learn more!*`;
-      suggestions = ['How do I submit homework?', 'How to log attendance?', 'Tell me about streak points'];
-    } else if (role === 'mentor') {
-      response = `Hello Mentor ${name}! How can I assist you with your class administration today?
-* **Grading Tasks:** How to evaluate homework and write feedback.
-* **Scholars Roster:** How to track streaks and completion charts.
-* **Direct Messages:** Coordinating study chats.`;
-      suggestions = ['How do I grade homework?', 'How to view scholar roster?', 'Where to message scholars?'];
-    } else if (role === 'teacher') {
-      response = `Hello Teacher ${name}! I can guide you through the following tasks:
-* **Curriculum Edits:** Adding cover photos, handout attachments, and formatting study notes.
-* **Cohort Audits:** Monitoring Cohort 1-4 enrollment sizes and statistics.
-* **Broadcast Alerts:** Sending push notifications and bulletin board posts.`;
-      suggestions = ['How to customize courses?', 'How to manage cohorts?', 'How to send broadcasts?'];
-    } else {
-      response = `Hello Admin ${name}! As an **Administrator**, you have super-user controls:
-* **Database Management:** Making SQLite file copies and downloading backups.
-* **Roster Control:** Setting up user accounts and assigning credentials.
-* **Parameters Toggles:** Tweaking sandbox compliance logging settings.`;
-      suggestions = ['How to backup database?', 'How to edit users?', 'Toggle compliance settings'];
-    }
+    messages.push({ role: "user", content: query });
   }
 
-  res.json({ response, suggestions });
+  try {
+    // Use process.env for Groq keys to prevent secret leaks on GitHub
+    const keys = [];
+    if (process.env.GROQ_API_KEY_1) keys.push(process.env.GROQ_API_KEY_1);
+    if (process.env.GROQ_API_KEY_2) keys.push(process.env.GROQ_API_KEY_2);
+    if (process.env.GROQ_API_KEY) keys.push(process.env.GROQ_API_KEY);
+    
+    const groqApiKey = keys.length > 0 ? keys[Math.floor(Math.random() * keys.length)] : process.env.GROQ_API_KEY;
+    
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${groqApiKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
+    
+    const data = await groqResponse.json();
+    if (!groqResponse.ok) {
+      console.error('Groq API Error:', data);
+      return res.status(500).json({ error: 'Failed to fetch AI response' });
+    }
+    
+    const botResponse = data.choices[0].message.content;
+    const suggestions = ['Explain a complex topic', 'Give me practice questions', 'Summarize my lessons'];
+    
+    res.json({ response: botResponse, suggestions });
+  } catch (err) {
+    console.error('Chatbot API error:', err);
+    res.status(500).json({ error: 'Failed to process AI query' });
+  }
 });
 
 // --- WebSockets Event Handlers ---
@@ -1127,7 +1043,7 @@ const initApp = async () => {
       await seedDatabase();
     } else {
       await sequelize.sync();
-      console.log('Database schemas verified.');
+      console.log('Database schemas verified and altered if necessary.');
     }
 
     server.listen(PORT, () => {

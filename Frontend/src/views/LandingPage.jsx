@@ -359,6 +359,56 @@ export default function LandingPage({ onEnterPortal }) {
         </div>
       </section>
 
+      {/* --- TASK 4: LIVE LEARNING STATS --- */}
+      <section className="py-16 bg-blue-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-16 relative z-10">
+          <div className="text-center mb-12">
+            <span className="text-yellow-400 font-black tracking-widest uppercase text-[10px]">Real-Time Metrics</span>
+            <h2 className="text-3xl font-black mt-2 tracking-tight">Live Platform Activity</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {[
+              { label: 'Active Users Today', value: '1,204' },
+              { label: 'Lessons Completed', value: '45,892' },
+              { label: 'Questions Asked to AI', value: '12,450' },
+              { label: 'Certificates Issued', value: '890' }
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:bg-white/15 transition-colors">
+                <p className="text-3xl sm:text-4xl font-black text-yellow-400 mb-2">{stat.value}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-300">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- TASK 4: TESTIMONIALS --- */}
+      <section className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-6 lg:px-16">
+          <div className="text-center mb-16">
+            <span className="text-blue-900 font-black tracking-widest uppercase text-[10px]">Success Stories</span>
+            <h2 className="text-3xl font-black text-slate-900 mt-2 tracking-tight">What Our Scholars Say</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { name: 'Sarah M.', role: 'University Scholar', text: 'Generation Rise transformed my approach to leadership. The interactive lessons and AI mentor helped me secure a scholarship!' },
+              { name: 'Nadine I.', role: 'High School Student', text: 'The English communication modules gave me the confidence to speak up in class. The gamified streaks keep me coming back every day.' },
+              { name: 'Aline U.', role: 'Alumni', text: 'Being part of the Ignite Program was life-changing. The support from my mentors through the portal was incredible.' }
+            ].map((test, i) => (
+              <div key={i} className="bg-slate-50 border border-slate-100 p-8 rounded-[2rem] shadow-sm relative hover:-translate-y-1 transition-transform">
+                <div className="absolute -top-4 -left-4 w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center text-blue-900 font-black text-2xl">"</div>
+                <p className="text-sm font-medium text-slate-600 italic leading-relaxed mb-6">"{test.text}"</p>
+                <div>
+                  <h4 className="font-black text-slate-900 text-sm">{test.name}</h4>
+                  <p className="text-[10px] text-blue-900 font-bold uppercase tracking-widest mt-0.5">{test.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* --- TASK 7: INTERACTIVE USER GUIDE SECTION --- */}
       <section id="guide" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 border-t border-slate-200/40 bg-slate-50/50">
         <div id="interactive-guide" className="space-y-12">

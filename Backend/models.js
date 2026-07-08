@@ -41,6 +41,10 @@ export const User = sequelize.define('User', {
     type: DataTypes.INTEGER,
     defaultValue: 0
   },
+  lastLoginDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
   avatarUrl: {
     type: DataTypes.STRING,
     allowNull: true
@@ -79,6 +83,10 @@ export const Lesson = sequelize.define('Lesson', {
   },
   notes: {
     type: DataTypes.TEXT, // Rich text notes
+    allowNull: true
+  },
+  quizData: {
+    type: DataTypes.TEXT, // JSON stringified quiz questions
     allowNull: true
   },
   videoRestrictions: {
