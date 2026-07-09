@@ -143,7 +143,7 @@ export default function LandingPage({ onEnterPortal }) {
 
         <button 
           onClick={onEnterPortal} 
-          className="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl shadow-lg shadow-blue-900/10 text-xs uppercase tracking-widest transition-all animate-pulse"
+          className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-350 text-blue-955 font-black rounded-full shadow-md text-xs uppercase tracking-widest transition-all active:scale-95 animate-pulse"
         >
           Enter Portal
         </button>
@@ -170,7 +170,7 @@ export default function LandingPage({ onEnterPortal }) {
           <div className="flex flex-wrap gap-4 pt-4">
             <button 
               onClick={onEnterPortal} 
-              className="px-8 py-4 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-2xl shadow-xl shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all text-sm uppercase tracking-widest border border-blue-900"
+              className="px-10 py-4 bg-yellow-400 hover:bg-yellow-350 text-blue-955 font-black rounded-full shadow-xl shadow-yellow-400/20 hover:scale-105 active:scale-95 transition-all text-sm uppercase tracking-widest"
             >
               Access Portal
             </button>

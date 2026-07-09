@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'GenRise',
         description: 'Generation Rise Scholar Portal',
         theme_color: '#0f172a',
-        background_color: '#ffffff',
+        background_color: '#0f172a',
         display: 'standalone',
         icons: [
           {

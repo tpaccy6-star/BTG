@@ -16,7 +16,325 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        overflow: hidden;
+        background: #081426;
+      }
+
+      /* Animated Background */
+      .loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background: linear-gradient(-45deg, #0f172a, #172554, #1e3a8a, #0f172a);
+        background-size: 400% 400%;
+        animation: bgMove 12s ease infinite;
+        z-index: 9999;
+      }
+
+      /* Decorative Blobs */
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: .35;
+        animation: float 10s ease-in-out infinite;
+      }
+
+      .b1 {
+        width: 350px;
+        height: 350px;
+        background: #2563eb;
+        top: -120px;
+        left: -80px;
+      }
+
+      .b2 {
+        width: 300px;
+        height: 300px;
+        background: #facc15;
+        bottom: -120px;
+        right: -70px;
+        animation-delay: 3s;
+      }
+
+      .b3 {
+        width: 220px;
+        height: 220px;
+        background: #38bdf8;
+        right: 20%;
+        top: 25%;
+        animation-delay: 5s;
+      }
+
+      /* Main Card */
+      .card {
+        width: 380px;
+        padding: 45px;
+        background: rgba(255, 255, 255, .08);
+        border: 1px solid rgba(255, 255, 255, .12);
+        backdrop-filter: blur(18px);
+        border-radius: 30px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, .45), 0 0 40px rgba(255, 255, 255, .05);
+        animation: appear .8s ease;
+        z-index: 10;
+      }
+
+      /* Logo */
+      .logo-box {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: auto;
+        margin-bottom: 30px;
+      }
+
+      .logo-ring {
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, .15);
+        border-top-color: #facc15;
+        border-left-color: #38bdf8;
+        animation: spin 2s linear infinite;
+      }
+
+      .logo-glow {
+        position: absolute;
+        inset: -18px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffffff40, transparent);
+        animation: pulse 2.5s infinite;
+      }
+
+      .logo {
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, .3);
+      }
+
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      /* Text */
+      .loader-h1 {
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .tagline {
+        color: #cbd5e1;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 25px;
+      }
+
+      /* Progress Bar */
+      .progress {
+        height: 8px;
+        width: 100%;
+        background: rgba(255, 255, 255, .12);
+        border-radius: 50px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .progress span {
+        display: block;
+        height: 100%;
+        width: 35%;
+        background: linear-gradient(90deg, #38bdf8, #facc15, #22c55e);
+        background-size: 300%;
+        border-radius: 50px;
+        animation: loading 2s infinite, gradient 3s linear infinite;
+      }
+
+      /* Loading Text */
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        color: white;
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .loading span {
+        width: 8px;
+        height: 8px;
+        background: #facc15;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite;
+      }
+
+      .loading span:nth-child(2) {
+        animation-delay: .2s;
+      }
+
+      .loading span:nth-child(3) {
+        animation-delay: .4s;
+      }
+
+      /* Status */
+      .status {
+        margin-top: 22px;
+        font-size: 13px;
+        color: #cbd5e1;
+        line-height: 1.7;
+      }
+
+      /* Version */
+      .version {
+        margin-top: 25px;
+        font-size: 12px;
+        color: #94a3b8;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* Animations */
+      @keyframes bgMove {
+        0% {
+          background-position: 0% 50%;
+        }
+
+        50% {
+          background-position: 100% 50%;
+        }
+
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes pulse {
+
+        0%,
+        100% {
+          transform: scale(.95);
+          opacity: .4;
+        }
+
+        50% {
+          transform: scale(1.15);
+          opacity: 1;
+        }
+      }
+
+      @keyframes loading {
+        0% {
+          transform: translateX(-100%);
+        }
+
+        100% {
+          transform: translateX(320%);
+        }
+      }
+
+      @keyframes gradient {
+        0% {
+          background-position: 0%;
+        }
+
+        100% {
+          background-position: 300%;
+        }
+      }
+
+      @keyframes bounce {
+
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+
+        40% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @keyframes float {
+        50% {
+          transform: translateY(-25px);
+        }
+      }
+
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: translateY(30px) scale(.95);
+        }
+
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+
+    <div class="loader">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+      <div class="card">
+        <div class="logo-box">
+          <div class="logo-glow"></div>
+          <div class="logo-ring"></div>
+          <div class="logo">
+            <img src="/Logo.png" alt="Generation Rise">
+          </div>
+        </div>
+        <div class="loader-h1">Generation Rise</div>
+        <p class="tagline">Empowering Scholars.<br>Inspiring Innovation.</p>
+        <div class="progress">
+          <span></span>
+        </div>
+        <div class="loading">
+          Loading
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="status">
+          Preparing your secure learning workspace.<br>
+          Please wait while we connect to our cloud servers.
+        </div>
+        <div class="version">Scholar Portal</div>
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
