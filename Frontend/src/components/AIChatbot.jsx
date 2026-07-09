@@ -123,10 +123,10 @@ export default function AIChatbot({ currentUser }) {
               opacity: 1, 
               y: 0, 
               scale: 1,
-              height: isMinimized ? 'auto' : (isMaximized ? '90vh' : '500px'),
-              width: isMaximized ? '90vw' : '360px',
-              bottom: isMaximized ? '5vh' : '80px',
-              right: isMaximized ? '5vw' : '24px'
+              height: isMinimized ? 'auto' : (isMaximized ? '90vh' : 'min(500px, calc(100vh - 120px))'),
+              width: isMaximized ? '90vw' : 'min(360px, calc(100vw - 32px))',
+              bottom: isMaximized ? '5vh' : '88px',
+              right: isMaximized ? '5vw' : '16px'
             }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
