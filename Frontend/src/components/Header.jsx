@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, PanelLeftClose, PanelLeftOpen, User, Settings, LogOut } from 'lucide-react';
+import { Bell, PanelLeftClose, PanelLeftOpen, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './NotificationBell';
 
@@ -10,7 +10,8 @@ export default function Header({
   toggleDesktopSidebar, 
   setCurrentView, 
   onLogout,
-  isDarkMode
+  isDarkMode,
+  setIsDarkMode
 }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
@@ -46,6 +47,17 @@ export default function Header({
       </div>
 
       <div className="flex items-center space-x-4">
+        {/* Mobile Theme Toggle */}
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`lg:hidden p-2 rounded-lg transition-colors ${
+            isDarkMode ? 'text-slate-400 hover:bg-slate-800 hover:text-yellow-400' : 'text-slate-500 hover:bg-slate-200 hover:text-blue-900'
+          }`}
+          title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         {/* Real Notification Bell */}
         <NotificationBell />
         

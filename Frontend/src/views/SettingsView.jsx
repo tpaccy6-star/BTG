@@ -5,6 +5,7 @@ import {
   Globe, Activity, User, Save, ListTodo, Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function SettingsView({ currentUser, userRole, onLogout, onUpdateUser }) {
   // Global States
@@ -13,6 +14,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [modalError, setModalError] = useState('');
+  const [confirmModalConfig, setConfirmModalConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
   // Tab: General / System states
   const [backups, setBackups] = useState([]);
@@ -345,23 +347,29 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   };
 
   const handleDeleteUser = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/admin/users/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setMessage('User deleted.');
-        fetchUsers();
-      } else {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to delete');
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete User',
+      message: 'Are you sure you want to delete this user? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`/api/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            setMessage('User deleted.');
+            fetchUsers();
+          } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete user');
+          }
+        } catch (err) {
+          setError(err.message);
+        }
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    });
   };
 
   // --- Curriculum / Lessons CRUD handlers ---
@@ -548,23 +556,29 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   };
 
   const handleDeleteLesson = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this curriculum unit?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/admin/lessons/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setMessage('Lesson deleted.');
-        fetchLessons();
-      } else {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to delete');
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete Curriculum Unit',
+      message: 'Are you sure you want to delete this curriculum unit? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`/api/admin/lessons/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            setMessage('Lesson deleted.');
+            fetchLessons();
+          } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete lesson');
+          }
+        } catch (err) {
+          setError(err.message);
+        }
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    });
   };
 
   // --- Announcements CRUD handlers ---
@@ -613,23 +627,29 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   };
 
   const handleDeleteAnn = async (id) => {
-    if (!window.confirm('Delete this broadcast?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/admin/announcements/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setMessage('Broadcast removed.');
-        fetchAnnouncements();
-      } else {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to delete');
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete Broadcast',
+      message: 'Are you sure you want to delete this broadcast?',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`/api/announcements/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            setMessage('Broadcast deleted.');
+            fetchAnnouncements();
+          } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete broadcast');
+          }
+        } catch (err) {
+          setError(err.message);
+        }
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    });
   };
 
   // --- Submissions CRUD handlers ---
@@ -670,23 +690,29 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   };
 
   const handleDeleteSub = async (id) => {
-    if (!window.confirm('Delete this submission record?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/admin/submissions/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setMessage('Submission deleted.');
-        fetchSubmissions();
-      } else {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to delete');
+    setConfirmModalConfig({
+      isOpen: true,
+      title: 'Delete Submission',
+      message: 'Are you sure you want to delete this submission record?',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`/api/admin/submissions/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            setMessage('Submission deleted.');
+            fetchSubmissions();
+          } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete submission');
+          }
+        } catch (err) {
+          setError(err.message);
+        }
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    });
   };
 
 
@@ -777,6 +803,14 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
 
   // --- Render Admin View (with tabs & CRUDs) ---
   return (
+    <>
+    <ConfirmModal 
+      isOpen={confirmModalConfig.isOpen}
+      title={confirmModalConfig.title}
+      message={confirmModalConfig.message}
+      onConfirm={confirmModalConfig.onConfirm}
+      onClose={() => setConfirmModalConfig({ ...confirmModalConfig, isOpen: false })}
+    />
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
       {/* Admin Title & Info */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1774,5 +1808,6 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
       </AnimatePresence>
 
     </motion.div>
+    </>
   );
 }

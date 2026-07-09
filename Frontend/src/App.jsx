@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Home, BookOpen, FileText, Settings, MessageCircle, 
-  CheckCircle2, User, PanelLeftClose, PanelLeftOpen, Bell
+  CheckCircle2, User, PanelLeftClose, PanelLeftOpen, Bell, Sun, Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -291,6 +291,14 @@ export default function App() {
               </button>
             );
           })}
+          {/* Explicit Mobile Theme Toggle */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400"
+          >
+            {isDarkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} />}
+            <span className="text-[8px] font-black uppercase tracking-wide">Theme</span>
+          </button>
         </nav>
       </div>
     );
@@ -322,6 +330,7 @@ export default function App() {
           setCurrentView={setCurrentView}
           onLogout={handleLogout}
           isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
         />
         
         {/* Scrollable Workspace */}

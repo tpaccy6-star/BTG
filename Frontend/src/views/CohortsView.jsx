@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, BarChart, CheckCircle2, Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function CohortsView({ currentUser, userRole }) {
   const [cohortsList, setCohortsList] = useState([]);
@@ -16,6 +17,7 @@ export default function CohortsView({ currentUser, userRole }) {
   const [cohortStatus, setCohortStatus] = useState('Active');
   const [cohortAttendance, setCohortAttendance] = useState('90');
   
+  const [confirmModalState, setConfirmModalState] = useState({ isOpen: false, idToDelete: null });
   const [error, setError] = useState('');
 
   const fetchCohorts = async () => {
@@ -107,7 +109,12 @@ export default function CohortsView({ currentUser, userRole }) {
   };
 
   const handleDeleteCohort = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this cohort? All associated users and lessons will lose this cohort link.')) return;
+    setConfirmModalState({ isOpen: true, idToDelete: id });
+  };
+
+  const executeDeleteCohort = async () => {
+    const id = confirmModalState.idToDelete;
+    if (!id) return;
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`/api/admin/cohorts/${id}`, {
@@ -126,6 +133,15 @@ export default function CohortsView({ currentUser, userRole }) {
   };
 
   return (
+    <>
+    <ConfirmModal 
+      isOpen={confirmModalState.isOpen}
+      onClose={() => setConfirmModalState({ isOpen: false, idToDelete: null })}
+      onConfirm={executeDeleteCohort}
+      title="Delete Cohort"
+      message="Are you sure you want to delete this cohort? All associated users and lessons will lose this cohort link."
+      confirmText="Delete Cohort"
+    />
     <motion.div 
       initial={{ opacity: 0, y: 15 }} 
       animate={{ opacity: 1, y: 0 }} 
@@ -385,6 +401,7 @@ export default function CohortsView({ currentUser, userRole }) {
         )}
       </AnimatePresence>
     </motion.div>
+    </>
   );
 }
 

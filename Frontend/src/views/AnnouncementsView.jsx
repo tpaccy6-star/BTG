@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Plus, Calendar, User, Send } from 'lucide-react';
+import { Megaphone, Plus, Calendar, User, Send, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AnnouncementsView({ userRole }) {
@@ -15,6 +15,8 @@ export default function AnnouncementsView({ userRole }) {
   const [cohorts, setCohorts] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const isTeacherOrAdmin = ['teacher', 'admin'].includes(userRole);
 
@@ -28,7 +30,7 @@ export default function AnnouncementsView({ userRole }) {
   const fetchCohorts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/admin/cohorts', {
+      const res = await fetch('/api/cohorts', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -60,6 +62,27 @@ export default function AnnouncementsView({ userRole }) {
     }
   };
 
+  const handleEdit = (ann) => {
+    setTitle(ann.title);
+    setContent(ann.content);
+    setTargetRole(ann.targetRole || 'all');
+    setTargetCohortId(ann.targetCohortId ? ann.targetCohortId.toString() : '');
+    setEditId(ann.id);
+    setIsFormOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/announcements/${deleteConfirmId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        fetchAnnouncements();
+        setDeleteConfirmId(null);
+      }
+    } catch (err) { console.error(err); }
+  };
+
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!title || !content) {
@@ -72,8 +95,10 @@ export default function AnnouncementsView({ userRole }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/announcements', {
-        method: 'POST',
+      const method = editId ? 'PUT' : 'POST';
+      const url = editId ? `/api/announcements/${editId}` : '/api/announcements';
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -91,11 +116,12 @@ export default function AnnouncementsView({ userRole }) {
         throw new Error(data.error || 'Failed to post announcement.');
       }
 
-      setMessage('Announcement broadcasted successfully!');
+      setMessage(editId ? 'Announcement updated successfully!' : 'Announcement broadcasted successfully!');
       setTitle('');
       setContent('');
       setTargetRole('all');
       setTargetCohortId('');
+      setEditId(null);
       setIsFormOpen(false);
       fetchAnnouncements();
     } catch (err) {
@@ -119,7 +145,14 @@ export default function AnnouncementsView({ userRole }) {
         </div>
         {isTeacherOrAdmin && (
           <button 
-            onClick={() => setIsFormOpen(true)}
+            onClick={() => {
+              setEditId(null);
+              setTitle('');
+              setContent('');
+              setTargetRole('all');
+              setTargetCohortId('');
+              setIsFormOpen(true);
+            }}
             className="px-4 py-2 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-md flex items-center transition-all"
           >
             <Plus size={14} className="mr-1.5" /> Publish Notice
@@ -148,14 +181,22 @@ export default function AnnouncementsView({ userRole }) {
                 transition={{ delay: idx * 0.05 }}
                 className="p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100/80 dark:border-slate-800 shadow-sm space-y-4 hover:shadow-md transition-all relative overflow-hidden"
               >
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-50 dark:border-slate-800 pb-4">
-                  <h4 className="text-base font-bold text-slate-800 dark:text-white leading-tight">{ann.title}</h4>
-                  <div className="flex items-center space-x-3 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    <span className="flex items-center"><User size={10} className="mr-1" /> {ann.author}</span>
-                    <span>•</span>
-                    <span className="flex items-center"><Calendar size={10} className="mr-1" /> {ann.date}</span>
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-50 dark:border-slate-800 pb-4">
+                    <h4 className="text-base font-bold text-slate-800 dark:text-white leading-tight">{ann.title}</h4>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center space-x-3 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                        <span className="flex items-center"><User size={10} className="mr-1" /> {ann.author}</span>
+                        <span>•</span>
+                        <span className="flex items-center"><Calendar size={10} className="mr-1" /> {ann.date}</span>
+                      </div>
+                      {isTeacherOrAdmin && (
+                        <div className="flex items-center space-x-2">
+                          <button onClick={() => handleEdit(ann)} className="text-slate-400 hover:text-blue-600 transition-colors" title="Edit Announcement"><Edit2 size={14}/></button>
+                          <button onClick={() => setDeleteConfirmId(ann.id)} className="text-slate-400 hover:text-red-500 transition-colors" title="Delete Announcement"><Trash2 size={14}/></button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                 <p className="text-xs text-slate-606 dark:text-slate-400 font-medium leading-relaxed">{ann.content}</p>
               </motion.div>
             ))
@@ -269,6 +310,49 @@ export default function AnnouncementsView({ userRole }) {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmId && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirmId(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-sm w-full space-y-6 text-center"
+            >
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Announcement?</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Are you sure you want to delete this notice? This action cannot be undone.
+              </p>
+              <div className="flex space-x-3 pt-4 justify-center">
+                <button 
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={executeDelete}
+                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs uppercase shadow-md shadow-red-600/20 transition-colors"
+                >
+                  Yes, Delete
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

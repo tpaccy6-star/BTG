@@ -128,12 +128,8 @@ export default function LandingPage({ onEnterPortal }) {
 
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 px-6 lg:px-16 py-4 flex items-center justify-between no-print">
-        <div className="flex items-center space-x-3">
-          <img src="/Logo.png" alt="Generation Rise" className="w-10 h-10 object-contain shrink-0" />
-          <div>
-            <span className="font-black text-sm tracking-wide text-blue-900 block leading-none">Generation Rise</span>
-            <span className="text-[8px] text-slate-400 uppercase tracking-widest font-black block mt-1">Inspiring & Empowering</span>
-          </div>
+        <div className="flex items-center">
+          <img src="/Logo.png" alt="Generation Rise" className="w-48 h-48 object-contain shrink-0" />
         </div>
         
         {/* Desktop Nav links */}
@@ -640,9 +636,8 @@ export default function LandingPage({ onEnterPortal }) {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <div className="lg:col-span-5 space-y-4">
-            <div className="flex items-center space-x-3">
-              <img src="/Logo.png" alt="Generation Rise Logo" className="w-10 h-10 object-contain invert brightness-0" />
-              <span className="font-black text-sm text-white uppercase tracking-wider">Generation Rise</span>
+            <div className="flex items-center">
+              <img src="/Logo.png" alt="Generation Rise Logo" className="w-48 h-48 object-contain invert brightness-0" />
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-medium max-w-sm">
               Inspiring & empowering young people through education. Promoting adolescent health, social gender equity, and economic empowerment.
