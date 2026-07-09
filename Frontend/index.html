@@ -6,11 +6,11 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/Logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#0b1220" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap"
     rel="stylesheet">
   <title>Generation Rise Scholar Portal</title>
 </head>
@@ -18,6 +18,17 @@
 <body>
   <div id="root">
     <style>
+      :root {
+        --ink: #0b1220;
+        --indigo: #131b34;
+        --indigo-2: #1c2647;
+        --dawn-gold: #f2b705;
+        --sunrise-coral: #ff7a59;
+        --sky-cyan: #5eead4;
+        --paper: #f7f3ea;
+        --muted: #aab3ce;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -25,12 +36,12 @@
       }
 
       body {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', sans-serif;
         overflow: hidden;
-        background: #081426;
+        background: var(--ink);
       }
 
-      /* Animated Background */
+      /* ============ Stage ============ */
       .loader {
         position: fixed;
         inset: 0;
@@ -38,263 +49,275 @@
         justify-content: center;
         align-items: center;
         overflow: hidden;
-        background: linear-gradient(-45deg, #0f172a, #172554, #1e3a8a, #0f172a);
-        background-size: 400% 400%;
-        animation: bgMove 12s ease infinite;
+        background:
+          radial-gradient(120% 90% at 50% 120%, #2a1a12 0%, transparent 55%),
+          linear-gradient(180deg, var(--ink) 0%, var(--indigo) 55%, var(--indigo-2) 100%);
         z-index: 9999;
       }
 
-      /* Decorative Blobs */
-      .blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(90px);
-        opacity: .35;
-        animation: float 10s ease-in-out infinite;
-      }
-
-      .b1 {
-        width: 350px;
-        height: 350px;
-        background: #2563eb;
-        top: -120px;
-        left: -80px;
-      }
-
-      .b2 {
-        width: 300px;
-        height: 300px;
-        background: #facc15;
-        bottom: -120px;
-        right: -70px;
-        animation-delay: 3s;
-      }
-
-      .b3 {
-        width: 220px;
-        height: 220px;
-        background: #38bdf8;
-        right: 20%;
-        top: 25%;
-        animation-delay: 5s;
-      }
-
-      /* Main Card */
-      .card {
-        width: 380px;
-        padding: 45px;
-        background: rgba(255, 255, 255, .08);
-        border: 1px solid rgba(255, 255, 255, .12);
-        backdrop-filter: blur(18px);
-        border-radius: 30px;
-        text-align: center;
-        box-shadow: 0 25px 60px rgba(0, 0, 0, .45), 0 0 40px rgba(255, 255, 255, .05);
-        animation: appear .8s ease;
-        z-index: 10;
-      }
-
-      /* Logo */
-      .logo-box {
-        position: relative;
-        width: 140px;
-        height: 140px;
-        margin: auto;
-        margin-bottom: 30px;
-      }
-
-      .logo-ring {
-        position: absolute;
-        inset: -12px;
-        border-radius: 50%;
-        border: 4px solid rgba(255, 255, 255, .15);
-        border-top-color: #facc15;
-        border-left-color: #38bdf8;
-        animation: spin 2s linear infinite;
-      }
-
-      .logo-glow {
-        position: absolute;
-        inset: -18px;
-        border-radius: 50%;
-        background: radial-gradient(circle, #ffffff40, transparent);
-        animation: pulse 2.5s infinite;
-      }
-
-      .logo {
+      /* Starfield: quiet scattered dots = the "scholars", each will glint */
+      .stars {
         position: absolute;
         inset: 0;
-        background: white;
+        z-index: 1;
+      }
+
+      .star {
+        position: absolute;
+        width: 3px;
+        height: 3px;
         border-radius: 50%;
+        background: var(--paper);
+        opacity: 0;
+        animation: glint 4.5s ease-in-out infinite;
+      }
+
+      /* ============ Signature element: the rising horizon ============ */
+      .horizon-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 46vh;
+        overflow: hidden;
+        z-index: 2;
+      }
+
+      .sun {
+        position: absolute;
+        left: 50%;
+        bottom: -170px;
+        width: 340px;
+        height: 340px;
+        margin-left: -170px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 38%, #ffe9a8 0%, var(--dawn-gold) 45%, var(--sunrise-coral) 78%, transparent 80%);
+        filter: blur(1px);
+        animation: rise 6s cubic-bezier(.32, .1, .3, 1) infinite;
+      }
+
+      .sun::after {
+        content: '';
+        position: absolute;
+        inset: -60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(242, 183, 5, .35), transparent 70%);
+        z-index: -1;
+      }
+
+      .horizon-line {
+        position: absolute;
+        left: -5%;
+        right: -5%;
+        bottom: 34%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(94, 234, 212, .55) 20%, rgba(242, 183, 5, .8) 50%, rgba(94, 234, 212, .55) 80%, transparent);
+        z-index: 3;
+      }
+
+      .ridge {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 40%;
+        background: var(--ink);
+        clip-path: polygon(0% 60%, 8% 52%, 19% 58%, 31% 44%, 44% 55%, 58% 40%, 71% 52%, 84% 46%, 100% 58%, 100% 100%, 0% 100%);
+        z-index: 4;
+        opacity: .92;
+      }
+
+      /* ============ Card ============ */
+      .card {
+        position: relative;
+        z-index: 10;
+        width: 380px;
+        padding: 46px 44px 40px;
+        text-align: center;
+        animation: appear .9s cubic-bezier(.2, .8, .2, 1);
+        
+        /* Added glass background to ensure text readability against the sun */
+        background: rgba(11, 18, 32, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 32px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Emblem: no spinner ring — the sun behind it already carries motion */
+      .emblem {
+        position: relative;
+        width: 108px;
+        height: 108px;
+        margin: 0 auto 26px;
+        border-radius: 50%;
+        background: var(--paper);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, .3);
+        padding: 14px;
+        box-shadow:
+          0 0 0 1px rgba(247, 243, 234, .12),
+          0 20px 45px rgba(0, 0, 0, .5),
+          0 0 55px rgba(242, 183, 5, .25);
       }
 
-      .logo img {
+      .emblem img {
         width: 100%;
         height: 100%;
         object-fit: contain;
       }
 
-      /* Text */
+      /* ============ Type ============ */
       .loader-h1 {
-        color: white;
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 8px;
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 30px;
+        letter-spacing: -.01em;
+        color: var(--paper);
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      }
+
+      .loader-h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--dawn-gold);
       }
 
       .tagline {
-        color: #cbd5e1;
-        font-size: 15px;
-        line-height: 1.7;
-        margin-bottom: 25px;
+        font-size: 13.5px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 30px;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
       }
 
-      /* Progress Bar */
+      /* ============ Progress: a path along the horizon ============ */
       .progress {
-        height: 8px;
+        position: relative;
+        height: 3px;
         width: 100%;
-        background: rgba(255, 255, 255, .12);
+        background: rgba(247, 243, 234, .12);
         border-radius: 50px;
-        overflow: hidden;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
+        overflow: visible;
       }
 
       .progress span {
+        position: absolute;
+        inset: 0;
         display: block;
-        height: 100%;
-        width: 35%;
-        background: linear-gradient(90deg, #38bdf8, #facc15, #22c55e);
-        background-size: 300%;
         border-radius: 50px;
-        animation: loading 2s infinite, gradient 3s linear infinite;
+        background: linear-gradient(90deg, var(--sky-cyan), var(--dawn-gold));
+        transform-origin: left center;
+        animation: fill 2.4s cubic-bezier(.6, 0, .4, 1) infinite;
       }
 
-      /* Loading Text */
-      .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-        color: white;
-        font-size: 15px;
-        font-weight: 500;
-      }
-
-      .loading span {
-        width: 8px;
-        height: 8px;
-        background: #facc15;
+      .progress-dot {
+        position: absolute;
+        top: 50%;
+        width: 9px;
+        height: 9px;
         border-radius: 50%;
-        animation: bounce 1.4s infinite;
+        background: var(--paper);
+        box-shadow: 0 0 10px 2px rgba(242, 183, 5, .8);
+        transform: translate(-50%, -50%);
+        animation: fill-dot 2.4s cubic-bezier(.6, 0, .4, 1) infinite;
       }
 
-      .loading span:nth-child(2) {
-        animation-delay: .2s;
-      }
-
-      .loading span:nth-child(3) {
-        animation-delay: .4s;
-      }
-
-      /* Status */
-      .status {
-        margin-top: 22px;
-        font-size: 13px;
-        color: #cbd5e1;
-        line-height: 1.7;
-      }
-
-      /* Version */
-      .version {
-        margin-top: 25px;
-        font-size: 12px;
-        color: #94a3b8;
-        letter-spacing: 2px;
+      .loading {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 12.5px;
+        letter-spacing: .12em;
         text-transform: uppercase;
+        color: var(--muted);
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
       }
 
-      /* Animations */
-      @keyframes bgMove {
+      .status {
+        margin-top: 20px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--muted);
+        opacity: .9;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      }
+
+      .version {
+        margin-top: 24px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 11px;
+        color: rgba(170, 179, 206, .7);
+        letter-spacing: .28em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      }
+
+      /* ============ Motion ============ */
+      @keyframes rise {
         0% {
-          background-position: 0% 50%;
-        }
-
-        50% {
-          background-position: 100% 50%;
-        }
-
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-
-      @keyframes spin {
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      @keyframes pulse {
-
-        0%,
-        100% {
-          transform: scale(.95);
-          opacity: .4;
-        }
-
-        50% {
-          transform: scale(1.15);
-          opacity: 1;
-        }
-      }
-
-      @keyframes loading {
-        0% {
-          transform: translateX(-100%);
-        }
-
-        100% {
-          transform: translateX(320%);
-        }
-      }
-
-      @keyframes gradient {
-        0% {
-          background-position: 0%;
-        }
-
-        100% {
-          background-position: 300%;
-        }
-      }
-
-      @keyframes bounce {
-
-        0%,
-        80%,
-        100% {
           transform: translateY(0);
         }
 
-        40% {
-          transform: translateY(-8px);
+        50% {
+          transform: translateY(-92px);
+        }
+
+        100% {
+          transform: translateY(0);
         }
       }
 
-      @keyframes float {
+      @keyframes glint {
+
+        0%,
+        100% {
+          opacity: 0;
+        }
+
         50% {
-          transform: translateY(-25px);
+          opacity: .9;
+        }
+      }
+
+      @keyframes fill {
+        0% {
+          transform: scaleX(0);
+        }
+
+        60% {
+          transform: scaleX(1);
+        }
+
+        100% {
+          transform: scaleX(1);
+          opacity: 0;
+        }
+      }
+
+      @keyframes fill-dot {
+        0% {
+          left: 0%;
+          opacity: 1;
+        }
+
+        60% {
+          left: 100%;
+        }
+
+        100% {
+          left: 100%;
+          opacity: 0;
         }
       }
 
       @keyframes appear {
         from {
           opacity: 0;
-          transform: translateY(30px) scale(.95);
+          transform: translateY(24px);
         }
 
         to {
@@ -302,38 +325,85 @@
           transform: none;
         }
       }
+
+      @media (prefers-reduced-motion: reduce) {
+
+        .sun,
+        .star,
+        .progress span,
+        .progress-dot,
+        .card {
+          animation: none !important;
+        }
+
+        .sun {
+          transform: translateY(-70px);
+        }
+
+        .progress span {
+          transform: scaleX(1);
+        }
+      }
+
+      @media (max-width: 440px) {
+        .card {
+          width: 92vw;
+          padding: 38px 26px 34px;
+        }
+
+        .loader-h1 {
+          font-size: 25px;
+        }
+      }
     </style>
 
     <div class="loader">
-      <div class="blob b1"></div>
-      <div class="blob b2"></div>
-      <div class="blob b3"></div>
+      <div class="stars" id="starfield"></div>
+
+      <div class="horizon-wrap">
+        <div class="sun"></div>
+        <div class="horizon-line"></div>
+        <div class="ridge"></div>
+      </div>
+
       <div class="card">
-        <div class="logo-box">
-          <div class="logo-glow"></div>
-          <div class="logo-ring"></div>
-          <div class="logo">
-            <img src="/Logo.png" alt="Generation Rise">
-          </div>
+        <div class="emblem">
+          <img src="/Logo.png" alt="Generation Rise">
         </div>
-        <div class="loader-h1">Generation Rise</div>
-        <p class="tagline">Empowering Scholars.<br>Inspiring Innovation.</p>
+
+        <div class="loader-h1">Generation <em>Rise</em></div>
+        <p class="tagline">Empowering Scholars &middot; Inspiring Innovation</p>
+
         <div class="progress">
           <span></span>
+          <div class="progress-dot"></div>
         </div>
-        <div class="loading">
-          Loading
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+
+        <div class="loading">Welcome, Scholar</div>
         <div class="status">
-          Preparing your secure learning workspace.<br>
-          Please wait while we connect to our cloud servers.
+          Your journey to rise begins here.<br>
+          Getting things ready for you.
         </div>
         <div class="version">Scholar Portal</div>
       </div>
     </div>
+
+    <script>
+      (function () {
+        var field = document.getElementById('starfield');
+        if (!field) return;
+        var count = window.innerWidth < 500 ? 14 : 26;
+        for (var i = 0; i < count; i++) {
+          var s = document.createElement('div');
+          s.className = 'star';
+          s.style.left = Math.random() * 100 + '%';
+          s.style.top = (Math.random() * 55) + '%';
+          s.style.animationDelay = (Math.random() * 4.5).toFixed(2) + 's';
+          s.style.animationDuration = (3.5 + Math.random() * 2.5).toFixed(2) + 's';
+          field.appendChild(s);
+        }
+      })();
+    </script>
   </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
