@@ -304,7 +304,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   const handleUserSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    const url = userEditing ? `/api/admin/users/${userEditing.id}` : '/api/admin/users';
+    const url = userEditing ? `/api/users/admin/${userEditing.id}` : '/api/users/admin';
     const method = userEditing ? 'PUT' : 'POST';
 
     const payload = {
@@ -354,7 +354,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`/api/admin/users/${id}`, {
+          const res = await fetch(`/api/users/admin/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -1368,7 +1368,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
         {isUserModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUserModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto space-y-6 text-slate-800 dark:text-white">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-4 sm:p-6 md:p-8 max-w-lg md:max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 sm:space-y-6 text-slate-800 dark:text-white">
               <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-4">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white">{userEditing ? 'Edit User Profile' : 'Create User Account'}</h3>
                 <button onClick={() => setIsUserModalOpen(false)} className="p-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-300"><X size={16} /></button>
@@ -1457,7 +1457,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
         {isLessonModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsLessonModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6 text-slate-800 dark:text-white">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-4 sm:p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 sm:space-y-6 text-slate-800 dark:text-white">
               <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-4">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white">{lessonEditing ? 'Edit Curriculum Lesson' : 'Create Curriculum Lesson'}</h3>
                 <button onClick={() => setIsLessonModalOpen(false)} className="p-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-300"><X size={16} /></button>
@@ -1726,7 +1726,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
         {isAnnModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsAnnModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto space-y-6 text-slate-800 dark:text-white">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-4 sm:p-6 md:p-8 max-w-lg md:max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 sm:space-y-6 text-slate-800 dark:text-white">
               <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-4">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white">{annEditing ? 'Edit Broadcast' : 'Create Global Broadcast'}</h3>
                 <button onClick={() => setIsAnnModalOpen(false)} className="p-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-300"><X size={16} /></button>
@@ -1765,7 +1765,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
         {isGradeModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsGradeModalOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto space-y-6 text-slate-800 dark:text-white">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-4 sm:p-6 md:p-8 max-w-lg md:max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 sm:space-y-6 text-slate-800 dark:text-white">
               <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-4">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white">Grade Homework Submission</h3>
                 <button onClick={() => setIsGradeModalOpen(false)} className="p-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-300"><X size={16} /></button>
