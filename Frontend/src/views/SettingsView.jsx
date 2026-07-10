@@ -39,6 +39,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
   const [userStreak, setUserStreak] = useState('0');
   const [cohortsList, setCohortsList] = useState([]);
   const [userCohortId, setUserCohortId] = useState('');
+  const [userAssignedMentor, setUserAssignedMentor] = useState('');
   const [lessonCohortId, setLessonCohortId] = useState('');
 
   // Tab: Lessons CRUD states
@@ -283,6 +284,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
     setUserYear('');
     setUserStreak('0');
     setUserCohortId('');
+    setUserAssignedMentor('');
     setModalError('');
     setIsUserModalOpen(true);
   };
@@ -297,6 +299,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
     setUserYear(user.yearLevel || '');
     setUserStreak(user.streakDays?.toString() || '0');
     setUserCohortId(user.cohortId?.toString() || '');
+    setUserAssignedMentor(user.assignedMentorId || '');
     setModalError('');
     setIsUserModalOpen(true);
   };
@@ -314,7 +317,8 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
       university: userRoleField === 'scholar' ? userUniv : null,
       yearLevel: userRoleField === 'scholar' ? userYear : null,
       streakDays: parseInt(userStreak, 10) || 0,
-      cohortId: userRoleField === 'scholar' && userCohortId ? parseInt(userCohortId, 10) : null
+      cohortId: userRoleField === 'scholar' && userCohortId ? parseInt(userCohortId, 10) : null,
+      assignedMentorId: userRoleField === 'scholar' && userAssignedMentor ? userAssignedMentor : null
     };
 
     if (userPassword) {
@@ -1010,6 +1014,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                       <th className="px-6 py-4">User Details</th>
                       <th className="px-6 py-4">Role</th>
                       <th className="px-6 py-4">University / Year</th>
+                      <th className="px-6 py-4">Assignment</th>
                       <th className="px-6 py-4">Streak</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
@@ -1031,6 +1036,9 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                         </td>
                         <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
                           {u.university ? `${u.university} (${u.yearLevel || 'Y1'})` : '-'}
+                        </td>
+                        <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 text-[10px]">
+                          {u.role === 'scholar' ? (u.mentor?.name || <span className="text-slate-400 italic">Unassigned</span>) : '-'}
                         </td>
                         <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">
                           {u.streakDays}d
@@ -1426,18 +1434,33 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                         <input type="text" placeholder="e.g. Year 2 Scholar" value={userYear} onChange={e => setUserYear(e.target.value)} className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-805 dark:text-white" />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Assigned Cohort</label>
-                      <select 
-                        value={userCohortId} 
-                        onChange={e => setUserCohortId(e.target.value)} 
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-805 dark:text-white"
-                      >
-                        <option value="">No Cohort (Unassigned)</option>
-                        {cohortsList.map(cohort => (
-                          <option key={cohort.id} value={cohort.id}>{cohort.name}</option>
-                        ))}
-                      </select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Assigned Cohort</label>
+                        <select 
+                          value={userCohortId} 
+                          onChange={e => setUserCohortId(e.target.value)} 
+                          className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-805 dark:text-white"
+                        >
+                          <option value="">No Cohort (Unassigned)</option>
+                          {cohortsList.map(cohort => (
+                            <option key={cohort.id} value={cohort.id}>{cohort.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Assigned Mentor</label>
+                        <select 
+                          value={userAssignedMentor} 
+                          onChange={e => setUserAssignedMentor(e.target.value)} 
+                          className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-805 dark:text-white"
+                        >
+                          <option value="">No Mentor (Unassigned)</option>
+                          {usersList.filter(u => u.role === 'mentor').map(mentor => (
+                            <option key={mentor.id} value={mentor.id}>{mentor.name}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -121,10 +121,15 @@ router.get('/admin/submissions', authenticateToken, async (req, res) => {
     return res.status(403).json({ error: 'Access denied.' });
   }
   try {
+    const scholarFilter = {};
+    if (req.user.role === 'mentor') {
+      scholarFilter.assignedMentorId = req.user.id;
+    }
+
     const submissions = await Submission.findAll({
       include: [
         { model: Lesson, as: 'lesson' },
-        { model: User, as: 'scholar', attributes: ['name', 'email', 'university'] }
+        { model: User, as: 'scholar', attributes: ['name', 'email', 'university'], where: scholarFilter }
       ],
       order: [['submittedAt', 'DESC']]
     });

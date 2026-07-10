@@ -26,6 +26,7 @@ import usersRoutes from './routes/users.js';
 import announcementRoutes from './routes/announcements.js';
 import notificationRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
+import rosterRoutes from './routes/roster.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'generation_rise_super_secret_key_2026';
 const PORT = process.env.PORT || 5000;
@@ -74,6 +75,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/roster', rosterRoutes);
 
 // 8. Attendance Checkpoint Route
 app.post('/api/attendance/mark', authenticateToken, async (req, res) => {
@@ -196,8 +198,13 @@ const initApp = async () => {
       console.log('Database empty. Seeding initial data...');
       await seedDatabase();
     } else {
+      try {
+        await sequelize.query('ALTER TABLE Users ADD COLUMN assignedMentorId CHAR(36);');
+      } catch (e) {
+        // Ignore if column already exists
+      }
       await sequelize.sync();
-      console.log('Database schemas verified and altered if necessary.');
+      console.log('Database schemas verified.');
     }
 
     server.listen(PORT, () => {

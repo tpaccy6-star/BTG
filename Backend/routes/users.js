@@ -14,7 +14,10 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ['passwordHash'] },
-      include: [{ model: Cohort, as: 'cohort', attributes: ['id', 'name'] }],
+      include: [
+        { model: Cohort, as: 'cohort', attributes: ['id', 'name'] },
+        { model: User, as: 'mentor', attributes: ['id', 'name'] }
+      ],
       order: [['role', 'ASC'], ['name', 'ASC']]
     });
     res.json(users);
@@ -85,7 +88,7 @@ router.post('/admin', authenticateToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
-  const { email, password, role, name, initials, university, yearLevel, streakDays, cohortId } = req.body;
+  const { email, password, role, name, initials, university, yearLevel, streakDays, cohortId, assignedMentorId } = req.body;
   if (!email || !password || !role || !name) {
     return res.status(400).json({ error: 'Email, password, role, and name are required.' });
   }
@@ -104,9 +107,10 @@ router.post('/admin', authenticateToken, async (req, res) => {
       university: university || null,
       yearLevel: yearLevel || null,
       streakDays: streakDays || 0,
-      cohortId: cohortId ? parseInt(cohortId, 10) : null
+      cohortId: cohortId ? parseInt(cohortId, 10) : null,
+      assignedMentorId: assignedMentorId || null
     });
-    res.json({ success: true, user: { id: user.id, email: user.email, role: user.role, name: user.name, cohortId: user.cohortId } });
+    res.json({ success: true, user: { id: user.id, email: user.email, role: user.role, name: user.name, cohortId: user.cohortId, assignedMentorId: user.assignedMentorId } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create user.' });
@@ -119,7 +123,7 @@ router.put('/admin/:id', authenticateToken, async (req, res) => {
     return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
   const { id } = req.params;
-  const { email, password, role, name, initials, university, yearLevel, streakDays, cohortId } = req.body;
+  const { email, password, role, name, initials, university, yearLevel, streakDays, cohortId, assignedMentorId } = req.body;
   try {
     const user = await User.findByPk(id);
     if (!user) {
@@ -136,9 +140,10 @@ router.put('/admin/:id', authenticateToken, async (req, res) => {
     if (yearLevel !== undefined) user.yearLevel = yearLevel;
     if (streakDays !== undefined) user.streakDays = parseInt(streakDays, 10) || 0;
     if (cohortId !== undefined) user.cohortId = cohortId ? parseInt(cohortId, 10) : null;
+    if (assignedMentorId !== undefined) user.assignedMentorId = assignedMentorId || null;
 
     await user.save();
-    res.json({ success: true, user: { id: user.id, email: user.email, role: user.role, name: user.name, cohortId: user.cohortId } });
+    res.json({ success: true, user: { id: user.id, email: user.email, role: user.role, name: user.name, cohortId: user.cohortId, assignedMentorId: user.assignedMentorId } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update user.' });

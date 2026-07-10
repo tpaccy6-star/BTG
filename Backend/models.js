@@ -52,6 +52,10 @@ export const User = sequelize.define('User', {
   cohortId: {
     type: DataTypes.INTEGER,
     allowNull: true
+  },
+  assignedMentorId: {
+    type: DataTypes.UUID,
+    allowNull: true
   }
 });
 
@@ -285,6 +289,9 @@ export const Cohort = sequelize.define('Cohort', {
 // --- Associations ---
 User.hasMany(Submission, { foreignKey: 'scholarId', as: 'submissions' });
 Submission.belongsTo(User, { foreignKey: 'scholarId', as: 'scholar' });
+
+User.belongsTo(User, { as: 'mentor', foreignKey: 'assignedMentorId' });
+User.hasMany(User, { as: 'assignedScholars', foreignKey: 'assignedMentorId' });
 
 Lesson.hasMany(Submission, { foreignKey: 'lessonId', as: 'submissions' });
 Submission.belongsTo(Lesson, { foreignKey: 'lessonId', as: 'lesson' });
