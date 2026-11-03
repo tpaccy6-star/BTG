@@ -1,11 +1,341 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  font-family: 'Nunito Sans', sans-serif;
+  color: #232323;
+  background: #f7f7f7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --rise-orange: #f74f22;
+  --rise-orange-light: #ff512f;
+  --rise-navy: #1a365f;
+  --rise-navy-dark: #000320;
+  --rise-coral: #fc466b;
+  --rise-gold: #fdc306;
+  --rise-ink: #232323;
+  --rise-muted: #666666;
+  --rise-border: #e8e8e8;
+  --rise-canvas: #f7f7f7;
+  --rise-surface: #ffffff;
+  --rise-shadow: 0 8px 24px rgba(26, 54, 95, 0.07);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--rise-ink);
+  background: var(--rise-canvas);
+}
+
 @layer base {
-  body {
-    @apply antialiased text-slate-900 bg-slate-50 font-sans;
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: Quicksand, 'Nunito Sans', sans-serif;
+    font-weight: 700;
   }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: 'Nunito Sans', sans-serif;
+  }
+}
+
+.rise-app {
+  --rise-canvas: #f7f7f7;
+  --rise-surface: #ffffff;
+  --rise-ink: #232323;
+  --rise-muted: #666666;
+  --rise-border: #e8e8e8;
+  --rise-sidebar: #1a365f;
+  --rise-sidebar-text: #e8eef6;
+  --rise-shadow: 0 8px 24px rgba(26, 54, 95, 0.07);
+  color: var(--rise-ink);
+  background: var(--rise-canvas);
+}
+
+.rise-app.dark {
+  --rise-canvas: #111a28;
+  --rise-surface: #18263a;
+  --rise-ink: #f7f7f7;
+  --rise-muted: #b8c2d0;
+  --rise-border: #2c405b;
+  --rise-sidebar: #000320;
+  --rise-sidebar-text: #e7ebf2;
+  --rise-shadow: 0 8px 24px rgba(0, 3, 32, 0.24);
+}
+
+.rise-app > main {
+  background: var(--rise-canvas);
+}
+
+.rise-header {
+  color: var(--rise-ink);
+  background: color-mix(in srgb, var(--rise-surface) 96%, transparent);
+  border-color: var(--rise-border);
+  box-shadow: 0 2px 8px rgba(26, 54, 95, 0.035);
+}
+
+.rise-header .rise-header-toggle {
+  color: var(--rise-muted);
+}
+
+.rise-header .rise-header-toggle:hover {
+  color: var(--rise-orange);
+  background: #fff0eb;
+}
+
+.rise-app.dark .rise-header .rise-header-toggle:hover {
+  color: var(--rise-orange-light);
+  background: #20324a;
+}
+
+.rise-header .rise-header-avatar {
+  color: var(--rise-gold);
+  background: var(--rise-navy);
+  border-color: var(--rise-gold);
+}
+
+.rise-notification-button {
+  color: var(--rise-muted);
+}
+
+.rise-notification-button:hover {
+  color: var(--rise-orange);
+  background: #fff0eb;
+}
+
+.rise-app.dark .rise-notification-button:hover {
+  color: var(--rise-orange-light);
+  background: #20324a;
+}
+
+.rise-sidebar {
+  color: #ffffff;
+  background: var(--rise-sidebar);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 6px 0 24px rgba(26, 54, 95, 0.14);
+}
+
+.rise-app.dark .rise-sidebar {
+  background: var(--rise-sidebar);
+  border-color: var(--rise-border);
+  box-shadow: 6px 0 24px rgba(0, 0, 0, 0.18);
+}
+
+.rise-mobile-nav {
+  color: var(--rise-muted);
+  background: var(--rise-surface);
+  border-color: var(--rise-border);
+  box-shadow: 0 -8px 24px rgba(26, 54, 95, 0.08);
+}
+
+.rise-mobile-nav button[aria-current="page"] {
+  color: var(--rise-orange);
+}
+
+.rise-sidebar .rise-brand-header,
+.rise-sidebar .rise-sidebar-footer {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.rise-app.dark .rise-sidebar .rise-brand-header,
+.rise-app.dark .rise-sidebar .rise-sidebar-footer {
+  border-color: var(--rise-border);
+}
+
+.rise-sidebar .rise-brand-name {
+  color: #ffffff;
+  font-family: Quicksand, 'Nunito Sans', sans-serif;
+}
+
+.rise-sidebar .rise-brand-subtitle {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.rise-sidebar .rise-nav-label {
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.rise-sidebar .rise-nav-link {
+  color: var(--rise-sidebar-text);
+}
+
+.rise-sidebar .rise-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rise-sidebar .rise-nav-link-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 3px 0 0 var(--rise-orange);
+}
+
+.rise-sidebar .rise-nav-link-active svg {
+  color: var(--rise-gold);
+}
+
+.rise-sidebar .rise-nav-icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rise-sidebar .rise-nav-link:hover .rise-nav-icon,
+.rise-sidebar .rise-nav-link-active .rise-nav-icon {
+  color: var(--rise-gold);
+}
+
+.rise-sidebar .rise-user-name {
+  color: #ffffff;
+}
+
+.rise-app.dark .rise-sidebar .rise-user-name {
+  color: #f5eef3;
+}
+
+.rise-app.dark .rise-sidebar .rise-user-email,
+.rise-app.dark .rise-sidebar .rise-theme-toggle {
+  color: #b8c2d0;
+}
+
+.rise-sidebar .rise-sidebar-help {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.rise-sidebar .rise-help-icon {
+  color: var(--rise-navy);
+  background: var(--rise-gold);
+}
+
+.rise-app.dark .rise-sidebar .rise-sidebar-help {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.rise-app .rise-header .font-display,
+.rise-app .rise-header h1 {
+  font-family: Quicksand, 'Nunito Sans', sans-serif;
+}
+
+.rise-app .rise-brand-mark {
+  background: #ffffff;
+  border-color: var(--rise-gold);
+}
+
+.rise-app.dark .rise-brand-mark {
+  background: #ffffff;
+}
+
+.rise-app .rise-header .border-l {
+  border-color: var(--rise-border);
+}
+
+.rise-footer {
+  color: var(--rise-muted);
+  background: var(--rise-canvas);
+  border-color: var(--rise-border);
+}
+
+.rise-footer-brand {
+  color: var(--rise-navy);
+  font-family: Quicksand, 'Nunito Sans', sans-serif;
+}
+
+.rise-app.dark .rise-footer-brand {
+  color: var(--rise-gold);
+}
+
+.rise-footer-link:hover {
+  color: var(--rise-orange);
+}
+
+.rise-app .rise-card {
+  background-color: var(--rise-surface);
+  border-color: var(--rise-border) !important;
+  box-shadow: var(--rise-shadow);
+}
+
+.rise-app main [class*="rounded"][class*="border"][class*="bg-white"] {
+  border-radius: 16px;
+  border-color: var(--rise-border);
+  box-shadow: var(--rise-shadow);
+}
+
+.rise-app button:not(:disabled),
+.rise-app a {
+  transition-duration: 160ms;
+}
+
+.rise-app input,
+.rise-app select,
+.rise-app textarea {
+  border-color: var(--rise-border);
+  border-radius: 10px;
+}
+
+.rise-app button:focus-visible,
+.rise-app a:focus-visible,
+.rise-app input:focus-visible,
+.rise-app select:focus-visible,
+.rise-app textarea:focus-visible {
+  outline-color: var(--rise-orange);
+}
+
+svg {
+  stroke-width: 1.8;
+}
+
+.rise-app .bg-blue-900,
+.rise-app .hover\:bg-blue-800:hover {
+  color: #ffffff;
+}
+
+.rise-app .bg-yellow-400 {
+  color: #232323;
+}
+
+.rise-app .bg-red-500 {
+  background-color: var(--rise-coral);
+}
+
+.rise-app.dark .bg-white {
+  background-color: var(--rise-surface);
+}
+
+.rise-app.dark .bg-slate-50,
+.rise-app.dark .bg-slate-100 {
+  background-color: #20324a;
+}
+
+.rise-app.dark .bg-blue-50,
+.rise-app.dark .bg-yellow-50 {
+  background-color: #20324a;
+}
+
+.rise-app.dark .border-slate-100,
+.rise-app.dark .border-slate-200 {
+  border-color: var(--rise-border);
+}
+
+.rise-app.dark .text-slate-900,
+.rise-app.dark .text-slate-800 {
+  color: #f7f7f7;
 }
 
 /* Custom Scrollbar for premium feel */

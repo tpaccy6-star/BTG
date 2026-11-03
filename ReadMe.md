@@ -50,3 +50,17 @@ An integrated, beautiful guide hub located on the landing page.
 ### 8. Mobile-First Optimizations
 * **Smart Mobile Bypass:** Automatically skips the landing page on mobile devices to load the login screen directly, speeding up dashboard access for scholars on the go.
 * **Responsive Spacing:** Floating widgets dynamically adjust their positioning to avoid overlapping with bottom navigation elements on smaller screens.
+
+## Project Structure
+
+* `Frontend/` is the React and Vite single-page app. `Frontend/src/App.jsx` handles session state, hash-based view navigation, and role-specific dashboards; reusable screens live in `Frontend/src/views/` and navigation is in `Frontend/src/components/Sidebar.jsx`.
+* `Backend/` is the Express API. Sequelize models and database configuration are in `Backend/models.js` and `Backend/database.js`. It uses SQLite for local development and PostgreSQL when `DATABASE_URL` is configured.
+* The frontend and backend are separate packages in the same repository; install and run them from their respective folders.
+
+## RISE HER Program Suite Integration
+
+The RISE HER experience is integrated into the existing Generation Rise portal, using one frontend, API, database, and sign-in. The shared interface uses the orange-red, navy, coral, and gold palette; Quicksand headings; Nunito Sans body type; and the Generation Rise brand mark while retaining BTG's learning, cohort, profile, and mentor-chat workflows.
+
+The program API is mounted at `/api/program`. It supports program dashboards; cohort member management; report submission, staff review, attachments, and AI-assisted drafting; academic results and reviews; Friendly Weeks pair generation and management; mentorship plans; support requests and assistance records; notifications through the existing notification API; and CSV exports. The React Program Suite reads and writes these APIs.
+
+BTG accounts remain the source of truth: `scholar` accounts are participants, while `mentor`, `teacher`, and `admin` accounts have program staff access. Program-specific tables are added through Sequelize synchronization to the configured BTG database (SQLite locally, PostgreSQL when `DATABASE_URL` is set). The separate Generation Rise database and account records are not imported; no external database or Neon project was provisioned.

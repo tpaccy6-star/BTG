@@ -129,7 +129,8 @@ export default function LandingPage({ onEnterPortal }) {
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 px-6 lg:px-16 py-4 flex items-center justify-between no-print">
         <div className="flex items-center">
-          <img src="/Logo.png" alt="Generation Rise" className="w-48 h-48 object-contain shrink-0" />
+          <img src="/rise-logo.png" alt="Rise Her" className="w-12 h-12 object-contain shrink-0 logo-sharp" />
+          <span className="ml-3 font-display text-lg font-bold text-blue-900">Rise Her</span>
         </div>
         
         {/* Desktop Nav links */}
@@ -158,14 +159,14 @@ export default function LandingPage({ onEnterPortal }) {
           className="space-y-6"
         >
           <span className="text-xs font-black text-blue-900 uppercase tracking-[0.2em] bg-blue-50 px-4 py-2 rounded-full border border-blue-100 inline-block">
-            Empowerment Ecosystem
+            Rise Her · Empowerment Ecosystem
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-blue-955 leading-tight tracking-tight">
             Inspiring & empowering <br />
             <span className="text-blue-900 bg-gradient-to-r from-blue-900 to-indigo-755 bg-clip-text text-transparent">young women.</span>
           </h1>
           <p className="text-slate-500 text-base sm:text-lg font-medium leading-relaxed max-w-xl">
-            Embracing an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in Rwanda.
+            Rise Her is an innovative learning and empowerment platform advancing gender equity and nurturing the next generation of female leaders in Rwanda.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <button 
@@ -233,16 +234,16 @@ export default function LandingPage({ onEnterPortal }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-5 space-y-4">
             <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg">Our Roots</span>
-            <h2 className="text-3xl lg:text-4xl font-black text-blue-955 tracking-tight leading-tight">About Generation Rise</h2>
+            <h2 className="text-3xl lg:text-4xl font-black text-blue-955 tracking-tight leading-tight">About Rise Her</h2>
             <p className="text-slate-500 leading-relaxed text-sm font-medium">
-              We are a community-based and community-driven organization – founded and led by a team of passionate young women, including previous program graduates.
+              Rise Her supports girls and young women through education, leadership development, and career opportunities, guided by a community of passionate women and program graduates.
             </p>
           </div>
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
               <h4 className="font-black text-blue-950 text-base">Innovative Philosophy</h4>
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Generation Rise embraces an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in the region.
+                Rise Her embraces an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in the region.
               </p>
             </div>
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
@@ -363,11 +364,10 @@ export default function LandingPage({ onEnterPortal }) {
             <span className="text-yellow-400 font-black tracking-widest uppercase text-[10px]">Real-Time Metrics</span>
             <h2 className="text-3xl font-black mt-2 tracking-tight">Live Platform Activity</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
             {[
               { label: 'Active Users Today', value: '1,204' },
               { label: 'Lessons Completed', value: '45,892' },
-              { label: 'Questions Asked to AI', value: '12,450' },
               { label: 'Certificates Issued', value: '890' }
             ].map((stat, i) => (
               <div key={i} className="bg-white/10 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:bg-white/15 transition-colors">
@@ -388,7 +388,7 @@ export default function LandingPage({ onEnterPortal }) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: 'Sarah M.', role: 'University Scholar', text: 'Generation Rise transformed my approach to leadership. The interactive lessons and AI mentor helped me secure a scholarship!' },
+              { name: 'Sarah M.', role: 'University Scholar', text: 'Rise Her transformed my approach to leadership. The interactive lessons helped me secure a scholarship!' },
               { name: 'Nadine I.', role: 'High School Student', text: 'The English communication modules gave me the confidence to speak up in class. The gamified streaks keep me coming back every day.' },
               { name: 'Aline U.', role: 'Alumni', text: 'Being part of the Ignite Program was life-changing. The support from my mentors through the portal was incredible.' }
             ].map((test, i) => (
@@ -637,7 +637,8 @@ export default function LandingPage({ onEnterPortal }) {
           
           <div className="lg:col-span-5 space-y-4">
             <div className="flex items-center">
-              <img src="/Logo.png" alt="Generation Rise Logo" className="w-48 h-48 object-contain invert brightness-0" />
+              <img src="/rise-logo.png" alt="Rise Her" className="w-12 h-12 object-contain invert brightness-0 logo-sharp" />
+              <span className="ml-3 font-display text-lg font-bold text-white">Rise Her</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-medium max-w-sm">
               Inspiring & empowering young people through education. Promoting adolescent health, social gender equity, and economic empowerment.
@@ -674,7 +675,7 @@ export default function LandingPage({ onEnterPortal }) {
         </div>
 
         <div className="max-w-7xl mx-auto pt-8 mt-12 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-          <p>© 2026 Building The Generation Rise. All rights reserved.</p>
+          <p>© 2026 Rise Her. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="hover:underline">Imprint</a>
             <a href="#" className="hover:underline">Privacy Policy</a>

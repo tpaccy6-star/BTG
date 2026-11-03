@@ -21,12 +21,12 @@ import authRoutes from './routes/auth.js';
 import lessonRoutes from './routes/lessons.js';
 import submissionRoutes from './routes/submissions.js';
 import cohortRoutes from './routes/cohorts.js';
-import chatbotRoutes from './routes/chatbot.js';
 import usersRoutes from './routes/users.js';
 import announcementRoutes from './routes/announcements.js';
 import notificationRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
 import rosterRoutes from './routes/roster.js';
+import programSuiteRoutes from './routes/programSuite.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'generation_rise_super_secret_key_2026';
 const PORT = process.env.PORT || 5000;
@@ -70,12 +70,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api', submissionRoutes);
 app.use('/api', cohortRoutes);
-app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/roster', rosterRoutes);
+app.use('/api/program', programSuiteRoutes);
 
 // 8. Attendance Checkpoint Route
 app.post('/api/attendance/mark', authenticateToken, async (req, res) => {
@@ -173,6 +173,18 @@ io.on('connection', (socket) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  if (err?.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ detail: 'Each attachment must be 20 MB or smaller.' });
+  }
+  if (err?.status) {
+    return res.status(err.status).json({ detail: err.message });
+  }
+  console.error('API request failed:', err);
+  return res.status(500).json({ detail: 'The server could not complete the request.' });
+});
+
 // --- Serve Static Frontend Assets in Production ---
 const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, '../Frontend/dist')));
@@ -205,6 +217,14 @@ const initApp = async () => {
       }
       await sequelize.sync();
       console.log('Database schemas verified.');
+    }
+
+    const cohortTable = await sequelize.getQueryInterface().describeTable(Cohort.getTableName());
+    if (!cohortTable.description) {
+      await sequelize.getQueryInterface().addColumn(Cohort.getTableName(), 'description', {
+        type: Cohort.rawAttributes.description.type,
+        allowNull: true
+      });
     }
 
     server.listen(PORT, () => {

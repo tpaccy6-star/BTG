@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Home, BookOpen, FileText, Settings, MessageCircle, 
+  Home, BookOpen, FileText, MessageCircle,
   CheckCircle2, User, PanelLeftClose, PanelLeftOpen, Bell, Sun, Moon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 // Import modular layouts and views
 import Sidebar from './components/Sidebar';
@@ -29,14 +29,16 @@ import CurriculumView from './views/CurriculumView';
 import AnnouncementsView from './views/AnnouncementsView';
 import UsersDirectoryView from './views/UsersDirectoryView';
 import SettingsView from './views/SettingsView';
-import AIChatbot from './components/AIChatbot';
+import ProgramWorkspace from './views/ProgramWorkspace';
 
-// View transitions animation helper
-const viewVariants = {
-  initial: { opacity: 0, y: 15 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, scale: 0.98 }
-};
+const programWorkspaceViews = new Set([
+  'programs',
+  'reports',
+  'academic-results',
+  'friendly-weeks',
+  'mentorship',
+  'assistance',
+]);
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -126,9 +128,10 @@ export default function App() {
       } else {
         const view = hash.replace('#/', '');
         if ([
-          'dashboard', 'catalog', 'lesson', 'tasks', 'attendance', 
+          'dashboard', 'catalog', 'lesson', 'tasks', 'attendance', 'programs',
           'chat', 'profile', 'scholars', 'grading', 'users', 
-          'curriculum', 'reports', 'settings', 'cohorts', 'announcements'
+          'curriculum', 'reports', 'academic-results', 'friendly-weeks',
+          'mentorship', 'assistance', 'settings', 'cohorts', 'announcements'
         ].includes(view)) {
           setCurrentView(view);
         }
@@ -250,12 +253,13 @@ export default function App() {
   // Mobile Bottom Navigation Component
   const MobileNavbar = () => {
     let items = [];
-    if (userRole === 'scholar') {
+    if (userRole === 'scholar' || userRole === 'beneficiary') {
       items = [
         { id: 'dashboard', icon: Home, label: 'Dashboard' },
         { id: 'catalog', icon: BookOpen, label: 'Catalog' },
         { id: 'tasks', icon: FileText, label: 'Tasks' },
         { id: 'chat', icon: MessageCircle, label: 'Chat' },
+        { id: 'programs', icon: BookOpen, label: 'Programs' },
         { id: 'profile', icon: User, label: 'Profile' }
       ];
     } else {
@@ -265,29 +269,40 @@ export default function App() {
         { id: 'tasks', icon: FileText, label: 'Grading' },
         { id: 'attendance', icon: CheckCircle2, label: 'Attendance' },
         { id: 'chat', icon: MessageCircle, label: 'DMs' },
+        { id: 'programs', icon: BookOpen, label: 'Programs' },
         { id: 'profile', icon: User, label: 'Profile' }
       ];
     }
 
     return (
-      <div className={`lg:hidden fixed bottom-0 left-0 right-0 border-t pb-safe z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] transition-all duration-200 ${
-        isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'
-      }`}>
-        <nav className="flex justify-around items-center h-16 px-2">
+      <div className="rise-mobile-nav lg:hidden fixed bottom-0 left-0 right-0 border-t pb-safe z-50 transition-all duration-200">
+        <nav
+          aria-label="Mobile navigation"
+          className="flex h-16 items-stretch justify-around px-1"
+        >
           {items.map((item) => {
-            const isActive = currentView === item.id;
-            const activeColor = isDarkMode ? 'text-yellow-400' : 'text-blue-900';
+            const isActive = currentView === item.id
+              || (item.id === 'programs' && programWorkspaceViews.has(currentView));
+            const activeColor = 'text-blue-900';
             return (
               <button
                 key={item.id}
+                type="button"
+                aria-label={item.id === 'dashboard' ? 'Home' : item.label}
+                aria-current={isActive ? 'page' : undefined}
+                title={item.id === 'dashboard' ? 'Home' : item.label}
                 onClick={() => {
                   setCurrentView(item.id);
                   window.location.hash = `#/${item.id}`;
                 }}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? activeColor : 'text-slate-400'}`}
+                className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-1 px-0.5 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue-500 ${
+                  isActive ? activeColor : 'text-slate-400'
+                }`}
               >
-                <item.icon size={20} className={isActive ? activeColor : 'text-slate-400'} />
-                <span className="text-[8px] font-black uppercase tracking-wide">{item.label}</span>
+                <item.icon size={18} className={isActive ? activeColor : 'text-slate-400'} />
+                <span className="w-full break-words text-[7px] font-black uppercase leading-tight tracking-tight">
+                  {item.id === 'dashboard' ? 'Home' : item.label}
+                </span>
               </button>
             );
           })}
@@ -298,8 +313,8 @@ export default function App() {
   };
 
   return (
-    <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-200 ${
-      isDarkMode ? 'bg-[#0b0f19] text-slate-100 dark' : 'bg-slate-50 text-slate-900'
+    <div className={`rise-app flex h-screen font-sans overflow-hidden transition-colors duration-200 ${
+      isDarkMode ? 'dark' : ''
     }`}>
       
       {/* Sidebar Layout */}
@@ -318,6 +333,7 @@ export default function App() {
         <Header 
           currentUser={currentUser}
           userRole={userRole}
+          currentView={currentView}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
           toggleDesktopSidebar={toggleDesktopSidebar}
           setCurrentView={setCurrentView}
@@ -331,7 +347,7 @@ export default function App() {
           <div className="flex-1 p-4 lg:p-10 pb-20 lg:pb-6">
             <div className="w-full h-full">
               <AnimatePresence mode="wait">
-                {currentView === 'dashboard' && userRole === 'scholar' && (
+                {currentView === 'dashboard' && (userRole === 'scholar' || userRole === 'beneficiary') && (
                   <ScholarDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholar-dash" />
                 )}
                 {currentView === 'dashboard' && userRole === 'mentor' && (
@@ -340,7 +356,7 @@ export default function App() {
                 {currentView === 'dashboard' && userRole === 'teacher' && (
                   <TeacherDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="teacher-dash" />
                 )}
-                {currentView === 'dashboard' && userRole === 'admin' && (
+                {currentView === 'dashboard' && (userRole === 'admin' || userRole === 'staff') && (
                   <AdminDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="admin-dash" />
                 )}
                 
@@ -386,16 +402,13 @@ export default function App() {
                   <SettingsView currentUser={currentUser} userRole={userRole} onLogout={handleLogout} onUpdateUser={refreshUserSession} key="settings" />
                 )}
 
-                {/* General Fallback for unspecified pages */}
-                {currentView === 'reports' && (
-                  <motion.div variants={viewVariants} initial="initial" animate="animate" exit="exit" className="flex flex-col items-center justify-center h-[60vh] text-center">
-                    <div className="w-24 h-24 bg-slate-100 rounded-3xl flex items-center justify-center mb-8 shadow-inner border border-slate-200">
-                      <Settings size={40} className="text-slate-300 animate-spin" style={{ animationDuration: '6s' }} />
-                    </div>
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tight">Module Loading</h2>
-                    <p className="text-slate-500 mt-3 max-w-sm font-medium leading-relaxed">This workspace panel ({currentView}) is initializing. Check back shortly.</p>
-                    <button onClick={() => setCurrentView('dashboard')} className="mt-10 px-8 py-3 bg-blue-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100">Return to Hub</button>
-                  </motion.div>
+                {programWorkspaceViews.has(currentView) && (
+                  <ProgramWorkspace
+                    currentView={currentView}
+                    setCurrentView={setCurrentView}
+                    userRole={userRole}
+                    key="program-workspace"
+                  />
                 )}
               </AnimatePresence>
             </div>
@@ -406,9 +419,6 @@ export default function App() {
         {/* Mobile bottom nav layout */}
         <MobileNavbar />
       </main>
-
-      {/* Floating Role-Customized AI Chatbot Assistant */}
-      {currentUser && <AIChatbot currentUser={currentUser} />}
     </div>
   );
 }

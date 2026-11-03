@@ -4,15 +4,13 @@ export default function Footer({ isDarkMode }) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={`hidden lg:block mt-auto pt-6 pb-24 lg:pb-6 px-4 lg:px-8 border-t transition-colors duration-200 text-xs shrink-0 ${
-      isDarkMode 
-        ? 'bg-[#0b0f19]/40 border-slate-800/60 text-slate-400' 
-        : 'bg-white/40 border-slate-200/60 text-slate-500'
+    <footer className={`rise-footer hidden lg:block mt-auto pt-5 pb-5 px-4 lg:px-6 border-t transition-colors duration-200 text-xs shrink-0 ${
+      isDarkMode ? 'text-slate-400' : 'text-slate-500'
     }`}>
-      <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 md:flex-row">
         {/* Left Side: Copyright & Brand */}
         <div className="flex items-center space-x-2">
-          <span className={`font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-blue-900'}`}>Generation Rise</span>
+          <span className="rise-footer-brand font-bold tracking-tight">Generation Rise</span>
           <span className="text-slate-300 dark:text-slate-700">|</span>
           <span>&copy; {currentYear} All rights reserved.</span>
         </div>
@@ -30,21 +28,21 @@ export default function Footer({ isDarkMode }) {
 
         {/* Right Side: Quick Links */}
         <div className="flex items-center space-x-6 font-semibold">
-          <a 
+          <a
             href="#/settings" 
-            className="hover:text-blue-900 dark:hover:text-yellow-400 transition-colors"
+            className="rise-footer-link transition-colors"
           >
             Support
           </a>
-          <a 
+          <a
             href="#/settings" 
-            className="hover:text-blue-900 dark:hover:text-yellow-400 transition-colors"
+            className="rise-footer-link transition-colors"
           >
             Privacy Policy
           </a>
-          <a 
+          <a
             href="#/settings" 
-            className="hover:text-blue-900 dark:hover:text-yellow-400 transition-colors"
+            className="rise-footer-link transition-colors"
           >
             Terms of Service
           </a>

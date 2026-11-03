@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'Logo.png'],
+      includeAssets: ['favicon.svg', 'Logo.png', 'rise-logo.png'],
       manifest: {
         name: 'Generation Rise Scholar Portal',
         short_name: 'GenRise',

@@ -6,6 +6,7 @@ import NotificationBell from './NotificationBell';
 export default function Header({ 
   currentUser, 
   userRole, 
+  currentView,
   isDesktopSidebarOpen, 
   toggleDesktopSidebar, 
   setCurrentView, 
@@ -20,39 +21,62 @@ export default function Header({
   const roleName = userRole.toUpperCase() + ' PORTAL';
   const initials = currentUser?.initials || name.slice(0, 2).toUpperCase();
   const detailLabel = currentUser?.yearLevel || 'Active Participant';
+  const viewLabel = ({
+    dashboard: 'Dashboard',
+    catalog: 'Learning catalog',
+    lesson: 'Lesson desk',
+    tasks: 'Tasks & submissions',
+    attendance: 'Attendance',
+    chat: 'Mentor chat',
+    profile: 'My profile',
+    scholars: 'Scholar roster',
+    grading: 'Grading',
+    cohorts: 'Cohorts',
+    curriculum: 'Curriculum',
+    announcements: 'Announcements',
+    users: 'User directory',
+    settings: 'System settings',
+    programs: 'Program suite',
+    reports: 'Reports',
+    'academic-results': 'Academic results',
+    'friendly-weeks': 'Friendly Weeks',
+    mentorship: 'Mentorship',
+    assistance: 'Support & assistance',
+  })[currentView] || roleName;
 
   return (
-    <header className={`sticky top-0 z-10 flex items-center justify-between h-20 px-4 lg:px-8 backdrop-blur-md transition-all duration-200 border-b shrink-0 ${
-      isDarkMode 
-        ? 'bg-[#0b0f19]/90 border-slate-800 text-white' 
-        : 'bg-slate-50/90 border-slate-200/60 text-slate-800'
+    <header className={`rise-header sticky top-0 z-10 flex items-center justify-between h-16 px-4 lg:px-6 backdrop-blur-md transition-all duration-200 border-b shrink-0 ${
+      isDarkMode ? 'dark' : ''
     }`}>
       <div className="flex items-center">
         {/* Desktop Toggle */}
         <button 
           onClick={toggleDesktopSidebar}
-          className={`mr-4 p-2 rounded-lg hidden lg:block transition-colors ${
-            isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-200'
-          }`}
+          className="rise-header-toggle mr-4 p-2 rounded-lg hidden lg:block transition-colors"
         >
           {isDesktopSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
         </button>
         <div className="lg:hidden flex items-center space-x-2">
-          <img src="/Logo.png" alt="Generation Rise" className="w-10 h-10 object-contain logo-sharp shrink-0" />
-          <h1 className={`font-bold text-sm leading-tight ${isDarkMode ? 'text-white' : 'text-blue-900'}`}>Generation Rise</h1>
+          <div className="rise-brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border p-1.5">
+            <img src="/rise-logo.png" alt="Rise Her" className="h-full w-full object-contain logo-sharp shrink-0" />
+          </div>
+          <div className="leading-tight">
+            <h1 className="font-display font-bold text-sm text-blue-900">Rise Her</h1>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Learning workspace</span>
+          </div>
         </div>
-        <div className="hidden lg:block ml-2">
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{roleName}</span>
+        <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
+          <span className="text-slate-500">Workspace</span>
+          <span className="text-slate-300">/</span>
+          <span className="font-bold text-slate-800">{viewLabel}</span>
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Mobile Theme Toggle */}
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`lg:hidden p-2 rounded-lg transition-colors ${
-            isDarkMode ? 'text-slate-400 hover:bg-slate-800 hover:text-yellow-400' : 'text-slate-500 hover:bg-slate-200 hover:text-blue-900'
-          }`}
+          className="rise-header-toggle lg:hidden p-2 rounded-lg transition-colors"
           title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
           {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -62,7 +86,7 @@ export default function Header({
         <NotificationBell />
         
         {/* Profile Dropdown Corner */}
-        <div className={`flex items-center space-x-3 pl-4 border-l relative ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+        <div className={`flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l relative`}>
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
             className="flex items-center space-x-3 cursor-pointer group"
@@ -77,7 +101,7 @@ export default function Header({
                 {detailLabel}
               </p>
             </div>
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-900 text-yellow-400 font-bold border border-white shadow-sm group-hover:ring-2 ring-yellow-400 transition-all text-sm shrink-0 overflow-hidden">
+            <div className="rise-header-avatar flex items-center justify-center w-10 h-10 rounded-xl font-bold border shadow-sm group-hover:ring-2 ring-yellow-400 transition-all text-sm shrink-0 overflow-hidden">
               {currentUser?.avatarUrl ? (
                 <img src={currentUser.avatarUrl} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -95,7 +119,7 @@ export default function Header({
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
                 className={`absolute right-0 top-full mt-3 w-48 rounded-2xl border shadow-lg py-1.5 z-50 overflow-hidden transition-colors ${
-                  isDarkMode ? 'bg-[#0f172a] border-slate-800 text-white' : 'bg-white border-slate-100'
+                  isDarkMode ? 'bg-slate-850 border-slate-800 text-white' : 'bg-white border-slate-100'
                 }`}
               >
                 <button

@@ -169,9 +169,9 @@ export default function LoginPage({ onLoginSuccess, onBackToHome }) {
           {/* Header/Logo section */}
           <div className="relative z-10 flex flex-col items-center">
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-lg mb-3 overflow-hidden p-1">
-              <img src="/Logo.png" alt="Generation Rise Logo" className="w-full h-full object-contain logo-sharp" />
+              <img src="/rise-logo.png" alt="Rise Her" className="w-full h-full object-contain logo-sharp" />
             </div>
-            <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-blue-200">generation rise</span>
+            <span className="font-bold text-[10px] uppercase tracking-[0.3em] text-blue-200">Rise Her</span>
           </div>
 
           {/* Message section */}
@@ -369,7 +369,7 @@ export default function LoginPage({ onLoginSuccess, onBackToHome }) {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-3xl font-black text-blue-900 tracking-tight capitalize">welcome</h2>
+                  <h2 className="text-3xl font-black text-blue-900 tracking-tight">Welcome to Rise Her</h2>
                   <p className="text-xs text-slate-400 font-semibold mt-1">Login to your account to continue</p>
                 </div>
 
