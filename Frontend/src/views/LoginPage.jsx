@@ -444,8 +444,8 @@ export default function LoginPage({ onLoginSuccess }) {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-blue-900 tracking-tight capitalize flex items-center">
-                    <Sparkles size={20} className="text-yellow-500 mr-2" /> Developer presets
+                  <h2 className="text-2xl sm:text-3xl font-black text-blue-900 tracking-tight capitalize">
+                    Developer Presets
                   </h2>
                   <p className="text-xs text-slate-400 font-semibold mt-1">Select a profile to instantly auto-fill credentials and enter the portal.</p>
                 </div>
