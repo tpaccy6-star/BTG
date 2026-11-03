@@ -103,7 +103,7 @@ export default function LoginPage({ onLoginSuccess }) {
       if (forgotCodeInput === forgotCodeGenerated) {
         setForgotStep(3);
       } else {
-        setError('Incorrect verification code. Please check the code shown in the simulator helper.');
+        setError('Incorrect verification code. Please check the code shown in the password reset helper.');
       }
     } else if (forgotStep === 3) {
       if (forgotNewPass.length < 6) {

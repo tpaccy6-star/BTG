@@ -218,7 +218,7 @@ export default function TasksView({ currentUser, userRole, lessons, onUpdateUser
     >
       <div>
         <h1 className="text-4xl font-black text-blue-955 dark:text-white tracking-tight">Grading Panel</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Grade scholar task submissions and upload qualitative feedback logs.</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Grade scholar task submissions and provide feedback.</p>
       </div>      <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm">
         {actionMessage && (
           <div className="mb-6 bg-blue-50 dark:bg-blue-955/20 text-blue-900 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 p-4 rounded-xl text-xs font-bold text-center">
@@ -227,9 +227,9 @@ export default function TasksView({ currentUser, userRole, lessons, onUpdateUser
         )}
 
         {loading ? (
-          <div className="p-8 text-center text-slate-400 dark:text-slate-505 font-medium">Loading submissions logs...</div>
+          <div className="p-8 text-center text-slate-400 dark:text-slate-505 font-medium">Loading submissions...</div>
         ) : submissionsList.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 dark:text-slate-505 font-medium">No scholar submissions logged.</div>
+          <div className="p-8 text-center text-slate-400 dark:text-slate-505 font-medium">No scholar submissions to grade.</div>
         ) : (
           <div className="overflow-x-auto w-full -mx-4 sm:mx-0">
             <table className="w-full text-left min-w-[700px] sm:min-w-full">

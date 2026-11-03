@@ -147,7 +147,7 @@ export default function CurriculumView({ lessons, onUpdateUser }) {
       const data = await res.json();
       if (res.ok) {
         setResources(prev => [...prev, data.resource]);
-        setMessage('Handout document uploaded and attached.');
+        setMessage('Handout document uploaded.');
       } else {
         throw new Error(data.error || 'Failed to upload document.');
       }
@@ -323,7 +323,7 @@ export default function CurriculumView({ lessons, onUpdateUser }) {
           <h3 className="text-base font-bold text-slate-800 dark:text-white tracking-tight mb-2">Curriculum Units</h3>
           {activeLessons.length === 0 ? (
             <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800">
-              No lessons recorded under this pillar. Click 'Add Lesson' to begin.
+              No lessons recorded under this pillar. Click "Add Lesson" to begin.
             </div>
           ) : (
             activeLessons.map((lesson, idx) => (
@@ -355,7 +355,7 @@ export default function CurriculumView({ lessons, onUpdateUser }) {
         {/* Action Panel / Quick Details */}
         <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm h-fit">
           <h3 className="text-base font-bold text-slate-800 dark:text-white mb-3">Database Overview</h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6">Generation Rise curriculum runs serverless on an SQLite relational database. Modifications to lessons will immediately sync with the Scholar Learning Catalog.</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6">Generation Rise curriculum is built on an SQLite relational database. Modifications to lessons will immediately sync with the Scholar Learning Catalog.</p>
           <div className="space-y-4 text-[10px] font-bold text-slate-600 dark:text-slate-300">
             <div className="flex justify-between border-b border-slate-50 dark:border-slate-800 pb-3">
               <span>Total Curriculum Units</span>
@@ -496,7 +496,7 @@ export default function CurriculumView({ lessons, onUpdateUser }) {
                     <Wand2 size={16} className="text-blue-900 dark:text-yellow-450" />
                     <label className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-widest block">Visual Quiz Builder</label>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-medium mb-4">Add multiple-choice or true/false questions visually. This data will be auto-compiled into the interactive quiz engine.</p>
+                  <p className="text-[10px] text-slate-500 font-medium mb-4">Add multiple-choice or true/false questions visually. This data will be automatically compiled into the interactive quiz engine.</p>
                   <QuizBuilder quizData={quizData} setQuizData={setQuizData} />
                 </div>
 
@@ -601,7 +601,7 @@ export default function CurriculumView({ lessons, onUpdateUser }) {
 
                   {/* Video restrictions toggles */}
                   <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Video restrictions parameters</span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Video Playback Restrictions</span>
                     
                     <div className="grid grid-cols-2 gap-3">
                       {[

@@ -132,7 +132,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl font-black text-blue-955 dark:text-white tracking-tight">Attendance Record</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Monitoring your impact and engagement for NGO compliance.</p>
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Track your attendance and engagement for NGO compliance.</p>
           </div>
           <div className="bg-white dark:bg-slate-900 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center space-x-3">
             <div className="text-center">
@@ -166,7 +166,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                   {attendanceRecords.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="px-8 py-6 text-center text-slate-400 dark:text-slate-550 font-medium">No check-ins logged yet. Use the scan portal to self-register.</td>
+                      <td colSpan="3" className="px-8 py-6 text-center text-slate-400 dark:text-slate-550 font-medium">No check-ins recorded yet. Use the scan portal to self-register.</td>
                     </tr>
                   ) : (
                     attendanceRecords.map((at, i) => (
@@ -196,7 +196,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
                 <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-2xl shadow-sm flex items-center justify-center text-slate-300 dark:text-slate-600 group-hover:text-blue-900 dark:group-hover:text-yellow-450 transition-all">
                   <Scan size={36} strokeWidth={1} />
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium leading-relaxed">Simulate a QR Code scanning session at your classroom location to self-check-in.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium leading-relaxed">Scan the QR code at your classroom location to self-check-in.</p>
                 {actionMessage && (
                   <div className="text-xs font-bold text-blue-900 dark:text-yellow-455 bg-blue-50/80 dark:bg-blue-950/20 px-3 py-2 rounded-xl border border-blue-100/50 dark:border-blue-900/30">
                     {actionMessage}
@@ -225,7 +225,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
     >
       <div>
         <h1 className="text-4xl font-black text-blue-955 dark:text-white tracking-tight">Roster Registry</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Log session attendance marks for active scholars.</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Mark attendance for active scholars.</p>
       </div>
 
       <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -279,7 +279,7 @@ export default function AttendanceView({ currentUser, userRole, onUpdateUser }) 
                       <td className="px-4 sm:px-8 py-4 sm:py-5 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1.5">
                           <span className="font-black text-blue-900 dark:text-yellow-455 text-xs sm:text-sm">{ratio}%</span>
-                          <span className="text-[9px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium">({records.length} logged)</span>
+                          <span className="text-[9px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium">({records.length} recorded)</span>
                         </div>
                       </td>
                       <td className="px-4 sm:px-8 py-4 sm:py-5 text-right">

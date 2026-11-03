@@ -149,7 +149,7 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Welcome Back, {currentUser?.name}!</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">You are doing great in the {currentUser?.university || 'Scholar Program'}.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">You are doing great at {currentUser?.university || 'Scholar Program'}.</p>
         </div>
         <div className="flex space-x-3">
           <button className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-xs shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition-all flex items-center"><Share2 size={14} className="mr-1.5" /> Share Stats</button>

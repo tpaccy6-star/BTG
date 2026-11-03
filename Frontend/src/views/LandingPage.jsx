@@ -40,7 +40,7 @@ export default function LandingPage({ onEnterPortal }) {
   const impactData = [
     { value: '80%', suffix: 'Graduation Rate', desc: 'Graduate High School compared to 33% nationally', color: 'text-indigo-650' },
     { value: '400+', suffix: 'Enrolled Girls', desc: 'Active scholars in leadership development programs', color: 'text-yellow-600' },
-    { value: '95%', suffix: 'Alumni Score', desc: 'Alumni would recommend the program to other girls', color: 'text-green-600' },
+    { value: '95%', suffix: 'Alumni Satisfaction', desc: 'Alumni would recommend the program to other girls', color: 'text-green-600' },
     { value: '3,000', suffix: 'Parents Engaged', desc: 'Advancing their daughters\' education at home', color: 'text-blue-600' }
   ];
 
@@ -249,7 +249,7 @@ export default function LandingPage({ onEnterPortal }) {
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
               <h4 className="font-black text-blue-955 text-base">Impact Focus</h4>
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                We implement an impressive portfolio of educational and career development programs to provide young women and girls with the opportunities and resources they need to be what they want to be.
+                We implement an impressive portfolio of educational and career development programs to provide young women and girls with the opportunities and resources they need to pursue their goals.
               </p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function LandingPage({ onEnterPortal }) {
         <div className="relative z-10 max-w-7xl mx-auto space-y-16">
           <div className="text-center max-w-xl mx-auto space-y-3">
             <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">Measurable Results</span>
-            <h2 className="text-3xl font-black text-white tracking-tight">Our Direct Work in Numbers</h2>
+            <h2 className="text-3xl font-black text-white tracking-tight">Our Impact in Numbers</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -413,7 +413,7 @@ export default function LandingPage({ onEnterPortal }) {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200/80 pb-6">
             <div>
               <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest block">Interactive Help Desk</span>
-              <h2 className="text-3xl font-black text-blue-955 tracking-tight mt-1">System Operation & Walkthrough Guide</h2>
+              <h2 className="text-3xl font-black text-blue-955 tracking-tight mt-1">System Usage Guide</h2>
               <p className="text-slate-500 font-medium text-xs mt-1">Step-by-step checklists, searchable quick references, and tips to use the portal effectively.</p>
             </div>
             
@@ -576,7 +576,7 @@ export default function LandingPage({ onEnterPortal }) {
               <h3 className="font-black text-blue-955 text-sm flex items-center border-b border-slate-50 pb-3"><ThumbsUp size={16} className="mr-2 text-blue-900" /> Quick Start Guide</h3>
               <ul className="space-y-3 text-xs leading-relaxed text-slate-505 font-medium">
                 <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Credentials:</strong> Default logins are: \`scholar@generationrise.org\`, \`mentor@generationrise.org\`, \`teacher@generationrise.org\`, or \`admin@generationrise.org\` (all passwords are \`password123\`).</li>
-                <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Role Testing:</strong> To fully test the evaluation flow, submit homework in a scholar tab, log out, log in as a mentor, open the task in the Grading tab, and submit a score.</li>
+                <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Role Testing:</strong> To fully test the evaluation flow, submit homework as a scholar, log out, log in as a mentor, open the task in the Grading tab, and submit a score.</li>
               </ul>
             </div>
 
@@ -584,7 +584,7 @@ export default function LandingPage({ onEnterPortal }) {
             <div className="bg-white border border-slate-200/80 p-6 sm:p-8 rounded-[2rem] shadow-sm space-y-4">
               <h3 className="font-black text-blue-955 text-sm flex items-center border-b border-slate-50 pb-3"><AlertCircle size={16} className="mr-2 text-blue-900" /> Tips & Best Practices</h3>
               <ul className="space-y-3 text-xs leading-relaxed text-slate-505 font-medium">
-                <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Data Safety:</strong> Go to the System parameters tab inside the Admin panel to backup the SQLite database file prior to bulk updates.</li>
+                <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Data Safety:</strong> Go to the System Parameters tab inside the Admin panel to back up the SQLite database file before bulk updates.</li>
                 <li className="flex items-start"><ChevronRight size={14} className="mr-2 text-blue-900 shrink-0 mt-0.5" /> <strong>Interactive Chat:</strong> If you are unsure how a feature functions, click the Sparkles icon on the bottom right and ask the AI Platform Assistant for guidelines!</li>
               </ul>
             </div>
@@ -641,7 +641,7 @@ export default function LandingPage({ onEnterPortal }) {
               <span className="ml-3 font-display text-lg font-bold text-white">Rise Her</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-medium max-w-sm">
-              Inspiring & empowering young people through education. Promoting adolescent health, social gender equity, and economic empowerment.
+              Inspiring & empowering young people through education. Promoting adolescent health, gender equity, and economic empowerment.
             </p>
           </div>
 
