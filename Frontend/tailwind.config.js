@@ -1,10 +1,11 @@
 import colors from 'tailwindcss/colors';
 
-const defaultColors = Object.fromEntries(
-  Object.entries(colors).filter(
-    ([name]) => !['lightBlue', 'warmGray', 'trueGray', 'coolGray', 'blueGray'].includes(name),
-  ),
-);
+// Delete deprecated color aliases directly so their warning getters are not triggered
+delete colors.lightBlue;
+delete colors.warmGray;
+delete colors.trueGray;
+delete colors.coolGray;
+delete colors.blueGray;
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -15,7 +16,7 @@ export default {
   ],
   theme: {
     colors: {
-      ...defaultColors,
+      ...colors,
       blue: {
         50: '#eff4fb',
         100: '#dce7f5',
