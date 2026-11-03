@@ -205,9 +205,10 @@ async function notifyUser(userId, title, message, link, type) {
 }
 
 async function notifyStaff(title, message, link, type) {
+  // Mentors are NOT allowed to see beneficiary assistance/support requests
   const staff = await User.findAll({
     attributes: ['id'],
-    where: { role: { [Op.in]: [...staffRoles] } }
+    where: { role: { [Op.in]: ['admin', 'teacher'] } }
   });
   await Promise.all(staff.map((person) => notifyUser(person.id, title, message, link, type)));
 }
@@ -851,6 +852,7 @@ router.patch('/mentorship/:mentorshipId', asyncRoute(async (req, res) => {
 
 // Support and financial assistance
 router.get('/financial-assistance', asyncRoute(async (req, res) => {
+  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to view beneficiary requests.');
   if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
   const records = await ProgramAssistance.findAll({
     where: isStaff(req.user) ? {} : { beneficiaryId: req.user.id },
@@ -861,6 +863,7 @@ router.get('/financial-assistance', asyncRoute(async (req, res) => {
 }));
 
 router.get('/financial-assistance/summary', asyncRoute(async (req, res) => {
+  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to view beneficiary requests.');
   if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
   const records = await ProgramAssistance.findAll({
     where: isStaff(req.user) ? {} : { beneficiaryId: req.user.id },
@@ -877,6 +880,7 @@ router.get('/financial-assistance/summary', asyncRoute(async (req, res) => {
 }));
 
 router.post('/financial-assistance', asyncRoute(async (req, res) => {
+  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to manage beneficiary requests.');
   const { beneficiary_id: suppliedId, support_type: supportType, amount, currency = 'RWF',
     support_date: suppliedDate, details } = req.body || {};
   const beneficiaryId = req.user.role === 'scholar' ? req.user.id : suppliedId;
@@ -908,6 +912,7 @@ router.post('/financial-assistance', asyncRoute(async (req, res) => {
 }));
 
 router.patch('/financial-assistance/:id', asyncRoute(async (req, res) => {
+  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to manage beneficiary requests.');
   const record = await ProgramAssistance.findByPk(req.params.id);
   if (!record) return fail(res, 404, 'Support record not found.');
   if (req.user.role === 'scholar') {
@@ -954,6 +959,7 @@ router.get('/academic-results/export', asyncRoute(async (req, res) => {
 }));
 
 router.get('/financial-assistance/export', asyncRoute(async (req, res) => {
+  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied.');
   if (!requireStaff(req, res)) return;
   const records = await ProgramAssistance.findAll({
     include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email'] }],

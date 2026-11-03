@@ -141,8 +141,11 @@ export default function App() {
 
   useEffect(() => {
     if (!isLoggedIn || userRole !== 'mentor') return;
-    if (currentView !== 'chat') setCurrentView('chat');
-    if (window.location.hash !== '#/chat') window.location.hash = '#/chat';
+    const allowedMentorViews = ['chat', 'profile', 'announcements'];
+    if (!allowedMentorViews.includes(currentView)) {
+      setCurrentView('chat');
+      window.location.hash = '#/chat';
+    }
   }, [isLoggedIn, userRole, currentView]);
 
   // --- 3. Load curriculum catalog once authenticated ---
