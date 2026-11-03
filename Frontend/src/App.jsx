@@ -9,7 +9,6 @@ import { AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import LandingPage from './views/LandingPage';
 import LoginPage from './views/LoginPage';
 import ScholarDashboard from './views/ScholarDashboard';
 import MentorDashboard from './views/MentorDashboard';
@@ -45,9 +44,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState('scholar');
   const [currentView, setCurrentView] = useState('dashboard');
-  const [showPortalLogin, setShowPortalLogin] = useState(() => {
-    return localStorage.getItem('showPortalLogin') === 'true';
-  });
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -121,11 +117,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
-      if (hash === '#/login') {
-        setShowPortalLogin(true);
-      } else if (hash === '#/home' || !hash) {
-        setShowPortalLogin(false);
-      } else {
+      if (hash !== '#/login' && hash !== '#/home' && hash) {
         const view = hash.replace('#/', '');
         if ([
           'dashboard', 'catalog', 'lesson', 'tasks', 'attendance', 'programs',
@@ -142,6 +134,12 @@ export default function App() {
     handleHashChange(); // Sync initial mount
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn && !loadingSession && window.location.hash !== '#/login') {
+      window.location.hash = '#/login';
+    }
+  }, [isLoggedIn, loadingSession]);
 
   // --- 3. Load curriculum catalog once authenticated ---
   useEffect(() => {
@@ -194,8 +192,6 @@ export default function App() {
     setCurrentUser(data.user);
     setUserRole(data.user.role);
     setIsLoggedIn(true);
-    setShowPortalLogin(false);
-    localStorage.setItem('showPortalLogin', 'false');
     setCurrentView('dashboard');
     window.location.hash = '#/dashboard';
   };
@@ -204,8 +200,6 @@ export default function App() {
     localStorage.removeItem('token');
     setCurrentUser(null);
     setIsLoggedIn(false);
-    setShowPortalLogin(true);
-    localStorage.setItem('showPortalLogin', 'true');
     setCurrentView('dashboard');
     window.location.hash = '#/login';
   };
@@ -226,28 +220,7 @@ export default function App() {
 
   // --- Auth layout guards ---
   if (!isLoggedIn) {
-    const isMobile = window.innerWidth < 1024;
-    if (showPortalLogin || isMobile) {
-      return (
-        <LoginPage 
-          onLoginSuccess={handleLoginSuccess} 
-          onBackToHome={() => {
-            setShowPortalLogin(false);
-            localStorage.setItem('showPortalLogin', 'false');
-            window.location.hash = '#/home';
-          }} 
-        />
-      );
-    }
-    return (
-      <LandingPage 
-        onEnterPortal={() => {
-          setShowPortalLogin(true);
-          localStorage.setItem('showPortalLogin', 'true');
-          window.location.hash = '#/login';
-        }} 
-      />
-    );
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
   // Mobile Bottom Navigation Component

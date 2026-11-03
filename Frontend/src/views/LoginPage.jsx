@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { 
   GraduationCap, Users, Award, Shield, Flame, 
-  ArrowLeft, Lock, Mail, AlertCircle, Sparkles,
+  Lock, Mail, AlertCircle, Sparkles,
   Eye, EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function LoginPage({ onLoginSuccess, onBackToHome }) {
+export default function LoginPage({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -202,15 +202,6 @@ export default function LoginPage({ onLoginSuccess, onBackToHome }) {
 
         {/* Right Side: Form / Presets panel */}
         <div className="w-full md:w-[58%] bg-white p-8 sm:p-12 flex flex-col justify-center relative min-h-[400px]">
-          
-          {/* Back to Landing button in top right */}
-          <button 
-            onClick={onBackToHome}
-            className="absolute top-6 right-6 px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-505 hover:text-slate-800 rounded-full border border-slate-200/60 font-bold text-[9px] uppercase tracking-wider transition-all flex items-center"
-          >
-            <ArrowLeft size={10} className="mr-1" /> Back to Home
-          </button>
-
           <AnimatePresence mode="wait">
             {showForgotPassword ? (
               <motion.div
