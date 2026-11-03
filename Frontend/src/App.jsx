@@ -230,9 +230,13 @@ export default function App() {
 
   // Mobile Bottom Navigation Component
   const MobileNavbar = () => {
-    if (userRole === 'mentor') return null;
     let items = [];
-    if (userRole === 'scholar' || userRole === 'beneficiary') {
+    if (userRole === 'mentor') {
+      items = [
+        { id: 'chat', icon: MessageCircle, label: 'Messages' },
+        { id: 'profile', icon: User, label: 'Profile' }
+      ];
+    } else if (userRole === 'scholar' || userRole === 'beneficiary') {
       items = [
         { id: 'dashboard', icon: Home, label: 'Dashboard' },
         { id: 'catalog', icon: BookOpen, label: 'Catalog' },
@@ -327,9 +331,17 @@ export default function App() {
             <div className="w-full h-full">
               <AnimatePresence mode="wait">
                 {userRole === 'mentor' ? (
-                  currentView === 'chat' && (
-                    <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
-                  )
+                  <>
+                    {currentView === 'chat' && (
+                      <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
+                    )}
+                    {currentView === 'profile' && (
+                      <ProfileView currentUser={currentUser} onLogout={handleLogout} onUpdateUser={refreshUserSession} key="profile" />
+                    )}
+                    {currentView === 'announcements' && (
+                      <AnnouncementsView currentUser={currentUser} userRole={userRole} key="announcements" />
+                    )}
+                  </>
                 ) : (
                   <>
                 {currentView === 'dashboard' && (userRole === 'scholar' || userRole === 'beneficiary') && (

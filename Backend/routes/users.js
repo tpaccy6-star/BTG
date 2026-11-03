@@ -169,4 +169,46 @@ router.delete('/admin/:id', authenticateToken, async (req, res) => {
   }
 });
 
+
+// 11e. Change Password (All Users except Admin)
+router.post('/change-password', authenticateToken, async (req, res) => {
+  // Rule: each and everyone in this project except admin (not staff) is able to change initial password
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'Master Administrator passwords cannot be changed from the user portal.' });
+  }
+
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Please provide both current password and new password.' });
+  }
+
+  if (confirmPassword && newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'New password and confirmation do not match.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+  }
+
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const isValid = bcrypt.compareSync(currentPassword, user.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Incorrect current password. Please check your initial password.' });
+    }
+
+    user.passwordHash = bcrypt.hashSync(newPassword, 10);
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully!' });
+  } catch (err) {
+    console.error('Password change error:', err);
+    res.status(500).json({ error: 'Failed to update password.' });
+  }
+});
+
 export default router;

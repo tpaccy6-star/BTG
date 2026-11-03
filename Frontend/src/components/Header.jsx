@@ -68,13 +68,11 @@ export default function Header({
             <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Generation Rise Foundation</span>
           </div>
         </div>
-        {userRole !== 'mentor' && (
-          <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
-            <span className="text-slate-500">Workspace</span>
-            <span className="text-slate-300">/</span>
-            <span className="font-bold text-slate-800">{viewLabel}</span>
-          </div>
-        )}
+        <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
+          <span className="text-slate-500">Workspace</span>
+          <span className="text-slate-300">/</span>
+          <span className="font-bold text-slate-800">{viewLabel}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
@@ -90,7 +88,7 @@ export default function Header({
         </button>
 
         {/* Real Notification Bell */}
-        {userRole !== 'mentor' && <NotificationBell />}
+        <NotificationBell />
         
         {/* Profile Dropdown Corner */}
         <div className={`flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l relative`}>
@@ -129,7 +127,7 @@ export default function Header({
                   isDarkMode ? 'bg-slate-850 border-slate-800 text-white' : 'bg-white border-slate-100'
                 }`}
               >
-                {userRole !== 'mentor' && <button
+                <button
                   onClick={() => {
                     setCurrentView('profile');
                     window.location.hash = '#/profile';
@@ -141,7 +139,7 @@ export default function Header({
                 >
                   <User size={14} className="text-slate-400" />
                   <span>View Profile</span>
-                </button>}
+                </button>
                 {userRole !== 'mentor' && <button
                   onClick={() => {
                     setCurrentView('settings');

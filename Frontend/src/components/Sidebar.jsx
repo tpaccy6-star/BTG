@@ -36,6 +36,7 @@ export default function Sidebar({
   } else if (userRole === 'mentor') {
     items = [
       { id: 'chat', icon: MessageCircle, label: 'Messages' },
+      { id: 'profile', icon: User, label: 'Profile' },
     ];
   } else if (userRole === 'teacher') {
     items = [
