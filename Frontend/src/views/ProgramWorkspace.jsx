@@ -8,7 +8,6 @@ import {
   HeartHandshake,
   LoaderCircle,
   MessageCircle,
-  RefreshCw,
   Sparkles,
   Users,
 } from 'lucide-react';
@@ -341,7 +340,7 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
     <section className="mx-auto w-full max-w-7xl">
       <div className="mb-6">
         <p className="text-[10px] font-black uppercase tracking-[0.12em] text-blue-800 dark:text-yellow-400 sm:text-xs sm:tracking-[0.2em]">
-          RISE HER · Generation Rise
+          RISE HER · Generation Rise Foundation
         </p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -349,7 +348,7 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">{title[1]}</p>
           </div>
           <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
-            {isScholar ? 'Participant workspace' : 'Program workspace'}
+            {isScholar ? 'Rise Her Scholar Workspace' : 'Generation Rise Foundation Workspace'}
           </span>
         </div>
       </div>
@@ -428,9 +427,6 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
                 <ArrowDownToLine size={15} /> Export CSV
               </button>
             )}
-            <button type="button" onClick={loadData} disabled={isLoading} className={quietButtonClass}>
-              <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} /> Refresh
-            </button>
           </div>
 
           {showForm && (

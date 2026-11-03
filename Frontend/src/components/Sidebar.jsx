@@ -30,7 +30,6 @@ export default function Sidebar({
       { id: 'catalog', icon: BookOpen, label: 'Catalog' },
       { id: 'tasks', icon: FileText, label: 'Tasks' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'attendance', icon: CheckCircle2, label: 'Attendance' },
       { id: 'chat', icon: MessageCircle, label: 'Mentor Chat' },
       { id: 'profile', icon: User, label: 'Profile' },
     ];
@@ -39,7 +38,6 @@ export default function Sidebar({
       { id: 'dashboard', icon: Home, label: 'Mentor Hub' },
       { id: 'scholars', icon: Users, label: 'My Scholars' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'attendance', icon: ListChecks, label: 'Attendance' },
       { id: 'grading', icon: ListChecks, label: 'Grading' },
       { id: 'chat', icon: MessageCircle, label: 'Messages' },
     ];
@@ -48,7 +46,6 @@ export default function Sidebar({
       { id: 'dashboard', icon: Home, label: 'Global Hub' },
       { id: 'cohorts', icon: Users, label: 'All Cohorts' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'attendance', icon: Users, label: 'Attendance' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
       { id: 'announcements', icon: MessageCircle, label: 'Broadcasts' },
     ];
@@ -57,7 +54,6 @@ export default function Sidebar({
       { id: 'dashboard', icon: Shield, label: 'Overview' },
       { id: 'users', icon: Users, label: 'User Directory' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'attendance', icon: BarChart, label: 'NGO Reports' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
       { id: 'settings', icon: Settings, label: 'System' },
     ];
@@ -81,7 +77,7 @@ export default function Sidebar({
               Rise Her
             </span>
             <span className="rise-brand-subtitle mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em]">
-              Hanga Ejo Route
+              Generation Rise Foundation
             </span>
           </div>
         )}

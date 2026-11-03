@@ -6,14 +6,16 @@ import {
   Database, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LegalModal from '../components/LegalModal';
 
 export default function LandingPage({ onEnterPortal }) {
+  const [legalModalOpen, setLegalModalOpen] = useState(false);
+  const [legalActiveTab, setLegalActiveTab] = useState('privacy');
   // Guide Sections checklist state
   const [completedSections, setCompletedSections] = useState({
     start: false,
     curriculum: false,
     tasks: false,
-    attendance: false,
     chat: false
   });
 
@@ -44,11 +46,11 @@ export default function LandingPage({ onEnterPortal }) {
     { value: '3,000', suffix: 'Parents Engaged', desc: 'Advancing their daughters\' education at home', color: 'text-blue-600' }
   ];
 
-  // Programs list
+  // Programs list under Generation Rise Foundation
   const programList = [
+    { title: 'Rise Her Project (Flagship)', desc: 'The central digital ecosystem empowering university scholars with leadership, tech, and academic tools.', icon: Award },
     { title: 'Her Voice Matters', desc: 'Focuses on communication, public expression, and digital presence.', icon: GraduationCap },
     { title: 'Ignite Program', desc: 'Drives leadership skills and confidence in young change-makers.', icon: Flame },
-    { title: 'Be That Girl (BTG)', desc: 'Prepares university scholars with English, life, and tech skills.', icon: Award },
     { title: 'Empowering Women Scholars', desc: 'Supports young women pursuing higher education and careers.', icon: Users }
   ];
 
@@ -57,7 +59,6 @@ export default function LandingPage({ onEnterPortal }) {
     { id: 'start', title: 'Onboarding & Quick Start', category: 'onboard', content: 'Sign up or login via the credentials provided by the NGO directors. Use the "Enter Portal" button to access the user validation desk.', icon: HelpCircle },
     { id: 'curriculum', title: 'Curriculum & Lectures', category: 'catalog', content: 'Access your coursework inside the "Catalog" tab. Read handouts, view sequence lock details, and watch video lectures past 90% to mark tasks complete.', icon: BookOpen },
     { id: 'tasks', title: 'Homework Submissions', category: 'tasks', content: 'Upload files (PDF, DOCX, or images up to 5MB) on the lesson desk right-hand sidebar. Your submissions will immediately flag to your assigned mentor.', icon: FileText },
-    { id: 'attendance', title: 'QR Check-In & Streak points', category: 'attendance', content: 'Mark daily attendance via the Attendance dashboard to keep your daily study streak going and earn streak certificates.', icon: CheckCircle2 },
     { id: 'chat', title: 'Direct Mentor Messaging', category: 'chat', content: 'Ask questions or request guidance by choosing "Mentor Chat" to reach your mentor in a real-time messaging layout.', icon: Users }
   ];
 
@@ -130,7 +131,10 @@ export default function LandingPage({ onEnterPortal }) {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50 px-6 lg:px-16 py-4 flex items-center justify-between no-print">
         <div className="flex items-center">
           <img src="/rise-logo.png" alt="Rise Her" className="w-12 h-12 object-contain shrink-0 logo-sharp" />
-          <span className="ml-3 font-display text-lg font-bold text-blue-900">Rise Her</span>
+          <div className="ml-3">
+            <span className="font-display text-lg font-bold text-blue-900 block leading-tight">Rise Her</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Generation Rise Foundation</span>
+          </div>
         </div>
         
         {/* Desktop Nav links */}
@@ -159,14 +163,14 @@ export default function LandingPage({ onEnterPortal }) {
           className="space-y-6"
         >
           <span className="text-xs font-black text-blue-900 uppercase tracking-[0.2em] bg-blue-50 px-4 py-2 rounded-full border border-blue-100 inline-block">
-            Rise Her · Empowerment Ecosystem
+            Rise Her Project · Generation Rise Foundation
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-blue-955 leading-tight tracking-tight">
             Inspiring & empowering <br />
             <span className="text-blue-900 bg-gradient-to-r from-blue-900 to-indigo-755 bg-clip-text text-transparent">young women.</span>
           </h1>
           <p className="text-slate-500 text-base sm:text-lg font-medium leading-relaxed max-w-xl">
-            Rise Her is an innovative learning and empowerment platform advancing gender equity and nurturing the next generation of female leaders in Rwanda.
+            Rise Her is a transformative project created by the Generation Rise Foundation to advance gender equity, provide structured academic learning, and nurture the next generation of female leaders in Rwanda.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <button 
@@ -217,7 +221,7 @@ export default function LandingPage({ onEnterPortal }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Attendance Rate</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Module Mastery</span>
                 <span className="font-black text-blue-955 text-lg block mt-1">92%</span>
               </div>
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
@@ -233,23 +237,23 @@ export default function LandingPage({ onEnterPortal }) {
       <section id="about" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 border-t border-slate-200/40 bg-white no-print">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-5 space-y-4">
-            <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg">Our Roots</span>
-            <h2 className="text-3xl lg:text-4xl font-black text-blue-955 tracking-tight leading-tight">About Rise Her</h2>
+            <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg">Foundation & Project</span>
+            <h2 className="text-3xl lg:text-4xl font-black text-blue-955 tracking-tight leading-tight">About Generation Rise & Rise Her</h2>
             <p className="text-slate-500 leading-relaxed text-sm font-medium">
-              Rise Her supports girls and young women through education, leadership development, and career opportunities, guided by a community of passionate women and program graduates.
+              Generation Rise is a dedicated foundation advancing gender equity and female leadership across Rwanda. Under the foundation, the <strong className="text-blue-900">Rise Her Project</strong> delivers a comprehensive digital learning, mentorship, and assistance portal for university scholars.
             </p>
           </div>
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
-              <h4 className="font-black text-blue-950 text-base">Innovative Philosophy</h4>
+              <h4 className="font-black text-blue-950 text-base">Generation Rise Foundation</h4>
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Rise Her embraces an innovative, multi-faceted approach to achieving gender equity and empowering the next generation of female leaders in the region.
+                The governing non-profit foundation providing program resources, partnerships, mentor networks, and community outreach.
               </p>
             </div>
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-3">
-              <h4 className="font-black text-blue-955 text-base">Impact Focus</h4>
+              <h4 className="font-black text-blue-955 text-base">Rise Her Project</h4>
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                We implement an impressive portfolio of educational and career development programs to provide young women and girls with the opportunities and resources they need to be what they want to be.
+                The flagship project and digital platform connecting scholars to interactive lectures, grading, streaks, and mentorship.
               </p>
             </div>
           </div>
@@ -259,9 +263,9 @@ export default function LandingPage({ onEnterPortal }) {
       {/* Programs List */}
       <section id="programs" className="max-w-7xl mx-auto px-6 lg:px-16 py-24 space-y-12 no-print">
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Active Development</span>
-          <h2 className="text-3xl font-black text-blue-955 tracking-tight">Our Popular Programs</h2>
-          <p className="text-slate-505 font-medium text-sm">Promoting education, health, and economic empowerment for girls.</p>
+          <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Generation Rise Foundation</span>
+          <h2 className="text-3xl font-black text-blue-955 tracking-tight">Programs Under Generation Rise</h2>
+          <p className="text-slate-505 font-medium text-sm">Empowering girls and scholars through education, mentorship, and economic advancement.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,8 +319,8 @@ export default function LandingPage({ onEnterPortal }) {
             </div>
             <div className="space-y-6">
               {[
-                { quote: "This platform completely changed how I study. The interactive videos and instant quiz feedback make learning complex math and logic exciting and accessible.", author: "Diane T.", role: "BTG Scholar (Computer & Math)" },
-                { quote: "Being able to upload my Agri-Economics projects and receive detailed scoring and remarks from my mentor helped me secure an internship in Kigali.", author: "Faith U.", role: "BTG Scholar (Agri-Economics)" }
+                { quote: "This platform completely changed how I study. The interactive videos and instant quiz feedback make learning complex math and logic exciting and accessible.", author: "Diane T.", role: "Rise Her Scholar (Computer & Math)" },
+                { quote: "Being able to upload my Agri-Economics projects and receive detailed scoring and remarks from my mentor helped me secure an internship in Kigali.", author: "Faith U.", role: "Rise Her Scholar (Agri-Economics)" }
               ].map((t, idx) => (
                 <div key={idx} className="bg-slate-50/50 border border-slate-200/60 p-6 rounded-3xl shadow-sm space-y-3">
                   <p className="text-xs text-slate-505 italic font-medium leading-relaxed">"{t.quote}"</p>
@@ -451,13 +455,12 @@ export default function LandingPage({ onEnterPortal }) {
             </div>
 
             {/* Interactive checklist boxes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
               {[
                 { id: 'start', title: '1. Onboarding' },
                 { id: 'curriculum', title: '2. Study Catalog' },
                 { id: 'tasks', title: '3. Submit Tasks' },
-                { id: 'attendance', title: '4. Check-Ins' },
-                { id: 'chat', title: '5. Direct Chat' }
+                { id: 'chat', title: '4. Direct Chat' }
               ].map(sec => {
                 const isDone = completedSections[sec.id];
                 return (
@@ -598,7 +601,7 @@ export default function LandingPage({ onEnterPortal }) {
               {[
                 { q: 'How do I perform a database backup?', a: 'Log in as an Admin, visit Settings (System Controls), open the System Param tab, and click Create Full Backup. Download your copy directly.' },
                 { q: 'What files are supported for scholar tasks?', a: 'Students can upload PDF worksheets, DOCX reports, or PNG/JPEG image files. File sizes must remain under 5MB per submission.' },
-                { q: 'Can students check in their own attendance?', a: 'Yes! Scholars can log their own presence for the current date inside the Attendance dashboard by scanning the check-in simulator. They are securely blocked from marking attendance for anyone else.' }
+                { q: 'How do I claim my program certificate?', a: 'Once you complete all required course modules and submit your assignments, your official verified certificate unlocks on your Scholar Dashboard.' }
               ].map((faq, idx) => {
                 const isOpen = openFaqIdx === idx;
                 return (
@@ -638,10 +641,13 @@ export default function LandingPage({ onEnterPortal }) {
           <div className="lg:col-span-5 space-y-4">
             <div className="flex items-center">
               <img src="/rise-logo.png" alt="Rise Her" className="w-12 h-12 object-contain invert brightness-0 logo-sharp" />
-              <span className="ml-3 font-display text-lg font-bold text-white">Rise Her</span>
+              <div className="ml-3">
+                <span className="font-display text-lg font-bold text-white block leading-tight">Rise Her</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Generation Rise Foundation</span>
+              </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-medium max-w-sm">
-              Inspiring & empowering young people through education. Promoting adolescent health, social gender equity, and economic empowerment.
+              Rise Her is a dedicated project under the Generation Rise Foundation promoting adolescent health, academic excellence, gender equity, and leadership for young women.
             </p>
           </div>
 
@@ -675,13 +681,21 @@ export default function LandingPage({ onEnterPortal }) {
         </div>
 
         <div className="max-w-7xl mx-auto pt-8 mt-12 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-          <p>© 2026 Rise Her. All rights reserved.</p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="hover:underline">Imprint</a>
-            <a href="#" className="hover:underline">Privacy Policy</a>
+          <p>© 2026 Generation Rise Foundation · Rise Her Project. All rights reserved.</p>
+          <div className="flex space-x-5 mt-4 md:mt-0">
+            <button type="button" onClick={() => { setLegalActiveTab('support'); setLegalModalOpen(true); }} className="hover:underline hover:text-white transition-colors cursor-pointer">Support</button>
+            <button type="button" onClick={() => { setLegalActiveTab('privacy'); setLegalModalOpen(true); }} className="hover:underline hover:text-white transition-colors cursor-pointer">Privacy Policy</button>
+            <button type="button" onClick={() => { setLegalActiveTab('terms'); setLegalModalOpen(true); }} className="hover:underline hover:text-white transition-colors cursor-pointer">Terms of Service</button>
           </div>
         </div>
       </footer>
+
+      <LegalModal 
+        isOpen={legalModalOpen}
+        onClose={() => setLegalModalOpen(false)}
+        activeTab={legalActiveTab}
+        onSelectTab={setLegalActiveTab}
+      />
     </div>
   );
 }

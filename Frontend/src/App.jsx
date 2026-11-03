@@ -15,7 +15,6 @@ import ScholarDashboard from './views/ScholarDashboard';
 import MentorDashboard from './views/MentorDashboard';
 import TeacherDashboard from './views/TeacherDashboard';
 import AdminDashboard from './views/AdminDashboard';
-import AttendanceView from './views/AttendanceView';
 import CatalogView from './views/CatalogView';
 import LessonView from './views/LessonView';
 import TasksView from './views/TasksView';
@@ -128,7 +127,7 @@ export default function App() {
       } else {
         const view = hash.replace('#/', '');
         if ([
-          'dashboard', 'catalog', 'lesson', 'tasks', 'attendance', 'programs',
+          'dashboard', 'catalog', 'lesson', 'tasks', 'programs',
           'chat', 'profile', 'scholars', 'grading', 'users', 
           'curriculum', 'reports', 'academic-results', 'friendly-weeks',
           'mentorship', 'assistance', 'settings', 'cohorts', 'announcements'
@@ -170,7 +169,7 @@ export default function App() {
     fetchLessons();
   }, [isLoggedIn]);
 
-  // Refresh user object (e.g. following upload or attendance log)
+  // Refresh user object (e.g. following task upload or profile update)
   const refreshUserSession = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -267,7 +266,6 @@ export default function App() {
       items = [
         { id: 'dashboard', icon: Home, label: 'Hub' },
         { id: 'tasks', icon: FileText, label: 'Grading' },
-        { id: 'attendance', icon: CheckCircle2, label: 'Attendance' },
         { id: 'chat', icon: MessageCircle, label: 'DMs' },
         { id: 'programs', icon: BookOpen, label: 'Programs' },
         { id: 'profile', icon: User, label: 'Profile' }
@@ -360,9 +358,6 @@ export default function App() {
                   <AdminDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="admin-dash" />
                 )}
                 
-                {currentView === 'attendance' && (
-                  <AttendanceView currentUser={currentUser} userRole={userRole} onUpdateUser={refreshUserSession} key="attendance" />
-                )}
                 {currentView === 'catalog' && (
                   <CatalogView currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} onSelectLesson={setSelectedLessonId} key="catalog" />
                 )}
@@ -413,7 +408,7 @@ export default function App() {
               </AnimatePresence>
             </div>
           </div>
-          <Footer isDarkMode={isDarkMode} />
+          <Footer isDarkMode={isDarkMode} setCurrentView={setCurrentView} />
         </div>
 
         {/* Mobile bottom nav layout */}

@@ -89,11 +89,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
   };
 
   // Compute scholar stats
-  const attendanceRecords = currentUser?.attendanceRecords || [];
-  const totalSessions = attendanceRecords.length;
-  const presentCount = attendanceRecords.filter(r => r.status === 'present').length;
-  const lateCount = attendanceRecords.filter(r => r.status === 'late').length;
-  const attendanceRate = totalSessions > 0 ? Math.round(((presentCount + lateCount) / totalSessions) * 100) : 92;
+  const completedTasksCount = currentUser?.submissions?.filter(s => s.status === 'completed' || s.status === 'graded')?.length || 0;
 
   const initials = currentUser?.initials || currentUser?.name?.slice(0, 2).toUpperCase() || 'AJ';
   const name = currentUser?.name || 'Alex Johnson';
@@ -152,8 +148,8 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           {/* Streaks & Progress Summary */}
           <div className="grid grid-cols-2 gap-4 w-full">
             <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80">
-              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Attendance</p>
-              <p className="text-xl font-black text-blue-955 dark:text-white mt-1">{attendanceRate}%</p>
+              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tasks Done</p>
+              <p className="text-xl font-black text-blue-955 dark:text-white mt-1">{completedTasksCount}</p>
             </div>
             <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80">
               <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Active Streak</p>

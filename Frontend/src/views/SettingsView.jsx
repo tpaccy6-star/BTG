@@ -926,7 +926,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-bold text-xs text-slate-800 dark:text-white">NGO Compliance Master Logs</p>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Auto-forward attendance registry summaries to master NGO archives weekly.</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Auto-forward scholar progress summaries to master NGO archives weekly.</p>
                     </div>
                     <button onClick={() => setIsComplianceEnabled(!isComplianceEnabled)} className={`w-12 h-6 rounded-full transition-all relative ${isComplianceEnabled ? 'bg-blue-900 dark:bg-yellow-450' : 'bg-slate-200 dark:bg-slate-800'}`}>
                       <div className={`w-4 h-4 bg-white dark:bg-slate-950 rounded-full shadow absolute top-1 transition-all ${isComplianceEnabled ? 'right-1' : 'left-1'}`} />

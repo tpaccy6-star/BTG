@@ -1,4 +1,8 @@
-# Generation Rise Portal
+# Rise Her · Generation Rise Foundation
+
+## Organization & Project Architecture
+* **Generation Rise** is the **Foundation** (the parent NGO organization advancing gender equity and female leadership in Rwanda).
+* **Rise Her** is the **Name of this Project** (the flagship initiative and digital workspace empowering university scholars with digital curriculum, mentorship, and assistance).
 
 ## Problem Statement
 There is a critical need to support gender equity and empower the next generation of female leaders in Rwanda. However, there often exists a gap in communication, resource accessibility, and structured learning between scholars, their mentors, educators, and the administrators running these programs. Without a unified, accessible, and engaging platform, it is challenging to deliver curriculum efficiently, track scholar progress, provide real-time mentorship, and manage system operations at scale.
@@ -86,10 +90,10 @@ You will need Git and the current Node.js LTS release installed.
 
 4. Open the local URL printed by Vite (usually `http://localhost:5173`). The frontend proxies API requests to the backend at `http://localhost:5000`. SQLite is used by default for local development; set `DATABASE_URL` in the backend environment to use PostgreSQL.
 
-## RISE HER Program Suite Integration
+## Rise Her Project Integration
 
-The RISE HER experience is integrated into the existing Generation Rise portal, using one frontend, API, database, and sign-in. The shared interface uses the orange-red, navy, coral, and gold palette; Quicksand headings; Nunito Sans body type; and the Generation Rise brand mark while retaining BTG's learning, cohort, profile, and mentor-chat workflows.
+The **Rise Her** project is integrated into the Generation Rise Foundation portal, using one unified frontend, API, database, and sign-in. The interface uses the Generation Rise visual identity, Quicksand headings, Nunito Sans body type, and the foundation brand mark while managing learning catalogs, cohorts, scholar profiles, mentor chats, and program assistance.
 
 The program API is mounted at `/api/program`. It supports program dashboards; cohort member management; report submission, staff review, attachments, and AI-assisted drafting; academic results and reviews; Friendly Weeks pair generation and management; mentorship plans; support requests and assistance records; notifications through the existing notification API; and CSV exports. The React Program Suite reads and writes these APIs.
 
-BTG accounts remain the source of truth: `scholar` accounts are participants, while `mentor`, `teacher`, and `admin` accounts have program staff access. Program-specific tables are added through Sequelize synchronization to the configured BTG database (SQLite locally, PostgreSQL when `DATABASE_URL` is set). The separate Generation Rise database and account records are not imported; no external database or Neon project was provisioned.
+Portal accounts serve all roles: `scholar` accounts are participants, while `mentor`, `teacher`, and `admin` accounts have program staff access. Program-specific tables are synchronized through Sequelize to the configured database (SQLite locally, PostgreSQL when `DATABASE_URL` is set).

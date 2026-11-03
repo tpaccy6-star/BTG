@@ -26,7 +26,6 @@ export default function Header({
     catalog: 'Learning catalog',
     lesson: 'Lesson desk',
     tasks: 'Tasks & submissions',
-    attendance: 'Attendance',
     chat: 'Mentor chat',
     profile: 'My profile',
     scholars: 'Scholar roster',
@@ -62,7 +61,7 @@ export default function Header({
           </div>
           <div className="leading-tight">
             <h1 className="font-display font-bold text-sm text-blue-900">Rise Her</h1>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Learning workspace</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Generation Rise Foundation</span>
           </div>
         </div>
         <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">

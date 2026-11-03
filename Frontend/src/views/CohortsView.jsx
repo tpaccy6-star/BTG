@@ -15,7 +15,6 @@ export default function CohortsView({ currentUser, userRole }) {
   const [cohortScholars, setCohortScholars] = useState('0');
   const [cohortProgress, setCohortProgress] = useState('0');
   const [cohortStatus, setCohortStatus] = useState('Active');
-  const [cohortAttendance, setCohortAttendance] = useState('90');
   
   const [confirmModalState, setConfirmModalState] = useState({ isOpen: false, idToDelete: null });
   const [error, setError] = useState('');
@@ -55,7 +54,6 @@ export default function CohortsView({ currentUser, userRole }) {
     setCohortScholars('0');
     setCohortProgress('0');
     setCohortStatus('Active');
-    setCohortAttendance('90');
     setError('');
     setIsCohortModalOpen(true);
   };
@@ -67,7 +65,6 @@ export default function CohortsView({ currentUser, userRole }) {
     setCohortScholars(cohort.scholars?.toString() || '0');
     setCohortProgress(cohort.progress?.toString() || '0');
     setCohortStatus(cohort.status || 'Active');
-    setCohortAttendance(cohort.attendance?.toString() || '90');
     setError('');
     setIsCohortModalOpen(true);
   };
@@ -83,8 +80,7 @@ export default function CohortsView({ currentUser, userRole }) {
       university: cohortUniv,
       scholars: parseInt(cohortScholars, 10) || 0,
       progress: parseInt(cohortProgress, 10) || 0,
-      status: cohortStatus,
-      attendance: parseInt(cohortAttendance, 10) || 0
+      status: cohortStatus
     };
 
     try {
@@ -151,7 +147,7 @@ export default function CohortsView({ currentUser, userRole }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Cohort Oversight</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Monitor enrollment metrics, attendance rates, and progress across regions.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Monitor enrollment metrics, curriculum progress, and academic standing across regions.</p>
         </div>
         {userRole === 'admin' && (
           <button
@@ -245,14 +241,6 @@ export default function CohortsView({ currentUser, userRole }) {
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Total Enrollment</span>
                   </div>
                   <span className="font-bold text-slate-800 dark:text-slate-100 text-xs">{selectedCohort.scholars}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100/50 dark:border-slate-850 rounded-xl">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg"><CheckCircle2 size={16} /></div>
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Avg Attendance</span>
-                  </div>
-                  <span className="font-bold text-emerald-650 dark:text-emerald-400 text-xs">{selectedCohort.attendance}%</span>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 border border-slate-100/50 dark:border-slate-850 rounded-xl">
@@ -374,17 +362,6 @@ export default function CohortsView({ currentUser, userRole }) {
                       <option value="Needs Attention">Needs Attention</option>
                       <option value="Just Started">Just Started</option>
                     </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Avg Attendance %</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      max="100"
-                      value={cohortAttendance} 
-                      onChange={e => setCohortAttendance(e.target.value)} 
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-blue-700 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white" 
-                    />
                   </div>
                 </div>
 

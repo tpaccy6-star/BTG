@@ -83,11 +83,6 @@ export default function ScholarsView({ currentUser, setCurrentView, lessons }) {
             const completed = s.submissions?.filter(sub => sub.status === 'completed' || sub.status === 'graded').length || 0;
             const progress = totalLessonsCount > 0 ? Math.round((completed / totalLessonsCount) * 100) : 0;
 
-            const records = s.attendanceRecords || [];
-            const present = records.filter(r => r.status === 'present').length;
-            const late = records.filter(r => r.status === 'late').length;
-            const attRate = records.length > 0 ? Math.round(((present + late) / records.length) * 100) : 92;
-
             return (
               <motion.div 
                 key={s.id}
@@ -115,10 +110,10 @@ export default function ScholarsView({ currentUser, setCurrentView, lessons }) {
                     </div>
 
                     <div className="flex items-center space-x-1 sm:space-x-2">
-                      <div className="p-1 sm:p-2 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0"><CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /></div>
+                      <div className="p-1 sm:p-2 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-lg shrink-0"><CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /></div>
                       <div className="min-w-0">
-                        <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none">Attend</span>
-                        <span className="font-bold text-[10px] sm:text-xs text-slate-800 dark:text-white block mt-1 truncate">{attRate}%</span>
+                        <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none">Tasks</span>
+                        <span className="font-bold text-[10px] sm:text-xs text-slate-800 dark:text-white block mt-1 truncate">{completed} done</span>
                       </div>
                     </div>
                   </div>

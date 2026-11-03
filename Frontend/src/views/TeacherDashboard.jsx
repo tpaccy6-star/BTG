@@ -1,14 +1,12 @@
 import React from 'react';
-import { Users, CheckCircle2, BarChart, FolderOpen, Megaphone } from 'lucide-react';
+import { Users, Megaphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const teacherStats = { totalScholars: 520, activeCohorts: 4, avgCompletion: 64, pendingReviews: 35, globalAttendance: 85 };
-
 const cohortList = [
-  { id: 1, name: 'Cohort 1', scholars: 120, progress: 75, status: 'On Track', attendance: 92 },
-  { id: 2, name: 'Cohort 2', scholars: 150, progress: 45, status: 'Needs Attention', attendance: 78 },
-  { id: 3, name: 'Cohort 3', scholars: 130, progress: 80, status: 'Excelling', attendance: 95 },
-  { id: 4, name: 'Cohort 4', scholars: 120, progress: 20, status: 'Just Started', attendance: 88 },
+  { id: 1, name: 'Cohort 1', scholars: 120, progress: 75, status: 'On Track' },
+  { id: 2, name: 'Cohort 2', scholars: 150, progress: 45, status: 'Needs Attention' },
+  { id: 3, name: 'Cohort 3', scholars: 130, progress: 80, status: 'Excelling' },
+  { id: 4, name: 'Cohort 4', scholars: 120, progress: 20, status: 'Just Started' },
 ];
 
 export default function TeacherDashboard({ currentUser, setCurrentView }) {
@@ -22,7 +20,7 @@ export default function TeacherDashboard({ currentUser, setCurrentView }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Academic Oversight</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Global monitoring across all {teacherStats.activeCohorts} cohorts.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Global monitoring across all {cohortList.length} cohorts.</p>
         </div>
         <button 
           onClick={() => { setCurrentView('announcements'); window.location.hash = '#/announcements'; }}
@@ -30,26 +28,6 @@ export default function TeacherDashboard({ currentUser, setCurrentView }) {
         >
           <Megaphone size={14} className="mr-1.5" /> Global Announcement
         </button>
-      </div>
-
-      {/* Teacher KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[
-          { label: 'Global Scholars', value: teacherStats.totalScholars, icon: Users, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-955/30' },
-          { label: 'Global Attendance', value: `${teacherStats.globalAttendance}%`, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-955/30' },
-          { label: 'Avg Completion', value: `${teacherStats.avgCompletion}%`, icon: BarChart, color: 'text-yellow-600 dark:text-yellow-450', bg: 'bg-yellow-50 dark:bg-yellow-955/30' },
-          { label: 'Active Cohorts', value: teacherStats.activeCohorts, icon: FolderOpen, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-955/30' }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-all group">
-            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6 ${stat.bg} ${stat.color}`}>
-              <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div>
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">{stat.label}</p>
-              <p className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white mt-1.5 sm:mt-1 leading-none">{stat.value}</p>
-            </div>
-          </div>
-        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -89,7 +67,6 @@ export default function TeacherDashboard({ currentUser, setCurrentView }) {
               {[
                 { title: 'Create & Modify Lessons', desc: 'Add handouts, study notes & covers', action: 'curriculum', url: '#/curriculum' },
                 { title: 'Grade Student Tasks', desc: 'Score homework & write feedback comments', action: 'tasks', url: '#/tasks' },
-                { title: 'Log Daily Attendance', desc: 'Register attendance rosters', action: 'attendance', url: '#/attendance' },
                 { title: 'Broadcast Bulletins', desc: 'Post push-alerts to scholar dashboards', action: 'announcements', url: '#/announcements' }
               ].map((tool, idx) => (
                 <button
@@ -104,20 +81,6 @@ export default function TeacherDashboard({ currentUser, setCurrentView }) {
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">{tool.desc}</span>
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
-            <h2 className="text-base font-bold text-slate-800 dark:text-white mb-6 tracking-tight">Attendance Monitor</h2>
-            <div className="h-48 flex items-end justify-around px-4">
-              {[40, 70, 45, 90, 65, 85, 55].map((h, i) => (
-                <div key={i} className="w-6 bg-blue-900 dark:bg-blue-800 rounded-t-lg opacity-80 hover:opacity-100 transition-opacity cursor-pointer relative group" style={{ height: `${h}%` }}>
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] py-1 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{h}%</div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-around mt-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
             </div>
           </div>
         </div>
