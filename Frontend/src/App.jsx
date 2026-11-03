@@ -9,16 +9,14 @@ import { AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import LandingPage from './views/LandingPage';
 import LoginPage from './views/LoginPage';
 import ScholarDashboard from './views/ScholarDashboard';
-import MentorDashboard from './views/MentorDashboard';
 import TeacherDashboard from './views/TeacherDashboard';
 import AdminDashboard from './views/AdminDashboard';
 import CatalogView from './views/CatalogView';
 import LessonView from './views/LessonView';
 import TasksView from './views/TasksView';
-import ChatView from './views/ChatView';
+import DirectMessagesView from './views/DirectMessagesView';
 import ProfileView from './views/ProfileView';
 
 // Newly implemented dashboard views
@@ -44,9 +42,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState('scholar');
   const [currentView, setCurrentView] = useState('dashboard');
-  const [showPortalLogin, setShowPortalLogin] = useState(() => {
-    return localStorage.getItem('showPortalLogin') === 'true';
-  });
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -120,11 +115,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
-      if (hash === '#/login') {
-        setShowPortalLogin(true);
-      } else if (hash === '#/home' || !hash) {
-        setShowPortalLogin(false);
-      } else {
+      if (hash !== '#/login' && hash !== '#/home' && hash) {
         const view = hash.replace('#/', '');
         if ([
           'dashboard', 'catalog', 'lesson', 'tasks', 'programs',
@@ -142,9 +133,21 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  useEffect(() => {
+    if (!isLoggedIn && !loadingSession && window.location.hash !== '#/login') {
+      window.location.hash = '#/login';
+    }
+  }, [isLoggedIn, loadingSession]);
+
+  useEffect(() => {
+    if (!isLoggedIn || userRole !== 'mentor') return;
+    if (currentView !== 'chat') setCurrentView('chat');
+    if (window.location.hash !== '#/chat') window.location.hash = '#/chat';
+  }, [isLoggedIn, userRole, currentView]);
+
   // --- 3. Load curriculum catalog once authenticated ---
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || userRole === 'mentor') return;
 
     const fetchLessons = async () => {
       try {
@@ -167,7 +170,7 @@ export default function App() {
     };
 
     fetchLessons();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, userRole]);
 
   // Refresh user object (e.g. following task upload or profile update)
   const refreshUserSession = async () => {
@@ -193,18 +196,15 @@ export default function App() {
     setCurrentUser(data.user);
     setUserRole(data.user.role);
     setIsLoggedIn(true);
-    setShowPortalLogin(false);
-    localStorage.setItem('showPortalLogin', 'false');
-    setCurrentView('dashboard');
-    window.location.hash = '#/dashboard';
+    const landingView = data.user.role === 'mentor' ? 'chat' : 'dashboard';
+    setCurrentView(landingView);
+    window.location.hash = `#/${landingView}`;
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
     setIsLoggedIn(false);
-    setShowPortalLogin(true);
-    localStorage.setItem('showPortalLogin', 'true');
     setCurrentView('dashboard');
     window.location.hash = '#/login';
   };
@@ -225,32 +225,12 @@ export default function App() {
 
   // --- Auth layout guards ---
   if (!isLoggedIn) {
-    const isMobile = window.innerWidth < 1024;
-    if (showPortalLogin || isMobile) {
-      return (
-        <LoginPage 
-          onLoginSuccess={handleLoginSuccess} 
-          onBackToHome={() => {
-            setShowPortalLogin(false);
-            localStorage.setItem('showPortalLogin', 'false');
-            window.location.hash = '#/home';
-          }} 
-        />
-      );
-    }
-    return (
-      <LandingPage 
-        onEnterPortal={() => {
-          setShowPortalLogin(true);
-          localStorage.setItem('showPortalLogin', 'true');
-          window.location.hash = '#/login';
-        }} 
-      />
-    );
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
   // Mobile Bottom Navigation Component
   const MobileNavbar = () => {
+    if (userRole === 'mentor') return null;
     let items = [];
     if (userRole === 'scholar' || userRole === 'beneficiary') {
       items = [
@@ -315,16 +295,17 @@ export default function App() {
       isDarkMode ? 'dark' : ''
     }`}>
       
-      {/* Sidebar Layout */}
-      <Sidebar 
-        userRole={userRole} 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
-        isDesktopSidebarOpen={isDesktopSidebarOpen} 
-        currentUser={currentUser}
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-      />
+      {userRole !== 'mentor' && (
+        <Sidebar
+          userRole={userRole}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          isDesktopSidebarOpen={isDesktopSidebarOpen}
+          currentUser={currentUser}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+        />
+      )}
 
       {/* Main Container Area */}
       <main className="flex-1 flex flex-col h-screen min-w-0 relative">
@@ -345,11 +326,14 @@ export default function App() {
           <div className="flex-1 p-4 lg:p-10 pb-20 lg:pb-6">
             <div className="w-full h-full">
               <AnimatePresence mode="wait">
+                {userRole === 'mentor' ? (
+                  currentView === 'chat' && (
+                    <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
+                  )
+                ) : (
+                  <>
                 {currentView === 'dashboard' && (userRole === 'scholar' || userRole === 'beneficiary') && (
                   <ScholarDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholar-dash" />
-                )}
-                {currentView === 'dashboard' && userRole === 'mentor' && (
-                  <MentorDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="mentor-dash" />
                 )}
                 {currentView === 'dashboard' && userRole === 'teacher' && (
                   <TeacherDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="teacher-dash" />
@@ -368,7 +352,7 @@ export default function App() {
                   <TasksView currentUser={currentUser} userRole={userRole} lessons={lessons} onUpdateUser={refreshUserSession} key="tasks" />
                 )}
                 {currentView === 'chat' && (
-                  <ChatView currentUser={currentUser} userRole={userRole} key="chat" />
+                  <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
                 )}
                 {currentView === 'profile' && (
                   <ProfileView currentUser={currentUser} onLogout={handleLogout} onUpdateUser={refreshUserSession} key="profile" />
@@ -404,6 +388,8 @@ export default function App() {
                     userRole={userRole}
                     key="program-workspace"
                   />
+                )}
+                  </>
                 )}
               </AnimatePresence>
             </div>

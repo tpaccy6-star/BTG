@@ -820,7 +820,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">System Controls & Admin Hub</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Super-user configuration portal with complete database operations and dashboard CRUD panels.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Super-user configuration portal with complete database operations and dashboard management panels.</p>
         </div>
         <div className="flex items-center space-x-2 bg-blue-900/10 dark:bg-blue-950/30 text-blue-900 dark:text-blue-400 px-3.5 py-1.5 rounded-full border border-blue-900/20 dark:border-blue-900/40 text-xs font-bold uppercase tracking-wider">
           <Shield size={12} className="mr-1.5" /> Operations Console
@@ -830,7 +830,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
       {/* Admin Tabs */}
       <div className="flex flex-wrap gap-2.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800">
         {[
-          { id: 'general', title: 'System Param', icon: Database },
+          { id: 'general', title: 'System Parameters', icon: Database },
           { id: 'users', title: 'Users CRUD', icon: Users },
           { id: 'lessons', title: 'Curriculum CRUD', icon: BookOpen },
           { id: 'announcements', title: 'Broadcasts CRUD', icon: Megaphone },
@@ -973,7 +973,7 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                 <AlertTriangle className="text-yellow-600 shrink-0 mt-0.5" size={14} />
                 <div className="space-y-1">
                   <h4 className="font-bold text-yellow-800 dark:text-yellow-550">Caution</h4>
-                  <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">Database resetting is instantaneous. Backup any files prior to dropping relational schemas.</p>
+                  <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">Database resetting is instantaneous. Back up the database before dropping relational schemas.</p>
                 </div>
               </div>
             </div>

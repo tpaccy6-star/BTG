@@ -56,7 +56,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
   const handleAvatarUpload = async (e) => {
     const fileToUpload = e.target.files[0];
     if (!fileToUpload) return;
-    
+
     setUploading(true);
     setUploadMessage('');
 
@@ -96,15 +96,15 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
   const streak = currentUser?.streakDays !== undefined ? currentUser.streakDays : 14;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, scale: 0.98 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98 }}
       className="space-y-8"
     >
       <div>
         <h1 className="text-4xl font-black text-blue-955 dark:text-white tracking-tight">My Profile</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">Manage your account settings, credentials, and achievements.</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">A personal space to review your academic journey, update your credentials, and configure how you engage with the Rise Her ecosystem.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -121,14 +121,14 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           {/* Picture Uploader */}
           <div className="mb-6">
             <label className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-150 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-650 dark:text-slate-300 hover:text-blue-900 dark:hover:text-yellow-450 transition-all cursor-pointer">
-              <input 
-                type="file" 
+              <input
+                type="file"
                 accept="image/*"
                 onChange={handleAvatarUpload}
-                className="hidden" 
+                className="hidden"
               />
               <Upload size={10} />
-              <span>{uploading ? 'Uploading...' : 'Upload Picture'}</span>
+              <span>{uploading ? 'Uploading portrait...' : 'Update portrait'}</span>
             </label>
             {uploadMessage && (
               <p className={`text-[10px] font-bold mt-1.5 ${uploadMessage.includes('error') ? 'text-red-500' : 'text-blue-900 dark:text-yellow-450'}`}>
@@ -140,7 +140,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           <h2 className="text-2xl font-black text-blue-955 dark:text-white">{name}</h2>
           <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">{currentUser?.university || 'Scholar University'}</p>
           <span className="mt-4 px-3.5 py-1.5 bg-yellow-100 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-455 font-black text-[10px] rounded-full uppercase tracking-wider border border-yellow-200/50 dark:border-yellow-900/30">
-            {currentUser?.yearLevel || 'Year 2 Scholar'}
+            {currentUser?.yearLevel || 'Second Year Scholar'}
           </span>
 
           <div className="w-full h-px bg-slate-100 dark:bg-slate-800 my-8" />
@@ -159,7 +159,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
 
           <button onClick={onLogout} className="mt-8 w-full py-4 bg-red-50 hover:bg-red-100 dark:bg-red-955/20 dark:hover:bg-red-955/40 text-red-600 dark:text-red-450 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center space-x-2 border border-red-200/20 dark:border-red-900/30">
             <LogOut size={16} />
-            <span>Log Out Portal</span>
+            <span>Sign Out of Portal</span>
           </button>
         </div>
 
@@ -168,8 +168,8 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           {/* Academic Info */}
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
             <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800 pb-3">
-              <h3 className="text-xl font-black text-blue-955 dark:text-white tracking-tight">Academic Scholarship Details</h3>
-              <button 
+              <h3 className="text-xl font-black text-blue-955 dark:text-white tracking-tight">Academic Profile</h3>
+              <button
                 onClick={() => {
                   if (isEditingInfo) {
                     handleSaveInfo();
@@ -183,17 +183,17 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                 disabled={savingInfo}
                 className="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 dark:bg-slate-850 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all disabled:opacity-50"
               >
-                {isEditingInfo ? (savingInfo ? 'Saving...' : 'Save Info') : 'Edit Info'}
+                {isEditingInfo ? (savingInfo ? 'Saving...' : 'Save Details') : 'Edit Details'}
               </button>
             </div>
-            
+
             {isEditingInfo ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white"
@@ -201,8 +201,8 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Email Address</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       value={editEmail}
                       onChange={(e) => setEditEmail(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white"
@@ -213,7 +213,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                   <p className={`text-[10px] font-bold ${editMessage.includes('Error') || editMessage.includes('cannot') ? 'text-red-500' : 'text-blue-900 dark:text-yellow-455'}`}>{editMessage}</p>
                 )}
                 <div className="flex space-x-3">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsEditingInfo(false)}
                     className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-805 text-slate-655 dark:text-slate-300 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -225,9 +225,9 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { label: 'Ecosystem Email', val: currentUser?.email },
-                  { label: 'Scholar Role / Authority', val: currentUser?.role?.toUpperCase() },
-                  { label: 'Matriculation Year', val: '2025' },
+                  { label: ' Email Address', val: currentUser?.email },
+                  { label: 'Scholar Role & Authority', val: currentUser?.role?.toUpperCase() },
+                  { label: ' Year', val: '2025' },
                   { label: 'NGO Compliance Status', val: 'Fully Compliant' }
                 ].map((detail, i) => (
                   <div key={i} className="flex flex-col">
@@ -241,38 +241,34 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
 
           {/* Notification settings */}
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
-            <h3 className="text-xl font-black text-blue-955 dark:text-white tracking-tight">Notification Settings</h3>
+            <h3 className="text-xl font-black text-blue-955 dark:text-white tracking-tight">Communication Preferences</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-sm text-blue-955 dark:text-white">Email Bulletins</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Receive weekly progress and grading bulletins from mentor Sarah.</p>
+                  <p className="font-bold text-sm text-blue-955 dark:text-white">Email Correspondence</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Receive a weekly digest summarising your academic progress, graded assignments, and mentor observations.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setEmailAlerts(!emailAlerts)}
-                  className={`w-12 h-7 rounded-full transition-all duration-300 relative ${
-                    emailAlerts ? 'bg-blue-900 dark:bg-yellow-455' : 'bg-slate-200 dark:bg-slate-800'
-                  }`}
+                  className={`w-12 h-7 rounded-full transition-all duration-300 relative ${emailAlerts ? 'bg-blue-900 dark:bg-yellow-455' : 'bg-slate-200 dark:bg-slate-800'
+                    }`}
                 >
-                  <div className={`w-5 h-5 bg-white dark:bg-slate-950 rounded-full shadow absolute top-1 transition-all duration-300 ${
-                    emailAlerts ? 'right-1' : 'left-1'
-                  }`} />
+                  <div className={`w-5 h-5 bg-white dark:bg-slate-950 rounded-full shadow absolute top-1 transition-all duration-300 ${emailAlerts ? 'right-1' : 'left-1'
+                    }`} />
                 </button>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold text-sm text-blue-955 dark:text-white">Push Notifications</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Receive live alerts when homework deadlines are updated.</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Be notified immediately whenever homework deadlines are revised or new announcements are published.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setPushAlerts(!pushAlerts)}
-                  className={`w-12 h-7 rounded-full transition-all duration-300 relative ${
-                    pushAlerts ? 'bg-blue-900 dark:bg-yellow-455' : 'bg-slate-200 dark:bg-slate-800'
-                  }`}
+                  className={`w-12 h-7 rounded-full transition-all duration-300 relative ${pushAlerts ? 'bg-blue-900 dark:bg-yellow-455' : 'bg-slate-200 dark:bg-slate-800'
+                    }`}
                 >
-                  <div className={`w-5 h-5 bg-white dark:bg-slate-950 rounded-full shadow absolute top-1 transition-all duration-300 ${
-                    pushAlerts ? 'right-1' : 'left-1'
-                  }`} />
+                  <div className={`w-5 h-5 bg-white dark:bg-slate-950 rounded-full shadow absolute top-1 transition-all duration-300 ${pushAlerts ? 'right-1' : 'left-1'
+                    }`} />
                 </button>
               </div>
             </div>

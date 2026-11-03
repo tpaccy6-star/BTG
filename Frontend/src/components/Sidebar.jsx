@@ -1,8 +1,8 @@
 import React from 'react';
 import { 
   Home, BookOpen, FileText, Settings, User, 
-  CheckCircle2, MessageCircle, Users, ListChecks, 
-  BarChart, Database, Shield, Sun, Moon
+  CheckCircle2, MessageCircle, Users,
+  BarChart, Database, Shield
 } from 'lucide-react';
 
 const programWorkspaceViews = new Set([
@@ -30,15 +30,11 @@ export default function Sidebar({
       { id: 'catalog', icon: BookOpen, label: 'Catalog' },
       { id: 'tasks', icon: FileText, label: 'Tasks' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'chat', icon: MessageCircle, label: 'Mentor Chat' },
+      { id: 'chat', icon: MessageCircle, label: 'Messages' },
       { id: 'profile', icon: User, label: 'Profile' },
     ];
   } else if (userRole === 'mentor') {
     items = [
-      { id: 'dashboard', icon: Home, label: 'Mentor Hub' },
-      { id: 'scholars', icon: Users, label: 'My Scholars' },
-      { id: 'programs', icon: Database, label: 'Program Suite' },
-      { id: 'grading', icon: ListChecks, label: 'Grading' },
       { id: 'chat', icon: MessageCircle, label: 'Messages' },
     ];
   } else if (userRole === 'teacher') {
@@ -48,6 +44,7 @@ export default function Sidebar({
       { id: 'programs', icon: Database, label: 'Program Suite' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
       { id: 'announcements', icon: MessageCircle, label: 'Broadcasts' },
+      { id: 'chat', icon: MessageCircle, label: 'Messages' },
     ];
   } else if (userRole === 'admin' || userRole === 'staff') {
     items = [
@@ -56,6 +53,7 @@ export default function Sidebar({
       { id: 'programs', icon: Database, label: 'Program Suite' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
       { id: 'settings', icon: Settings, label: 'System' },
+      { id: 'chat', icon: MessageCircle, label: 'Messages' },
     ];
   }
 
@@ -115,40 +113,6 @@ export default function Sidebar({
 
       {/* Sidebar Footer Elements */}
       <div className="rise-sidebar-footer mt-auto space-y-3 pt-4 border-t">
-        {isDesktopSidebarOpen && (
-          <div className="rise-sidebar-help mb-2 rounded-2xl border p-3.5">
-            <span className="rise-help-icon mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg">
-              <Users size={16} />
-            </span>
-            <p className="text-[11px] font-bold">Growing together</p>
-            <p className="mt-1 text-[10px] leading-relaxed">Every step forward matters.</p>
-          </div>
-        )}
-        {/* Dark Mode Switcher */}
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`w-full flex items-center transition-all duration-200 group ${
-            !isDesktopSidebarOpen ? 'justify-center' : 'justify-start'
-          }`}
-          title={!isDesktopSidebarOpen ? (isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode') : ''}
-        >
-          <span className={`rise-nav-link rise-theme-toggle w-full inline-flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 ${
-            !isDesktopSidebarOpen ? 'justify-center w-12' : 'space-x-3'
-          }`}>
-            {isDarkMode ? (
-              <>
-              <Sun size={18} className="rise-nav-icon text-yellow-400" />
-                {isDesktopSidebarOpen && <span className="font-semibold text-xs whitespace-nowrap">Light Theme</span>}
-              </>
-            ) : (
-              <>
-              <Moon size={18} className="rise-nav-icon text-slate-400 group-hover:text-blue-900" />
-                {isDesktopSidebarOpen && <span className="font-semibold text-xs whitespace-nowrap">Dark Theme</span>}
-              </>
-            )}
-          </span>
-        </button>
-
         {/* User Card Details */}
         <div className={`flex items-center ${!isDesktopSidebarOpen ? 'justify-center' : 'space-x-3 px-2 pt-1'}`}>
           <div className="w-9 h-9 rounded-xl bg-yellow-400 text-blue-900 font-bold flex items-center justify-center text-xs shrink-0 overflow-hidden border border-white/20 shadow-sm">

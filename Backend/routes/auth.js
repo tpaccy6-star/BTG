@@ -63,7 +63,8 @@ router.post('/login', async (req, res) => {
         yearLevel: user.yearLevel,
         streakDays: user.streakDays,
         avatarUrl: user.avatarUrl,
-        cohortId: user.cohortId
+        cohortId: user.cohortId,
+        assignedMentorId: user.assignedMentorId
       }
     });
   } catch (err) {
@@ -98,6 +99,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         streakDays: user.streakDays,
         avatarUrl: user.avatarUrl,
         cohortId: user.cohortId,
+        assignedMentorId: user.assignedMentorId,
         cohort: user.cohort || null,
         submissions: user.submissions || [],
         attendanceRecords: user.attendanceRecords || []

@@ -116,7 +116,7 @@ export default function AnnouncementsView({ userRole }) {
         throw new Error(data.error || 'Failed to post announcement.');
       }
 
-      setMessage(editId ? 'Announcement updated successfully!' : 'Announcement broadcasted successfully!');
+      setMessage(editId ? 'Announcement updated successfully!' : 'Announcement broadcast successfully!');
       setTitle('');
       setContent('');
       setTargetRole('all');
@@ -141,7 +141,7 @@ export default function AnnouncementsView({ userRole }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Global Broadcasts</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Ecosystem notices, compliance regulations, and scheduled events.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Ecosystem notices, compliance updates, and scheduled events.</p>
         </div>
         {isTeacherOrAdmin && (
           <button 
@@ -170,7 +170,7 @@ export default function AnnouncementsView({ userRole }) {
             </div>
           ) : announcements.length === 0 ? (
             <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800">
-              No active announcements logged.
+              No active announcements posted.
             </div>
           ) : (
             announcements.map((ann, idx) => (
@@ -208,7 +208,7 @@ export default function AnnouncementsView({ userRole }) {
           <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-[1.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
             <Megaphone size={36} className="text-blue-900 dark:text-yellow-450 mb-4 animate-bounce" />
             <p className="text-xs font-bold text-slate-800 dark:text-white mb-2">Compliance Notice Board</p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-450 font-medium leading-relaxed">All announcements represent academic/NGO policies binding on active scholars.</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-450 font-medium leading-relaxed">All announcements reflect academic and NGO policies that apply to active scholars.</p>
           </div>
         </div>
       </div>

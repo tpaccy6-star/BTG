@@ -63,6 +63,30 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
+const communicationStaffRoles = ['staff', 'admin', 'teacher'];
+const onlineSocketCounts = new Map();
+
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error('Authentication required.'));
+
+  let verified;
+  try {
+    verified = jwt.verify(token, JWT_SECRET);
+  } catch {
+    return next(new Error('Authentication failed.'));
+  }
+
+  try {
+    const user = await User.findByPk(verified.id);
+    if (!user) return next(new Error('Authentication failed.'));
+    socket.data.user = user;
+    return next();
+  } catch (error) {
+    console.error('Socket authentication failed:', error);
+    return next(new Error('Authentication failed.'));
+  }
+});
 
 // --- REST API Endpoints ---
 app.use('/api/auth', authRoutes);
@@ -110,28 +134,79 @@ app.post('/api/attendance/mark', authenticateToken, async (req, res) => {
   }
 });
 
+const findChatContacts = async (user) => {
+  const account = await User.findByPk(user.id);
+  if (!account) throw new Error('Authenticated user no longer exists.');
+
+  const where = account.role === 'mentor'
+    ? { [Op.and]: [
+        { id: { [Op.ne]: account.id } },
+        {
+        [Op.or]: [
+          { role: { [Op.in]: ['scholar', 'beneficiary'] }, assignedMentorId: account.id },
+          { role: { [Op.in]: communicationStaffRoles } }
+        ]
+        }
+      ] }
+    : ['scholar', 'beneficiary'].includes(account.role)
+      ? {
+          [Op.or]: [
+            { id: account.assignedMentorId, role: 'mentor' },
+            { role: { [Op.in]: communicationStaffRoles } }
+          ]
+        }
+      : { id: { [Op.ne]: account.id } };
+
+  return User.findAll({
+    where,
+    attributes: ['id', 'name', 'role', 'initials', 'avatarUrl', 'university'],
+    order: [['name', 'ASC']]
+  });
+};
+
+const canDirectMessage = (sender, recipient) => (
+  sender.id !== recipient.id && (
+    (sender.role === 'mentor' && (
+      (['scholar', 'beneficiary'].includes(recipient.role) && recipient.assignedMentorId === sender.id) ||
+      communicationStaffRoles.includes(recipient.role)
+    )) ||
+    (['scholar', 'beneficiary'].includes(sender.role) && (
+      (recipient.role === 'mentor' && sender.assignedMentorId === recipient.id) ||
+      communicationStaffRoles.includes(recipient.role)
+    )) ||
+    communicationStaffRoles.includes(sender.role)
+  )
+);
+
+app.get('/api/chat/contacts', authenticateToken, async (req, res) => {
+  try {
+    res.json(await findChatContacts(req.user));
+  } catch (err) {
+    console.error('Error fetching chat contacts:', err);
+    res.status(500).json({ error: 'Failed to fetch chat contacts.' });
+  }
+});
+
 // 9. Chat History Route
 app.get('/api/chat/history', authenticateToken, async (req, res) => {
   try {
-    let messages = [];
-    if (req.user.role === 'scholar') {
-      // Fetch public group messages or messages matching scholar's ID
-      messages = await Message.findAll({
-        where: sequelize.or(
-          { recipientId: req.user.id },
-          { senderId: req.user.id },
-          { recipientId: 'group-all' }
-        ),
-        order: [['timestamp', 'ASC']]
-      });
-    } else {
-      // Mentors / Admin can fetch all message histories
-      messages = await Message.findAll({
-        order: [['timestamp', 'ASC']]
-      });
+    const contacts = await findChatContacts(req.user);
+    const contactIds = contacts.map(contact => contact.id);
+    const historyConditions = [
+      { senderId: req.user.id, recipientId: { [Op.in]: contactIds } },
+      { senderId: { [Op.in]: contactIds }, recipientId: req.user.id }
+    ];
+    if (req.user.role !== 'mentor') {
+      historyConditions.push({ recipientId: 'group-all' });
     }
+
+    const messages = await Message.findAll({
+      where: { [Op.or]: historyConditions },
+      order: [['timestamp', 'ASC']]
+    });
     res.json(messages);
   } catch (err) {
+    console.error('Error fetching chat history:', err);
     res.status(500).json({ error: 'Error fetching chat logs.' });
   }
 });
@@ -139,37 +214,116 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
 // --- WebSockets Event Handlers ---
 io.on('connection', (socket) => {
   console.log('Socket client connected:', socket.id);
+  const user = socket.data.user;
 
-  socket.on('joinRoom', ({ userId }) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined room.`);
+  socket.on('joinRoom', () => {
+    if (socket.data.joinedChat) return;
+    socket.data.joinedChat = true;
+    socket.join(user.id);
+    console.log(`User ${user.id} joined room.`);
+    const connectionCount = (onlineSocketCounts.get(user.id) || 0) + 1;
+    onlineSocketCounts.set(user.id, connectionCount);
+
+    findChatContacts(user).then(contacts => {
+      if (!socket.connected) return;
+      socket.data.chatContactIds = contacts.map(contact => contact.id);
+      socket.emit('presenceSnapshot', socket.data.chatContactIds.filter(
+        contactId => onlineSocketCounts.has(contactId)
+      ));
+      for (const contactId of socket.data.chatContactIds) {
+        io.to(contactId).emit('presenceUpdate', { userId: user.id, online: true });
+      }
+    }).catch(error => {
+      console.error('Failed to initialize chat presence:', error);
+      socket.emit('communicationError', 'Unable to load online contact status.');
+    });
   });
 
-  socket.on('sendMessage', async (data) => {
-    const { senderId, senderName, recipientId, content } = data;
+  socket.on('typing', async (data = {}) => {
+    const { recipientId, isTyping } = data || {};
+    if (typeof recipientId !== 'string' || typeof isTyping !== 'boolean') return;
     try {
+      const [sender, recipient] = await Promise.all([
+        User.findByPk(user.id),
+        User.findByPk(recipientId)
+      ]);
+      if (!sender || !recipient || !canDirectMessage(sender, recipient)) return;
+      io.to(recipientId).emit('userTyping', {
+        userId: sender.id,
+        userName: sender.name,
+        isTyping
+      });
+    } catch (error) {
+      console.error('Failed to update typing status:', error);
+    }
+  });
+
+  socket.on('sendMessage', async (data, acknowledge) => {
+    const respond = typeof acknowledge === 'function' ? acknowledge : () => {};
+    const recipientId = data?.recipientId;
+    const content = typeof data?.content === 'string' ? data.content.trim() : '';
+
+    try {
+      if (!content || content.length > 5000) {
+        return respond({ error: 'Messages must be between 1 and 5000 characters.' });
+      }
+      if (typeof recipientId !== 'string' || !recipientId.trim()) {
+        return respond({ error: 'Choose a valid contact.' });
+      }
+
+      if (recipientId === 'group-all') {
+        if (user.role === 'mentor') {
+          return respond({ error: 'Mentors can message staff and their assigned scholars only.' });
+        }
+      } else {
+        const recipient = await User.findByPk(recipientId);
+        const sender = await User.findByPk(user.id);
+        const canMessage = sender && recipient && canDirectMessage(sender, recipient);
+        if (!canMessage) {
+          return respond({ error: 'You cannot message this contact.' });
+        }
+      }
+
       const msg = await Message.create({
-        senderId,
-        senderName,
+        senderId: user.id,
+        senderName: user.name,
         recipientId,
         content
       });
 
       // Broadcast to specific recipient room and sender room
       io.to(recipientId).emit('newMessage', msg);
-      io.to(senderId).emit('newMessage', msg);
+      io.to(user.id).emit('newMessage', msg);
 
       // If it's a global group message
       if (recipientId === 'group-all') {
-        socket.broadcast.emit('newMessage', msg);
+        for (const connectedSocket of io.sockets.sockets.values()) {
+          if (connectedSocket.id !== socket.id && connectedSocket.data.user.role !== 'mentor') {
+            connectedSocket.emit('newMessage', msg);
+          }
+        }
       }
+      return respond({ success: true });
     } catch (err) {
       console.error('Error saving socket message:', err);
+      return respond({ error: 'Failed to send message.' });
     }
   });
 
   socket.on('disconnect', () => {
     console.log('Socket client disconnected:', socket.id);
+    if (!socket.data.joinedChat) return;
+
+    const connectionCount = (onlineSocketCounts.get(user.id) || 1) - 1;
+    if (connectionCount > 0) {
+      onlineSocketCounts.set(user.id, connectionCount);
+      return;
+    }
+
+    onlineSocketCounts.delete(user.id);
+    for (const contactId of socket.data.chatContactIds || []) {
+      io.to(contactId).emit('presenceUpdate', { userId: user.id, online: false });
+    }
   });
 });
 
