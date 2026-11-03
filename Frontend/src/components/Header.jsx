@@ -88,7 +88,7 @@ export default function Header({
         </button>
 
         {/* Real Notification Bell */}
-        <NotificationBell />
+        <NotificationBell setCurrentView={setCurrentView} isDarkMode={isDarkMode} />
         
         {/* Profile Dropdown Corner */}
         <div className={`flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l relative`}>

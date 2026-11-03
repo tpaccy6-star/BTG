@@ -37,6 +37,14 @@ export const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   streakDays: {
     type: DataTypes.INTEGER,
     defaultValue: 0

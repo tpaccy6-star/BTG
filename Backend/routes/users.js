@@ -53,7 +53,7 @@ router.post('/upload-avatar', authenticateToken, upload.single('avatar'), async 
 
 // 11d. Update User Profile (All Authenticated Users)
 router.put('/update-profile', authenticateToken, async (req, res) => {
-  const { name, email, university, yearLevel } = req.body;
+  const { name, email, university, yearLevel, phone, bio } = req.body;
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required.' });
   }
@@ -74,9 +74,26 @@ router.put('/update-profile', authenticateToken, async (req, res) => {
     user.initials = name.slice(0, 2).toUpperCase();
     if (university !== undefined) user.university = university;
     if (yearLevel !== undefined) user.yearLevel = yearLevel;
+    if (phone !== undefined) user.phone = phone;
+    if (bio !== undefined) user.bio = bio;
     
     await user.save();
-    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, initials: user.initials, university: user.university, yearLevel: user.yearLevel, role: user.role, avatarUrl: user.avatarUrl, streakDays: user.streakDays } });
+    res.json({ 
+      success: true, 
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        email: user.email, 
+        initials: user.initials, 
+        university: user.university, 
+        yearLevel: user.yearLevel, 
+        phone: user.phone,
+        bio: user.bio,
+        role: user.role, 
+        avatarUrl: user.avatarUrl, 
+        streakDays: user.streakDays 
+      } 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error updating profile.' });

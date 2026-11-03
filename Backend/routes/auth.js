@@ -63,6 +63,8 @@ router.post('/login', async (req, res) => {
         yearLevel: user.yearLevel,
         streakDays: user.streakDays,
         avatarUrl: user.avatarUrl,
+        phone: user.phone,
+        bio: user.bio,
         cohortId: user.cohortId,
         assignedMentorId: user.assignedMentorId
       }
@@ -98,6 +100,8 @@ router.get('/me', authenticateToken, async (req, res) => {
         yearLevel: user.yearLevel,
         streakDays: user.streakDays,
         avatarUrl: user.avatarUrl,
+        phone: user.phone,
+        bio: user.bio,
         cohortId: user.cohortId,
         assignedMentorId: user.assignedMentorId,
         cohort: user.cohort || null,

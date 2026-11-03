@@ -26,6 +26,8 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
   const [editEmail, setEditEmail] = useState(currentUser?.email || '');
   const [editUniversity, setEditUniversity] = useState(currentUser?.university || '');
   const [editYearLevel, setEditYearLevel] = useState(currentUser?.yearLevel || '');
+  const [editPhone, setEditPhone] = useState(currentUser?.phone || '');
+  const [editBio, setEditBio] = useState(currentUser?.bio || '');
   const [editMessage, setEditMessage] = useState('');
   const [savingInfo, setSavingInfo] = useState(false);
 
@@ -72,7 +74,9 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           name: editName.trim(),
           email: editEmail.trim(),
           university: editUniversity.trim(),
-          yearLevel: editYearLevel.trim()
+          yearLevel: editYearLevel.trim(),
+          phone: editPhone.trim(),
+          bio: editBio.trim()
         })
       });
       const data = await res.json();
@@ -296,6 +300,8 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                     setEditEmail(currentUser?.email || '');
                     setEditUniversity(currentUser?.university || '');
                     setEditYearLevel(currentUser?.yearLevel || '');
+                    setEditPhone(currentUser?.phone || '');
+                    setEditBio(currentUser?.bio || '');
                     setEditMessage('');
                     setIsEditingInfo(true);
                   }
@@ -350,6 +356,26 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                       className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white"
                     />
                   </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Contact Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      placeholder="e.g. +250 788 123 456"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white"
+                    />
+                  </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Biography & Focus Summary</label>
+                    <textarea
+                      rows={3}
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      placeholder="Share a short bio, office hours, or mentorship focus..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white resize-none"
+                    />
+                  </div>
                 </div>
 
                 {editMessage && (
@@ -374,11 +400,13 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                   { label: 'Email Address', val: currentUser?.email },
                   { label: 'Role & Authority', val: roleDisplay },
                   { label: 'University / Institution', val: currentUser?.university || 'Generation Rise Foundation' },
-                  { label: 'Title / Level', val: currentUser?.yearLevel || 'Active Participant' }
+                  { label: 'Title / Level', val: currentUser?.yearLevel || 'Active Participant' },
+                  { label: 'Contact Phone', val: currentUser?.phone || 'Not specified' },
+                  { label: 'Mentorship / Bio Summary', val: currentUser?.bio || 'Empowering scholars through leadership, mentorship, and academic growth.', full: true }
                 ].map((detail, i) => (
-                  <div key={i} className="flex flex-col">
+                  <div key={i} className={`flex flex-col ${detail.full ? 'md:col-span-2' : ''}`}>
                     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{detail.label}</span>
-                    <span className="text-sm font-bold text-blue-955 dark:text-white mt-1 break-all">{detail.val}</span>
+                    <span className="text-sm font-bold text-blue-955 dark:text-white mt-1 break-words">{detail.val}</span>
                   </div>
                 ))}
               </div>
