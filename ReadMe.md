@@ -57,6 +57,35 @@ An integrated, beautiful guide hub located on the landing page.
 * `Backend/` is the Express API. Sequelize models and database configuration are in `Backend/models.js` and `Backend/database.js`. It uses SQLite for local development and PostgreSQL when `DATABASE_URL` is configured.
 * The frontend and backend are separate packages in the same repository; install and run them from their respective folders.
 
+## Clone and Run Locally
+
+You will need Git and the current Node.js LTS release installed.
+
+1. Clone the repository and enter the project folder:
+
+   ```bash
+   git clone https://github.com/tpaccy6-star/BTG.git
+   cd BTG
+   ```
+
+2. In a terminal, install and start the backend:
+
+   ```bash
+   cd Backend
+   npm install
+   npm run dev
+   ```
+
+3. From the project root, open a second terminal and install and start the frontend:
+
+   ```bash
+   cd Frontend
+   npm install
+   npm run dev
+   ```
+
+4. Open the local URL printed by Vite (usually `http://localhost:5173`). The frontend proxies API requests to the backend at `http://localhost:5000`. SQLite is used by default for local development; set `DATABASE_URL` in the backend environment to use PostgreSQL.
+
 ## RISE HER Program Suite Integration
 
 The RISE HER experience is integrated into the existing Generation Rise portal, using one frontend, API, database, and sign-in. The shared interface uses the orange-red, navy, coral, and gold palette; Quicksand headings; Nunito Sans body type; and the Generation Rise brand mark while retaining BTG's learning, cohort, profile, and mentor-chat workflows.
