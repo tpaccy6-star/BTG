@@ -164,7 +164,7 @@ export default function Header({
                   }`}
                 >
                   <LogOut size={14} className="text-red-500" />
-                  <span>Log Out</span>
+                  <span>Logout</span>
                 </button>
               </motion.div>
             )}

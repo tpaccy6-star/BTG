@@ -205,10 +205,10 @@ async function notifyUser(userId, title, message, link, type) {
 }
 
 async function notifyStaff(title, message, link, type) {
-  // Mentors are NOT allowed to see beneficiary assistance/support requests
+  // ONLY Admin receives beneficiary / support requests
   const staff = await User.findAll({
     attributes: ['id'],
-    where: { role: { [Op.in]: ['admin', 'teacher'] } }
+    where: { role: 'admin' }
   });
   await Promise.all(staff.map((person) => notifyUser(person.id, title, message, link, type)));
 }
@@ -850,12 +850,10 @@ router.patch('/mentorship/:mentorshipId', asyncRoute(async (req, res) => {
   res.json(publicMentorship(updated));
 }));
 
-// Support and financial assistance
+// Support and financial assistance (Admin only coordinates and views)
 router.get('/financial-assistance', asyncRoute(async (req, res) => {
-  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to view beneficiary requests.');
-  if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
+  if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can view beneficiary support requests.');
   const records = await ProgramAssistance.findAll({
-    where: isStaff(req.user) ? {} : { beneficiaryId: req.user.id },
     include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }],
     order: [['supportDate', 'DESC'], ['createdAt', 'DESC']]
   });
@@ -863,10 +861,8 @@ router.get('/financial-assistance', asyncRoute(async (req, res) => {
 }));
 
 router.get('/financial-assistance/summary', asyncRoute(async (req, res) => {
-  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to view beneficiary requests.');
-  if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
+  if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can view assistance summaries.');
   const records = await ProgramAssistance.findAll({
-    where: isStaff(req.user) ? {} : { beneficiaryId: req.user.id },
     attributes: ['currency', 'amount']
   });
   const totals = {};
@@ -880,11 +876,12 @@ router.get('/financial-assistance/summary', asyncRoute(async (req, res) => {
 }));
 
 router.post('/financial-assistance', asyncRoute(async (req, res) => {
-  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to manage beneficiary requests.');
+  if (req.user.role !== 'admin' && req.user.role !== 'scholar') {
+    return fail(res, 403, 'Access denied. Only administrators can manage support and assistance.');
+  }
   const { beneficiary_id: suppliedId, support_type: supportType, amount, currency = 'RWF',
     support_date: suppliedDate, details } = req.body || {};
   const beneficiaryId = req.user.role === 'scholar' ? req.user.id : suppliedId;
-  if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
   const numericAmount = amount === '' || amount == null ? 0 : Number(amount);
   const finalCurrency = String(currency).trim().toUpperCase();
   const supportDate = req.user.role === 'scholar'
@@ -902,9 +899,8 @@ router.post('/financial-assistance', asyncRoute(async (req, res) => {
     supportDate, details: details?.trim() || null, status: isRequest ? 'Requested' : 'Delivered'
   });
   if (isRequest) {
+    // Only Admin receives notification for support requests
     await notifyStaff('New support request', `${scholar.name} requested ${supportType.trim()}.`, 'assistance', 'support');
-  } else {
-    await notifyUser(beneficiaryId, 'Support recorded', `Support was recorded: ${supportType.trim()}.`, 'assistance', 'support');
   }
   res.status(201).json(publicAssistance(await ProgramAssistance.findByPk(record.id, {
     include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }]
@@ -912,23 +908,15 @@ router.post('/financial-assistance', asyncRoute(async (req, res) => {
 }));
 
 router.patch('/financial-assistance/:id', asyncRoute(async (req, res) => {
-  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied. Mentors are not allowed to manage beneficiary requests.');
+  if (req.user.role !== 'admin') {
+    return fail(res, 403, 'Access denied. Only administrators can update support requests.');
+  }
   const record = await ProgramAssistance.findByPk(req.params.id);
   if (!record) return fail(res, 404, 'Support record not found.');
-  if (req.user.role === 'scholar') {
-    if (record.beneficiaryId !== req.user.id) return fail(res, 404, 'Support record not found.');
-    if (record.status !== 'Requested') return fail(res, 403, 'Only pending support requests can be updated by the requester.');
-    const { details } = req.body || {};
-    if (!optionalText(details, 5000)) return fail(res, 422, 'Enter valid request details.');
-    await record.update({ details: details?.trim() || null });
-  } else {
-    if (!requireStaff(req, res)) return;
-    const { status, details } = req.body || {};
-    if (!validText(status, 2, 50) || !optionalText(details, 5000)) return fail(res, 422, 'Enter valid support status and details.');
-    await record.update({ status: status.trim(), ...(details !== undefined ? { details: details?.trim() || null } : {}) });
-    await notifyUser(record.beneficiaryId, 'Support request updated',
-      `Your support request status is now ${record.status}.`, 'assistance', 'support');
-  }
+  const { status, details } = req.body || {};
+  if (!validText(status, 2, 50) || !optionalText(details, 5000)) return fail(res, 422, 'Enter valid support status and details.');
+  await record.update({ status: status.trim(), ...(details !== undefined ? { details: details?.trim() || null } : {}) });
+  // Per specification, responses are strictly managed by Admin and not broadcast to other users
   const updated = await ProgramAssistance.findByPk(record.id, {
     include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }]
   });
@@ -959,8 +947,7 @@ router.get('/academic-results/export', asyncRoute(async (req, res) => {
 }));
 
 router.get('/financial-assistance/export', asyncRoute(async (req, res) => {
-  if (req.user.role === 'mentor') return fail(res, 403, 'Access denied.');
-  if (!requireStaff(req, res)) return;
+  if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can export support records.');
   const records = await ProgramAssistance.findAll({
     include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email'] }],
     order: [['supportDate', 'DESC']]

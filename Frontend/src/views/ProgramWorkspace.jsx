@@ -122,7 +122,10 @@ function ScholarSelect({ name, label, value, scholars, exclude, onChange }) {
 }
 
 export default function ProgramWorkspace({ currentView, setCurrentView, userRole }) {
-  const activeView = views.some((view) => view.id === currentView) ? currentView : 'programs';
+  const availableViews = views.filter((view) => view.id !== 'assistance' || userRole === 'admin');
+  const activeView = (userRole !== 'admin' && currentView === 'assistance')
+    ? 'programs'
+    : (availableViews.some((view) => view.id === currentView) ? currentView : 'programs');
   const isScholar = userRole === 'scholar' || userRole === 'beneficiary';
   const isStaff = ['mentor', 'teacher', 'admin', 'staff'].includes(userRole);
   const [records, setRecords] = useState([]);
@@ -354,7 +357,7 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
       </div>
 
       <nav aria-label="Program features" className="mb-6 grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-3 lg:grid-cols-6">
-        {views.map(({ id, label, icon: Icon }) => (
+        {availableViews.map(({ id, label, icon: Icon }) => (
           <button key={id} type="button" onClick={() => navigate(id)} aria-current={activeView === id ? 'page' : undefined}
             className={`flex items-center justify-center gap-2 rounded-xl px-2 py-3 text-xs font-bold transition sm:text-sm ${
               activeView === id ? 'bg-blue-900 text-white shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-900 dark:text-slate-300 dark:hover:bg-slate-800'
@@ -374,10 +377,10 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
             <Stat label="Friendly Weeks" value={dashboard?.stats?.friendly_weeks_count} />
             <Stat label={isStaff ? 'All academic results' : 'Reviewed average'} value={isStaff ? dashboard?.stats?.academic_results_count : dashboard?.stats?.reviewed_average == null ? '—' : `${dashboard.stats.reviewed_average}%`} />
             <Stat label="Mentorship plans" value={dashboard?.counts?.mentorships} />
-            <Stat label="Support records" value={dashboard?.stats?.financial_assistance_count} />
+            {userRole === 'admin' && <Stat label="Support records" value={dashboard?.stats?.financial_assistance_count} />}
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {views.slice(1).map(({ id, label, icon: Icon }) => (
+            {availableViews.slice(1).map(({ id, label, icon: Icon }) => (
               <button key={id} type="button" onClick={() => navigate(id)}
                 className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-900 dark:bg-blue-950 dark:text-blue-200"><Icon size={20} /></span>
@@ -402,14 +405,15 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
       ) : (
         <div className="space-y-5">
           <div className="flex flex-wrap gap-2">
-            {((isScholar && ['reports', 'academic-results', 'assistance'].includes(activeView)) ||
-              (isStaff && ['academic-results', 'friendly-weeks', 'mentorship', 'assistance'].includes(activeView))) && (
+            {((isScholar && ['reports', 'academic-results'].includes(activeView)) ||
+              (userRole === 'admin' && activeView === 'assistance') ||
+              (isStaff && ['academic-results', 'friendly-weeks', 'mentorship'].includes(activeView))) && (
               <button type="button" onClick={() => setShowForm((value) => !value)} className={buttonClass}>
                 {activeView === 'reports' ? 'Submit a report'
                   : activeView === 'academic-results' ? (isScholar ? 'Add academic result' : 'Record academic result')
                     : activeView === 'friendly-weeks' ? 'Plan a Friendly Week'
                       : activeView === 'mentorship' ? 'Create mentorship plan'
-                        : isScholar ? 'Request support' : 'Record support'}
+                        : 'Record support'}
               </button>
             )}
             {isStaff && activeView === 'friendly-weeks' && (
@@ -422,7 +426,7 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
                 <ArrowDownToLine size={15} /> Export CSV
               </button>
             )}
-            {isStaff && activeView === 'assistance' && (
+            {userRole === 'admin' && activeView === 'assistance' && (
               <button type="button" onClick={() => exportCsv('/api/program/financial-assistance/export', 'support-records.csv')} className={quietButtonClass}>
                 <ArrowDownToLine size={15} /> Export CSV
               </button>
@@ -523,7 +527,7 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
               {activeView === 'assistance' && records.map((record) => (
                 <RecordCard key={record.id} title={record.support_type} subtitle={`${record.beneficiary_name || 'You'} · ${record.support_date}${Number(record.amount) > 0 ? ` · ${record.amount} ${record.currency}` : ''}`} status={record.status}>
                   {record.details && <p className="text-sm text-slate-600 dark:text-slate-300">{record.details}</p>}
-                  {isStaff && <div className="mt-3 flex flex-wrap gap-2">{['Requested', 'Approved', 'Declined', 'Delivered'].map((status) => <button key={status} type="button" onClick={() => changeStatus(`/api/program/financial-assistance/${record.id}`, { status }, `Support marked ${status.toLowerCase()}.`)} className={quietButtonClass}>{status}</button>)}</div>}
+                  {userRole === 'admin' && <div className="mt-3 flex flex-wrap gap-2">{['Requested', 'Approved', 'Declined', 'Delivered'].map((status) => <button key={status} type="button" onClick={() => changeStatus(`/api/program/financial-assistance/${record.id}`, { status }, `Support marked ${status.toLowerCase()}.`)} className={quietButtonClass}>{status}</button>)}</div>}
                 </RecordCard>
               ))}
             </div>

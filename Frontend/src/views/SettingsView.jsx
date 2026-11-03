@@ -762,8 +762,8 @@ export default function SettingsView({ currentUser, userRole, onLogout, onUpdate
                 {currentUser.university}
               </span>
             )}
-            <button onClick={onLogout} className="mt-8 w-full py-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all">
-              Log Out Portal
+            <button onClick={onLogout} className="mt-8 w-full py-3 bg-red-50 hover:bg-red-100 dark:bg-red-955/20 dark:hover:bg-red-955/40 text-red-600 dark:text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all">
+              Logout
             </button>
           </div>
 

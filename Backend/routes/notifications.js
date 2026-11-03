@@ -55,6 +55,15 @@ router.get('/', authenticateToken, async (req, res) => {
       });
     }
 
+    if (req.user.role !== 'admin') {
+      notifications = notifications.filter(n =>
+        n.type !== 'support' &&
+        !n.title?.toLowerCase().includes('support') &&
+        !n.title?.toLowerCase().includes('assistance') &&
+        !n.link?.includes('assistance')
+      );
+    }
+
     res.json(notifications);
   } catch (err) {
     console.error('Failed to load notifications:', err);

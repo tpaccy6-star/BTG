@@ -140,6 +140,19 @@ export default function App() {
   }, [isLoggedIn, loadingSession]);
 
   useEffect(() => {
+    if (!isLoggedIn || userRole === 'mentor') return;
+    if (userRole !== 'admin') {
+      if (currentView === 'cohorts') {
+        setCurrentView('dashboard');
+        window.location.hash = '#/dashboard';
+      } else if (currentView === 'assistance') {
+        setCurrentView('programs');
+        window.location.hash = '#/programs';
+      }
+    }
+  }, [isLoggedIn, userRole, currentView]);
+
+  useEffect(() => {
     if (!isLoggedIn || userRole !== 'mentor') return;
     const allowedMentorViews = ['chat', 'profile', 'announcements'];
     if (!allowedMentorViews.includes(currentView)) {
@@ -380,7 +393,7 @@ export default function App() {
                 {currentView === 'grading' && (
                   <TasksView currentUser={currentUser} userRole={userRole} lessons={lessons} onUpdateUser={refreshUserSession} key="grading" />
                 )}
-                {currentView === 'cohorts' && (
+                {currentView === 'cohorts' && userRole === 'admin' && (
                   <CohortsView currentUser={currentUser} userRole={userRole} key="cohorts" />
                 )}
                 {currentView === 'curriculum' && (

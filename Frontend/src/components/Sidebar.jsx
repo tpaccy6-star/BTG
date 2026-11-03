@@ -41,7 +41,6 @@ export default function Sidebar({
   } else if (userRole === 'teacher') {
     items = [
       { id: 'dashboard', icon: Home, label: 'Global Hub' },
-      { id: 'cohorts', icon: Users, label: 'All Cohorts' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
       { id: 'announcements', icon: MessageCircle, label: 'Broadcasts' },
@@ -50,6 +49,7 @@ export default function Sidebar({
   } else if (userRole === 'admin' || userRole === 'staff') {
     items = [
       { id: 'dashboard', icon: Shield, label: 'Overview' },
+      ...(userRole === 'admin' ? [{ id: 'cohorts', icon: Users, label: 'Cohorts' }] : []),
       { id: 'users', icon: Users, label: 'User Directory' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },

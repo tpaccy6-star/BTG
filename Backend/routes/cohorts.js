@@ -1,5 +1,5 @@
 import express from 'express';
-import { Cohort } from '../models.js';
+import { Cohort, User } from '../models.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -85,6 +85,130 @@ router.delete('/admin/cohorts/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete cohort.' });
+  }
+});
+
+
+// 27. Get Members of a Specific Cohort (Admin Only)
+router.get('/admin/cohorts/:id/members', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+  const { id } = req.params;
+  try {
+    const members = await User.findAll({
+      where: { cohortId: id },
+      attributes: ['id', 'name', 'email', 'role', 'university', 'yearLevel', 'avatarUrl', 'initials', 'createdAt'],
+      order: [['name', 'ASC']]
+    });
+    res.json(members);
+  } catch (err) {
+    console.error('Failed to fetch cohort members:', err);
+    res.status(500).json({ error: 'Failed to fetch cohort members.' });
+  }
+});
+
+// 28. Get Available Scholars To Add To Cohort (Admin Only)
+router.get('/admin/cohorts-available-scholars', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+  try {
+    const scholars = await User.findAll({
+      where: { role: 'scholar' },
+      attributes: ['id', 'name', 'email', 'cohortId', 'university', 'avatarUrl', 'initials'],
+      include: [{ model: Cohort, as: 'cohort', attributes: ['id', 'name'] }],
+      order: [['name', 'ASC']]
+    });
+    res.json(scholars);
+  } catch (err) {
+    console.error('Failed to fetch available scholars:', err);
+    res.status(500).json({ error: 'Failed to fetch available scholars.' });
+  }
+});
+
+// 29. Add Member To Cohort (Admin Only)
+router.post('/admin/cohorts/:id/members', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+  const { id } = req.params;
+  const { userId, name, email, university } = req.body;
+
+  try {
+    const cohort = await Cohort.findByPk(id);
+    if (!cohort) {
+      return res.status(404).json({ error: 'Cohort not found.' });
+    }
+
+    let member;
+    if (userId) {
+      member = await User.findByPk(userId);
+      if (!member) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+      member.cohortId = cohort.id;
+      if (university && !member.university) member.university = university;
+      await member.save();
+    } else if (name && email) {
+      const existing = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (existing) {
+        return res.status(400).json({ error: 'User with this email already exists.' });
+      }
+      const bcrypt = (await import('bcryptjs')).default;
+      member = await User.create({
+        email: email.toLowerCase().trim(),
+        passwordHash: bcrypt.hashSync('password123', 10),
+        role: 'scholar',
+        name: name.trim(),
+        initials: name.trim().slice(0, 2).toUpperCase(),
+        university: university || cohort.university || 'Scholar University',
+        yearLevel: 'Active Scholar',
+        cohortId: cohort.id
+      });
+    } else {
+      return res.status(400).json({ error: 'Please select an existing scholar or provide a name and email.' });
+    }
+
+    // Auto update scholars count
+    const count = await User.count({ where: { cohortId: cohort.id, role: 'scholar' } });
+    cohort.scholars = count;
+    await cohort.save();
+
+    res.json({ success: true, member, cohort });
+  } catch (err) {
+    console.error('Failed to add member to cohort:', err);
+    res.status(500).json({ error: 'Failed to add member to cohort.' });
+  }
+});
+
+// 30. Remove Member From Cohort (Admin Only)
+router.delete('/admin/cohorts/:id/members/:userId', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+  }
+  const { id, userId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    user.cohortId = null;
+    await user.save();
+
+    const cohort = await Cohort.findByPk(id);
+    if (cohort) {
+      const count = await User.count({ where: { cohortId: cohort.id, role: 'scholar' } });
+      cohort.scholars = count;
+      await cohort.save();
+    }
+
+    res.json({ success: true, message: 'Member removed from cohort successfully.' });
+  } catch (err) {
+    console.error('Failed to remove member from cohort:', err);
+    res.status(500).json({ error: 'Failed to remove member from cohort.' });
   }
 });
 

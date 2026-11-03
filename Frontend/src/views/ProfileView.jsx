@@ -214,7 +214,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
             </div>
 
             {/* Quick Camera Overlay Label */}
-            <label className="absolute -bottom-2 -right-2 p-2.5 bg-yellow-450 hover:bg-yellow-400 text-slate-950 rounded-2xl shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 border-2 border-white dark:border-slate-900" title="Upload portrait picture">
+            <label className="absolute -bottom-2 -right-2 p-2.5 bg-yellow-450 hover:bg-yellow-400 text-slate-950 rounded-2xl shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 border-2 border-white dark:border-slate-900" title={currentUser?.avatarUrl ? "Change photo" : "Upload photo"}>
               <Camera size={16} />
               <input
                 type="file"
@@ -229,7 +229,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
           <div className="mb-4">
             <label className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-650 dark:text-slate-300 hover:text-blue-900 dark:hover:text-yellow-450 transition-all cursor-pointer">
               <Upload size={12} />
-              <span>{uploading ? 'Uploading picture...' : 'Update picture'}</span>
+              <span>{uploading ? 'Uploading photo...' : currentUser?.avatarUrl ? 'Change photo' : 'Upload photo'}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -278,7 +278,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
             className="mt-8 w-full py-3.5 bg-red-50 hover:bg-red-100 dark:bg-red-955/20 dark:hover:bg-red-955/40 text-red-600 dark:text-red-450 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center space-x-2 border border-red-200/20 dark:border-red-900/30 cursor-pointer"
           >
             <LogOut size={16} />
-            <span>Sign Out of Portal</span>
+            <span>Logout</span>
           </button>
         </div>
 
@@ -421,12 +421,12 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
               </div>
               <div>
                 <h3 className="text-xl font-black text-blue-955 dark:text-white tracking-tight">
-                  {isAdmin ? 'System Credentials' : 'Change Initial Password'}
+                  {isAdmin ? 'System Credentials' : 'Change Password'}
                 </h3>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
                   {isAdmin 
                     ? 'Security access rules for administrative accounts.' 
-                    : 'Personalize your credentials by updating your initial account password.'}
+                    : 'Personalize your credentials by updating your account password.'}
                 </p>
               </div>
             </div>
@@ -443,11 +443,6 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
               </div>
             ) : (
               <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
-                  <span className="font-bold">Initial Password Tip: </span>
-                  All participant, mentor, teacher, and staff accounts are assigned an initial password upon creation (default: <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/50 px-1 py-0.5 rounded">password123</code>). Enter your current password below to set your new personal password.
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Current Password */}
                   <div className="space-y-1">
@@ -459,7 +454,7 @@ export default function ProfileView({ currentUser, onLogout, onUpdateUser }) {
                         type={showCurrentPass ? 'text' : 'password'}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Initial password"
+                        placeholder="Current password"
                         required
                         className="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-white"
                       />
