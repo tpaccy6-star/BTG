@@ -27,7 +27,7 @@ export default function Header({
     lesson: 'Lesson desk',
     tasks: 'Tasks & submissions',
     attendance: 'Attendance',
-    chat: 'Mentor chat',
+    chat: 'Messages',
     profile: 'My profile',
     scholars: 'Scholar roster',
     grading: 'Grading',
@@ -52,11 +52,15 @@ export default function Header({
         {/* Desktop Toggle */}
         <button 
           onClick={toggleDesktopSidebar}
-          className="rise-header-toggle mr-4 p-2 rounded-lg hidden lg:block transition-colors"
+          className={`rise-header-toggle mr-4 p-2 rounded-lg transition-colors ${
+            userRole === 'mentor' ? 'hidden' : 'hidden lg:block'
+          }`}
         >
           {isDesktopSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
         </button>
-        <div className="lg:hidden flex items-center space-x-2">
+        <div className={`flex items-center space-x-2 ${
+          userRole === 'mentor' ? '' : 'lg:hidden'
+        }`}>
           <div className="rise-brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border p-1.5">
             <img src="/rise-logo.png" alt="Rise Her" className="h-full w-full object-contain logo-sharp shrink-0" />
           </div>
@@ -65,25 +69,29 @@ export default function Header({
             <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Learning workspace</span>
           </div>
         </div>
-        <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
-          <span className="text-slate-500">Workspace</span>
-          <span className="text-slate-300">/</span>
-          <span className="font-bold text-slate-800">{viewLabel}</span>
-        </div>
+        {userRole !== 'mentor' && (
+          <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
+            <span className="text-slate-500">Workspace</span>
+            <span className="text-slate-300">/</span>
+            <span className="font-bold text-slate-800">{viewLabel}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Mobile Theme Toggle */}
+        {/* Theme Toggle */}
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="rise-header-toggle lg:hidden p-2 rounded-lg transition-colors"
+          className={`rise-header-toggle p-2 rounded-lg transition-colors ${
+            userRole === 'mentor' ? '' : ''
+          }`}
           title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
           {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
         {/* Real Notification Bell */}
-        <NotificationBell />
+        {userRole !== 'mentor' && <NotificationBell />}
         
         {/* Profile Dropdown Corner */}
         <div className={`flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l relative`}>
@@ -122,7 +130,7 @@ export default function Header({
                   isDarkMode ? 'bg-slate-850 border-slate-800 text-white' : 'bg-white border-slate-100'
                 }`}
               >
-                <button
+                {userRole !== 'mentor' && <button
                   onClick={() => {
                     setCurrentView('profile');
                     window.location.hash = '#/profile';
@@ -134,8 +142,8 @@ export default function Header({
                 >
                   <User size={14} className="text-slate-400" />
                   <span>View Profile</span>
-                </button>
-                <button
+                </button>}
+                {userRole !== 'mentor' && <button
                   onClick={() => {
                     setCurrentView('settings');
                     window.location.hash = '#/settings';
@@ -147,7 +155,7 @@ export default function Header({
                 >
                   <Settings size={14} className="text-slate-400" />
                   <span>Settings</span>
-                </button>
+                </button>}
                 <div className={`border-t my-1 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`} />
                 <button
                   onClick={() => {

@@ -11,14 +11,13 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import LoginPage from './views/LoginPage';
 import ScholarDashboard from './views/ScholarDashboard';
-import MentorDashboard from './views/MentorDashboard';
 import TeacherDashboard from './views/TeacherDashboard';
 import AdminDashboard from './views/AdminDashboard';
 import AttendanceView from './views/AttendanceView';
 import CatalogView from './views/CatalogView';
 import LessonView from './views/LessonView';
 import TasksView from './views/TasksView';
-import ChatView from './views/ChatView';
+import DirectMessagesView from './views/DirectMessagesView';
 import ProfileView from './views/ProfileView';
 
 // Newly implemented dashboard views
@@ -141,9 +140,15 @@ export default function App() {
     }
   }, [isLoggedIn, loadingSession]);
 
+  useEffect(() => {
+    if (!isLoggedIn || userRole !== 'mentor') return;
+    if (currentView !== 'chat') setCurrentView('chat');
+    if (window.location.hash !== '#/chat') window.location.hash = '#/chat';
+  }, [isLoggedIn, userRole, currentView]);
+
   // --- 3. Load curriculum catalog once authenticated ---
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || userRole === 'mentor') return;
 
     const fetchLessons = async () => {
       try {
@@ -166,7 +171,7 @@ export default function App() {
     };
 
     fetchLessons();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, userRole]);
 
   // Refresh user object (e.g. following upload or attendance log)
   const refreshUserSession = async () => {
@@ -192,8 +197,9 @@ export default function App() {
     setCurrentUser(data.user);
     setUserRole(data.user.role);
     setIsLoggedIn(true);
-    setCurrentView('dashboard');
-    window.location.hash = '#/dashboard';
+    const landingView = data.user.role === 'mentor' ? 'chat' : 'dashboard';
+    setCurrentView(landingView);
+    window.location.hash = `#/${landingView}`;
   };
 
   const handleLogout = () => {
@@ -225,6 +231,7 @@ export default function App() {
 
   // Mobile Bottom Navigation Component
   const MobileNavbar = () => {
+    if (userRole === 'mentor') return null;
     let items = [];
     if (userRole === 'scholar' || userRole === 'beneficiary') {
       items = [
@@ -290,16 +297,17 @@ export default function App() {
       isDarkMode ? 'dark' : ''
     }`}>
       
-      {/* Sidebar Layout */}
-      <Sidebar 
-        userRole={userRole} 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
-        isDesktopSidebarOpen={isDesktopSidebarOpen} 
-        currentUser={currentUser}
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-      />
+      {userRole !== 'mentor' && (
+        <Sidebar
+          userRole={userRole}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          isDesktopSidebarOpen={isDesktopSidebarOpen}
+          currentUser={currentUser}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+        />
+      )}
 
       {/* Main Container Area */}
       <main className="flex-1 flex flex-col h-screen min-w-0 relative">
@@ -320,11 +328,14 @@ export default function App() {
           <div className="flex-1 p-4 lg:p-10 pb-20 lg:pb-6">
             <div className="w-full h-full">
               <AnimatePresence mode="wait">
+                {userRole === 'mentor' ? (
+                  currentView === 'chat' && (
+                    <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
+                  )
+                ) : (
+                  <>
                 {currentView === 'dashboard' && (userRole === 'scholar' || userRole === 'beneficiary') && (
                   <ScholarDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholar-dash" />
-                )}
-                {currentView === 'dashboard' && userRole === 'mentor' && (
-                  <MentorDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="mentor-dash" />
                 )}
                 {currentView === 'dashboard' && userRole === 'teacher' && (
                   <TeacherDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="teacher-dash" />
@@ -346,7 +357,7 @@ export default function App() {
                   <TasksView currentUser={currentUser} userRole={userRole} lessons={lessons} onUpdateUser={refreshUserSession} key="tasks" />
                 )}
                 {currentView === 'chat' && (
-                  <ChatView currentUser={currentUser} userRole={userRole} key="chat" />
+                  <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
                 )}
                 {currentView === 'profile' && (
                   <ProfileView currentUser={currentUser} onLogout={handleLogout} onUpdateUser={refreshUserSession} key="profile" />
@@ -382,6 +393,8 @@ export default function App() {
                     userRole={userRole}
                     key="program-workspace"
                   />
+                )}
+                  </>
                 )}
               </AnimatePresence>
             </div>
