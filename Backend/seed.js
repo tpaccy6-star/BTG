@@ -44,6 +44,13 @@ const seedDatabase = async () => {
     ]);
     console.log('Default University of Rwanda cross-campus promotion cohorts seeded.');
 
+    if (sequelize.getDialect() === 'postgres') {
+      const cohortTable = Cohort.getTableName();
+      await sequelize.query(
+        `SELECT setval(pg_get_serial_sequence('"${cohortTable}"', 'id'), COALESCE((SELECT MAX(id) FROM "${cohortTable}"), 1), true);`
+      );
+    }
+
     // --- Seed Users ---
     const passwordHash = bcrypt.hashSync('password123', 10);
 
@@ -586,6 +593,7 @@ const seedDatabase = async () => {
 
   } catch (err) {
     console.error('Error seeding database:', err);
+    throw err;
   }
 };
 

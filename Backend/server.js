@@ -369,6 +369,8 @@ app.get('*', (req, res, next) => {
 // --- Server Initialization ---
 const initApp = async () => {
   try {
+    await sequelize.authenticate();
+
     // Check if database contains data, if not seed it
     const usersCount = await User.count().catch(() => 0);
     if (usersCount === 0) {
@@ -381,15 +383,16 @@ const initApp = async () => {
         rawTables.map((t) => String(typeof t === 'string' ? t : t.tableName || t.name || '').toLowerCase())
       );
 
-      const userTable = await qi.describeTable('Users');
+      const userTableName = User.getTableName();
+      const userTable = await qi.describeTable(userTableName);
       if (!userTable.assignedMentorId) {
-        await qi.addColumn('Users', 'assignedMentorId', { type: User.rawAttributes.assignedMentorId.type, allowNull: true });
+        await qi.addColumn(userTableName, 'assignedMentorId', { type: User.rawAttributes.assignedMentorId.type, allowNull: true });
       }
       if (!userTable.phone) {
-        await qi.addColumn('Users', 'phone', { type: User.rawAttributes.phone.type, allowNull: true });
+        await qi.addColumn(userTableName, 'phone', { type: User.rawAttributes.phone.type, allowNull: true });
       }
       if (!userTable.bio) {
-        await qi.addColumn('Users', 'bio', { type: User.rawAttributes.bio.type, allowNull: true });
+        await qi.addColumn(userTableName, 'bio', { type: User.rawAttributes.bio.type, allowNull: true });
       }
 
       if (existingTables.has('program_academic_results')) {
@@ -433,7 +436,14 @@ const initApp = async () => {
       console.log(`Generation Rise Backend running on http://localhost:${PORT}`);
     });
   } catch (err) {
+    const dnsHost = err?.parent?.hostname || err?.original?.hostname;
+    if ((err?.parent?.code === 'ENOTFOUND' || err?.original?.code === 'ENOTFOUND') && dnsHost) {
+      console.error(
+        `Database host "${dnsHost}" could not be resolved (ENOTFOUND). Update DATABASE_URL in your deployment Environment to an active PostgreSQL instance (or remove DATABASE_URL to use SQLite).`
+      );
+    }
     console.error('Unable to start application server:', err);
+    process.exit(1);
   }
 };
 

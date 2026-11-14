@@ -9,17 +9,25 @@ const __dirname = path.dirname(__filename);
 
 let sequelize;
 
-if (process.env.DATABASE_URL) {
+const databaseUrl = process.env.DATABASE_URL?.trim();
+
+if (databaseUrl) {
+  const requiresSsl =
+    process.env.NODE_ENV === 'production' ||
+    /render\.com|sslmode=require/i.test(databaseUrl);
+
   // Use PostgreSQL in production or when DATABASE_URL is set
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
+  sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
     logging: false,
-    dialectOptions: {
-      ssl: process.env.NODE_ENV === 'production' ? {
-        require: true,
-        rejectUnauthorized: false
-      } : false
-    }
+    dialectOptions: requiresSsl
+      ? {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false
+          }
+        }
+      : {}
   });
 } else {
   // Fall back to SQLite for local development
