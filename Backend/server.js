@@ -4,6 +4,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -351,19 +352,40 @@ app.use((err, req, res, next) => {
 });
 
 // --- Serve Static Frontend Assets in Production ---
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, '../Frontend/dist')));
+const serverDir = path.dirname(fileURLToPath(import.meta.url));
+const frontendDistDir = path.resolve(serverDir, '../Frontend/dist');
+
+function setStaticCacheHeaders(res, servedPath) {
+  const normalized = servedPath.replace(/\\/g, '/');
+  if (
+    normalized.endsWith('/index.html') ||
+    normalized.endsWith('/sw.js') ||
+    normalized.endsWith('/registerSW.js') ||
+    normalized.endsWith('/manifest.webmanifest')
+  ) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    return;
+  }
+  if (normalized.includes('/assets/')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+}
+
+app.use(express.static(frontendDistDir, { index: false, setHeaders: setStaticCacheHeaders }));
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
     return next();
   }
-  // Check if file exists in dist, otherwise send index.html
-  const filePath = path.join(__dirname, '../Frontend/dist', req.path);
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+  const relativeReqPath = String(req.path || '/').replace(/^\/+/, '');
+  const filePath = path.resolve(frontendDistDir, relativeReqPath);
+  if (filePath.startsWith(frontendDistDir + path.sep) && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    setStaticCacheHeaders(res, filePath);
     return res.sendFile(filePath);
   }
-  res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
+  const indexPath = path.join(frontendDistDir, 'index.html');
+  setStaticCacheHeaders(res, indexPath);
+  return res.sendFile(indexPath);
 });
 
 // --- Server Initialization ---

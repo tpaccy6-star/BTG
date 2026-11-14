@@ -36,7 +36,11 @@ export default defineConfig({
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5000000 // 5 MB
+        maximumFileSizeToCacheInBytes: 5000000, // 5 MB
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallbackDenylist: [/^\/api/, /^\/uploads/]
       }
     })
   ],
