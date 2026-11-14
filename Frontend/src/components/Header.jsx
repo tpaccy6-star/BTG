@@ -44,28 +44,28 @@ export default function Header({
   })[currentView] || roleName;
 
   return (
-    <header className={`rise-header sticky top-0 z-10 flex items-center justify-between h-16 px-4 lg:px-6 backdrop-blur-md transition-all duration-200 border-b shrink-0 ${
+    <header className={`rise-header sticky top-0 z-30 flex items-center justify-between gap-2 h-16 px-3 sm:px-4 lg:px-6 backdrop-blur-md transition-all duration-200 border-b shrink-0 ${
       isDarkMode ? 'dark' : ''
     }`}>
-      <div className="flex items-center">
+      <div className="flex min-w-0 flex-1 items-center">
         {/* Desktop Toggle */}
         <button 
           onClick={toggleDesktopSidebar}
-          className={`rise-header-toggle mr-4 p-2 rounded-lg transition-colors ${
+          className={`rise-header-toggle mr-4 p-2 rounded-lg transition-colors shrink-0 ${
             userRole === 'mentor' ? 'hidden' : 'hidden lg:block'
           }`}
         >
           {isDesktopSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
         </button>
-        <div className={`flex items-center space-x-2 ${
+        <div className={`flex min-w-0 items-center space-x-2 ${
           userRole === 'mentor' ? '' : 'lg:hidden'
         }`}>
-          <div className="rise-brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border p-1.5">
+          <div className="rise-brand-mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border p-1.5 shrink-0">
             <img src="/rise-logo.png" alt="Rise Her" className="h-full w-full object-contain logo-sharp shrink-0" />
           </div>
-          <div className="leading-tight">
-            <h1 className="font-display font-bold text-sm text-blue-900">Rise Her</h1>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Generation Rise Foundation</span>
+          <div className="min-w-0 leading-tight">
+            <h1 className="truncate font-display font-bold text-sm text-blue-900">Rise Her</h1>
+            <span className="block truncate text-[9px] font-bold uppercase tracking-wider text-slate-500">Generation Rise Foundation</span>
           </div>
         </div>
         <div className="hidden lg:flex ml-2 items-center gap-2 text-[11px]">
@@ -75,7 +75,7 @@ export default function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
         {/* Theme Toggle */}
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
@@ -91,7 +91,7 @@ export default function Header({
         <NotificationBell setCurrentView={setCurrentView} isDarkMode={isDarkMode} />
         
         {/* Profile Dropdown Corner */}
-        <div className={`flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l relative`}>
+        <div className={`flex items-center gap-2 sm:gap-3 pl-1.5 sm:pl-4 border-l relative`}>
           <button 
             onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)} 
             className="flex items-center space-x-3 cursor-pointer group"

@@ -16,18 +16,27 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Close dropdown on click outside
+  // Close dropdown on click/touch outside or Escape key
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside, { passive: true });
+      document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
 
@@ -116,13 +125,13 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
   const getTypeIcon = (type) => {
     switch (type) {
       case 'announcement':
-        return <Megaphone size={14} className="text-blue-600 dark:text-yellow-450" />;
+        return <Megaphone size={14} className="text-blue-600 dark:text-yellow-400" />;
       case 'message':
         return <MessageCircle size={14} className="text-emerald-500" />;
       case 'alert':
         return <ShieldAlert size={14} className="text-amber-500" />;
       default:
-        return <Info size={14} className="text-blue-500 dark:text-yellow-450" />;
+        return <Info size={14} className="text-blue-500 dark:text-yellow-400" />;
     }
   };
 
@@ -140,13 +149,15 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`rise-notification-button relative p-2.5 rounded-xl transition-all cursor-pointer ${
-          isOpen 
-            ? 'bg-blue-100 dark:bg-slate-800 text-blue-900 dark:text-yellow-450' 
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className={`rise-notification-button relative p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer ${isOpen
+            ? 'bg-blue-100 dark:bg-slate-800 text-blue-900 dark:text-yellow-400'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-        }`}
+          }`}
         title="Notifications"
         aria-label="Open notifications"
       >
@@ -162,20 +173,22 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            role="dialog"
+            aria-label="Notifications panel"
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl z-50 overflow-hidden text-slate-800 dark:text-white"
+            className="fixed inset-x-3 top-[4.5rem] w-auto sm:inset-x-auto sm:absolute sm:right-0 sm:top-full sm:mt-3.5 sm:w-96 sm:max-w-[calc(100vw-2rem)] rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl z-50 overflow-hidden text-slate-800 dark:text-white"
           >
             {/* Popover Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between gap-2 px-3.5 sm:px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40">
+              <div className="flex min-w-0 items-center space-x-2">
                 <span className="font-black text-xs uppercase tracking-wider text-blue-955 dark:text-white">
                   Notifications
                 </span>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-yellow-450/20 text-blue-900 dark:text-yellow-450">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-yellow-400/20 text-blue-900 dark:text-yellow-400 shrink-0">
                     {unreadCount} new
                   </span>
                 )}
@@ -183,8 +196,9 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
 
               {unreadCount > 0 && (
                 <button
+                  type="button"
                   onClick={handleMarkAllRead}
-                  className="inline-flex items-center space-x-1 text-[10px] font-bold text-blue-900 dark:text-yellow-450 hover:underline cursor-pointer"
+                  className="inline-flex shrink-0 items-center space-x-1 text-[10px] font-bold text-blue-900 dark:text-yellow-400 hover:underline cursor-pointer"
                 >
                   <CheckCheck size={12} />
                   <span>Mark all read</span>
@@ -193,7 +207,7 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
             </div>
 
             {/* Notifications Scroll List */}
-            <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+            <div className="max-h-[min(22rem,calc(100vh-11rem))] sm:max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
               {notifications.length === 0 ? (
                 <div className="py-10 text-center px-4">
                   <Bell size={24} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
@@ -205,45 +219,48 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
                   <div
                     key={item.id}
                     onClick={() => handleNotificationClick(item)}
-                    className={`p-3.5 flex items-start space-x-3 transition-colors cursor-pointer group ${
-                      !item.isRead 
-                        ? 'bg-blue-50/40 dark:bg-slate-850/60 hover:bg-blue-50/80 dark:hover:bg-slate-800' 
+                    className={`p-3 sm:p-3.5 flex items-start gap-2.5 sm:gap-3 transition-colors cursor-pointer group ${!item.isRead
+                        ? 'bg-blue-50/40 dark:bg-slate-850/60 hover:bg-blue-50/80 dark:hover:bg-slate-800'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-850'
-                    }`}
+                      }`}
                   >
                     <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 mt-0.5">
                       {getTypeIcon(item.type)}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className={`text-xs truncate ${!item.isRead ? 'font-black text-blue-955 dark:text-white' : 'font-semibold text-slate-700 dark:text-slate-300'}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-xs break-words line-clamp-2 ${!item.isRead ? 'font-black text-blue-955 dark:text-white' : 'font-semibold text-slate-700 dark:text-slate-300'}`}>
                           {item.title}
                         </p>
-                        <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 shrink-0 ml-2">
+                        <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 shrink-0 pt-0.5">
                           {formatTimestamp(item.createdAt)}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium line-clamp-2 mt-0.5 leading-relaxed break-words">
                         {item.message}
                       </p>
                     </div>
 
-                    {/* Actions on hover */}
-                    <div className="flex items-center space-x-1 shrink-0 pt-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    {/* Actions */}
+                    <div className="flex items-center space-x-1 shrink-0 pt-0.5 opacity-85 sm:opacity-60 sm:group-hover:opacity-100 transition-opacity">
                       {!item.isRead && (
                         <button
+                          type="button"
                           onClick={(e) => handleMarkSingleRead(item.id, e)}
                           title="Mark as read"
-                          className="p-1 text-blue-900 dark:text-yellow-450 hover:bg-white dark:hover:bg-slate-700 rounded-lg cursor-pointer"
+                          aria-label="Mark notification as read"
+                          className="p-1.5 text-blue-900 dark:text-yellow-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg cursor-pointer"
                         >
                           <CheckCheck size={13} />
                         </button>
                       )}
                       <button
+                        type="button"
                         onClick={(e) => handleDismissNotification(item.id, e)}
                         title="Dismiss"
-                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-700 rounded-lg cursor-pointer transition-colors"
+                        aria-label="Dismiss notification"
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-700 rounded-lg cursor-pointer transition-colors"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -256,6 +273,7 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
             {/* Popover Footer */}
             <div className="p-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 text-center">
               <button
+                type="button"
                 onClick={() => {
                   setIsOpen(false);
                   if (setCurrentView) {
@@ -263,10 +281,10 @@ export default function NotificationBell({ setCurrentView, isDarkMode }) {
                     window.location.hash = '#/announcements';
                   }
                 }}
-                className="w-full py-1.5 px-3 rounded-xl text-[11px] font-bold text-blue-900 dark:text-yellow-450 hover:bg-white dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center space-x-1.5 cursor-pointer"
+                className="w-full py-1.5 px-3 rounded-xl text-[11px] font-bold text-blue-900 dark:text-yellow-400 hover:bg-white dark:hover:bg-slate-800 transition-colors inline-flex items-center justify-center space-x-1.5 cursor-pointer"
               >
-                <span>View All Broadcasts & Announcements</span>
-                <ExternalLink size={11} />
+                <span className="truncate">View All Broadcasts & Announcements</span>
+                <ExternalLink size={11} className="shrink-0" />
               </button>
             </div>
           </motion.div>

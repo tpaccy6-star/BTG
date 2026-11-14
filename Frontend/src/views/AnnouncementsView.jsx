@@ -136,10 +136,10 @@ export default function AnnouncementsView({ userRole }) {
       initial={{ opacity: 0, y: 15 }} 
       animate={{ opacity: 1, y: 0 }} 
       exit={{ opacity: 0 }}
-      className="space-y-8"
+      className="min-w-0 space-y-6 sm:space-y-8"
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Global Broadcasts</h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">Ecosystem notices, compliance updates, and scheduled events.</p>
         </div>
@@ -153,23 +153,23 @@ export default function AnnouncementsView({ userRole }) {
               setTargetCohortId('');
               setIsFormOpen(true);
             }}
-            className="px-4 py-2 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-md flex items-center transition-all"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 sm:py-2 bg-blue-900 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-md flex items-center transition-all"
           >
             <Plus size={14} className="mr-1.5" /> Publish Notice
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
         {/* Notices Feed */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 min-w-0 space-y-4 sm:space-y-6">
           <h3 className="text-base font-bold text-slate-805 dark:text-white tracking-tight mb-2">Announcements</h3>
           {loading ? (
-            <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+            <div className="p-6 sm:p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-100 dark:border-slate-800">
               Loading broadcasts...
             </div>
           ) : announcements.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+            <div className="p-6 sm:p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-100 dark:border-slate-800">
               No active announcements posted.
             </div>
           ) : (
@@ -179,36 +179,36 @@ export default function AnnouncementsView({ userRole }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100/80 dark:border-slate-800 shadow-sm space-y-4 hover:shadow-md transition-all relative overflow-hidden"
+                className="p-4 sm:p-6 lg:p-8 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-100/80 dark:border-slate-800 shadow-sm space-y-3 sm:space-y-4 hover:shadow-md transition-all relative overflow-hidden"
               >
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-50 dark:border-slate-800 pb-4">
-                    <h4 className="text-base font-bold text-slate-800 dark:text-white leading-tight">{ann.title}</h4>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center space-x-3 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 border-b border-slate-50 dark:border-slate-800 pb-3 sm:pb-4">
+                    <h4 className="min-w-0 break-words text-base font-bold text-slate-800 dark:text-white leading-tight">{ann.title}</h4>
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                         <span className="flex items-center"><User size={10} className="mr-1" /> {ann.author}</span>
                         <span>•</span>
                         <span className="flex items-center"><Calendar size={10} className="mr-1" /> {ann.date}</span>
                       </div>
                       {isTeacherOrAdmin && (
                         <div className="flex items-center space-x-2">
-                          <button onClick={() => handleEdit(ann)} className="text-slate-400 hover:text-blue-600 transition-colors" title="Edit Announcement"><Edit2 size={14}/></button>
-                          <button onClick={() => setDeleteConfirmId(ann.id)} className="text-slate-400 hover:text-red-500 transition-colors" title="Delete Announcement"><Trash2 size={14}/></button>
+                          <button onClick={() => handleEdit(ann)} className="p-1 text-slate-400 hover:text-blue-600 transition-colors" title="Edit Announcement"><Edit2 size={14}/></button>
+                          <button onClick={() => setDeleteConfirmId(ann.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Delete Announcement"><Trash2 size={14}/></button>
                         </div>
                       )}
                     </div>
                   </div>
-                <p className="text-xs text-slate-606 dark:text-slate-400 font-medium leading-relaxed">{ann.content}</p>
+                <p className="break-words text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{ann.content}</p>
               </motion.div>
             ))
           )}
         </div>
 
         {/* Static Sidebar Panel */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm h-fit">
-          <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-[1.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
-            <Megaphone size={36} className="text-blue-900 dark:text-yellow-450 mb-4 animate-bounce" />
+        <div className="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm h-fit">
+          <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-2xl sm:rounded-[1.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
+            <Megaphone size={36} className="text-blue-900 dark:text-yellow-400 mb-4 animate-bounce" />
             <p className="text-xs font-bold text-slate-800 dark:text-white mb-2">Compliance Notice Board</p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-450 font-medium leading-relaxed">All announcements reflect academic and NGO policies that apply to active scholars.</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">All announcements reflect academic and NGO policies that apply to active scholars.</p>
           </div>
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function AnnouncementsView({ userRole }) {
       {/* Broadcast Form Modal */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -228,7 +228,7 @@ export default function AnnouncementsView({ userRole }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 max-w-md w-full space-y-6"
+              className="relative max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-5 sm:p-8 max-w-md w-full space-y-5 sm:space-y-6"
             >
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Publish Notice</h3>
               {message && (
@@ -246,7 +246,7 @@ export default function AnnouncementsView({ userRole }) {
                     placeholder="e.g. Schedule Update for Session 4"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 text-slate-800 dark:text-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-400 text-slate-800 dark:text-white"
                   />
                 </div>
 
@@ -257,18 +257,18 @@ export default function AnnouncementsView({ userRole }) {
                     placeholder="Write detailed announcements here..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:border-blue-900 dark:focus:border-yellow-455 text-slate-850 dark:text-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:border-blue-900 dark:focus:border-yellow-400 text-slate-800 dark:text-white"
                     rows="5"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="space-y-1 min-w-0">
                     <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Target Role</label>
                     <select
                       value={targetRole}
                       onChange={(e) => setTargetRole(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 text-slate-800 dark:text-white"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-400 text-slate-800 dark:text-white"
                     >
                       <option value="all">Everyone</option>
                       <option value="scholar">Scholars Only</option>
@@ -277,12 +277,12 @@ export default function AnnouncementsView({ userRole }) {
                     </select>
                   </div>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-1 min-w-0">
                     <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Target Cohort</label>
                     <select
                       value={targetCohortId}
                       onChange={(e) => setTargetCohortId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-450 text-slate-800 dark:text-white"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-900 dark:focus:border-yellow-400 text-slate-800 dark:text-white"
                     >
                       <option value="">All Cohorts</option>
                       {cohorts.map(c => (
@@ -292,18 +292,18 @@ export default function AnnouncementsView({ userRole }) {
                   </div>
                 </div>
 
-                <div className="flex space-x-3 pt-4 justify-end">
+                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:space-x-3 pt-4 justify-end">
                   <button 
                     type="button" 
                     onClick={() => setIsFormOpen(false)}
-                    className="px-4 py-2 bg-white dark:bg-slate-905 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 rounded-xl font-bold text-xs uppercase"
+                    className="w-full sm:w-auto px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs uppercase"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
                     disabled={submitting}
-                    className="px-4 py-2 bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 dark:hover:bg-slate-750 text-white rounded-xl font-bold text-xs uppercase disabled:opacity-50 flex items-center space-x-1.5"
+                    className="w-full sm:w-auto justify-center px-4 py-2 bg-blue-900 dark:bg-slate-800 hover:bg-blue-800 dark:hover:bg-slate-700 text-white rounded-xl font-bold text-xs uppercase disabled:opacity-50 flex items-center space-x-1.5"
                   >
                     <Send size={10} />
                     <span>{submitting ? 'Sending...' : 'Broadcast'}</span>
@@ -318,7 +318,7 @@ export default function AnnouncementsView({ userRole }) {
       {/* Custom Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteConfirmId && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
