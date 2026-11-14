@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Home, BookOpen, FileText, MessageCircle,
+  Home, BookOpen, FileText, MessageCircle, Users,
   CheckCircle2, User, PanelLeftClose, PanelLeftOpen, Bell, Sun, Moon
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
@@ -141,29 +141,26 @@ export default function App() {
 
   useEffect(() => {
     if (!isLoggedIn || userRole === 'mentor') return;
-    if (userRole !== 'admin') {
+    if (userRole !== 'admin' && userRole !== 'teacher') {
       if (currentView === 'cohorts') {
         setCurrentView('dashboard');
         window.location.hash = '#/dashboard';
-      } else if (currentView === 'assistance') {
-        setCurrentView('programs');
-        window.location.hash = '#/programs';
       }
     }
   }, [isLoggedIn, userRole, currentView]);
 
   useEffect(() => {
     if (!isLoggedIn || userRole !== 'mentor') return;
-    const allowedMentorViews = ['chat', 'profile', 'announcements'];
+    const allowedMentorViews = ['chat', 'profile', 'announcements', 'tasks', 'grading', 'scholars', 'programs'];
     if (!allowedMentorViews.includes(currentView)) {
-      setCurrentView('chat');
-      window.location.hash = '#/chat';
+      setCurrentView('tasks');
+      window.location.hash = '#/tasks';
     }
   }, [isLoggedIn, userRole, currentView]);
 
   // --- 3. Load curriculum catalog once authenticated ---
   useEffect(() => {
-    if (!isLoggedIn || userRole === 'mentor') return;
+    if (!isLoggedIn) return;
 
     const fetchLessons = async () => {
       try {
@@ -249,6 +246,9 @@ export default function App() {
     let items = [];
     if (userRole === 'mentor') {
       items = [
+        { id: 'tasks', icon: FileText, label: 'Grading' },
+        { id: 'scholars', icon: Users, label: 'Scholars' },
+        { id: 'programs', icon: BookOpen, label: 'Programs' },
         { id: 'chat', icon: MessageCircle, label: 'Messages' },
         { id: 'profile', icon: User, label: 'Profile' }
       ];
@@ -315,17 +315,15 @@ export default function App() {
       isDarkMode ? 'dark' : ''
     }`}>
       
-      {userRole !== 'mentor' && (
-        <Sidebar
-          userRole={userRole}
-          currentView={currentView}
-          setCurrentView={setCurrentView}
-          isDesktopSidebarOpen={isDesktopSidebarOpen}
-          currentUser={currentUser}
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
-        />
-      )}
+      <Sidebar
+        userRole={userRole}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        isDesktopSidebarOpen={isDesktopSidebarOpen}
+        currentUser={currentUser}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
 
       {/* Main Container Area */}
       <main className="flex-1 flex flex-col h-screen min-w-0 relative">
@@ -346,20 +344,6 @@ export default function App() {
           <div className="flex-1 p-4 lg:p-10 pb-20 lg:pb-6">
             <div className="w-full h-full">
               <AnimatePresence mode="wait">
-                {userRole === 'mentor' ? (
-                  <>
-                    {currentView === 'chat' && (
-                      <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
-                    )}
-                    {currentView === 'profile' && (
-                      <ProfileView currentUser={currentUser} onLogout={handleLogout} onUpdateUser={refreshUserSession} key="profile" />
-                    )}
-                    {currentView === 'announcements' && (
-                      <AnnouncementsView currentUser={currentUser} userRole={userRole} key="announcements" />
-                    )}
-                  </>
-                ) : (
-                  <>
                 {currentView === 'dashboard' && (userRole === 'scholar' || userRole === 'beneficiary') && (
                   <ScholarDashboard currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholar-dash" />
                 )}
@@ -369,6 +353,9 @@ export default function App() {
                 {currentView === 'dashboard' && (userRole === 'admin' || userRole === 'staff') && (
                   <AdminDashboard currentUser={currentUser} setCurrentView={setCurrentView} key="admin-dash" />
                 )}
+                {currentView === 'dashboard' && userRole === 'mentor' && (
+                  <ScholarsView currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="mentor-dash" />
+                )}
                 
                 {currentView === 'catalog' && (
                   <CatalogView currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} onSelectLesson={setSelectedLessonId} key="catalog" />
@@ -376,8 +363,11 @@ export default function App() {
                 {currentView === 'lesson' && (
                   <LessonView currentUser={currentUser} lessons={lessons} selectedLessonId={selectedLessonId} setCurrentView={setCurrentView} onUpdateUser={refreshUserSession} key="lesson" />
                 )}
-                {currentView === 'tasks' && (
+                {(currentView === 'tasks' || currentView === 'grading') && (
                   <TasksView currentUser={currentUser} userRole={userRole} lessons={lessons} onUpdateUser={refreshUserSession} key="tasks" />
+                )}
+                {currentView === 'scholars' && (
+                  <ScholarsView currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholars" />
                 )}
                 {currentView === 'chat' && (
                   <DirectMessagesView currentUser={currentUser} userRole={userRole} key="chat" />
@@ -387,20 +377,14 @@ export default function App() {
                 )}
 
                 {/* Dynamic fully-implemented views */}
-                {currentView === 'scholars' && (
-                  <ScholarsView currentUser={currentUser} setCurrentView={setCurrentView} lessons={lessons} key="scholars" />
-                )}
-                {currentView === 'grading' && (
-                  <TasksView currentUser={currentUser} userRole={userRole} lessons={lessons} onUpdateUser={refreshUserSession} key="grading" />
-                )}
-                {currentView === 'cohorts' && userRole === 'admin' && (
+                {currentView === 'cohorts' && (userRole === 'admin' || userRole === 'teacher') && (
                   <CohortsView currentUser={currentUser} userRole={userRole} key="cohorts" />
                 )}
                 {currentView === 'curriculum' && (
                   <CurriculumView lessons={lessons} onUpdateUser={refreshUserSession} key="curriculum" />
                 )}
                 {currentView === 'announcements' && (
-                  <AnnouncementsView userRole={userRole} key="announcements" />
+                  <AnnouncementsView currentUser={currentUser} userRole={userRole} key="announcements" />
                 )}
                 {currentView === 'users' && (
                   <UsersDirectoryView key="users" />
@@ -414,10 +398,9 @@ export default function App() {
                     currentView={currentView}
                     setCurrentView={setCurrentView}
                     userRole={userRole}
+                    currentUser={currentUser}
                     key="program-workspace"
                   />
-                )}
-                  </>
                 )}
               </AnimatePresence>
             </div>

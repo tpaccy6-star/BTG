@@ -35,16 +35,24 @@ export default function Sidebar({
     ];
   } else if (userRole === 'mentor') {
     items = [
+      { id: 'tasks', icon: FileText, label: 'Grading' },
+      { id: 'scholars', icon: Users, label: 'My Scholars' },
+      { id: 'programs', icon: Database, label: 'Program Suite' },
+      { id: 'announcements', icon: MessageCircle, label: 'Broadcasts' },
       { id: 'chat', icon: MessageCircle, label: 'Messages' },
       { id: 'profile', icon: User, label: 'Profile' },
     ];
   } else if (userRole === 'teacher') {
     items = [
       { id: 'dashboard', icon: Home, label: 'Global Hub' },
+      { id: 'scholars', icon: Users, label: 'Scholars Roster' },
+      { id: 'cohorts', icon: Users, label: 'Cohorts' },
       { id: 'programs', icon: Database, label: 'Program Suite' },
       { id: 'curriculum', icon: Database, label: 'Curriculum' },
+      { id: 'tasks', icon: FileText, label: 'Grading' },
       { id: 'announcements', icon: MessageCircle, label: 'Broadcasts' },
       { id: 'chat', icon: MessageCircle, label: 'Messages' },
+      { id: 'profile', icon: User, label: 'Profile' },
     ];
   } else if (userRole === 'admin' || userRole === 'staff') {
     items = [
@@ -89,7 +97,7 @@ export default function Sidebar({
         </p>
         {items.map((item) => {
           const isActive = currentView === item.id
-            || (item.id === 'programs' && programWorkspaceViews.has(currentView));
+            || (item.id === 'programs' && programWorkspaceViews.has(currentView) && !items.some(i => i.id === currentView));
           return (
             <button
               key={item.id}

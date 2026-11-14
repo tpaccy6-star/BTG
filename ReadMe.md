@@ -17,7 +17,7 @@ Designed to be engaging, encouraging, and easy to navigate on any device.
 * **Interactive Curriculum Catalog:** Browse learning modules across core pillars (*Career Readiness, Entrepreneurship, Professional English, Life Skills*). Features sequential unlocking to ensure organized study paths.
 * **Lecture Study Desk:** Dynamic video player with an interactive checklist that tracks progress (*Watch Video, Read Reference, Complete Quiz*). Videos watched past 90% automatically check off progress.
 * **Homework Submissions:** Submit documents, PDFs, or images for grading.
-* **QR Attendance & Study Streak Tracker:** Log daily attendance to build study habits with an active streak counter.
+* **Daily Study Streak Tracker:** Build consistent study habits with an active daily check-in streak counter, XP rewards, and milestone badges.
 * **Direct Mentor Chat:** Real-time chat channel with assigned mentors for personalized guidance.
 
 ### 2. Mentor Workspace
@@ -29,7 +29,7 @@ Enables mentors to effectively evaluate work, track performance, and maintain co
 ### 3. Teacher Workspace
 Empowers curriculum developers and program directors to configure learning materials.
 * **Curriculum Management Suite:** Create, modify, or delete course lessons. Includes a Rich Text Notes Editor for study guides, Lesson Cover Photos, and Resource Attachments.
-* **Cohort Administration:** Monitor enrollment metrics and average attendance across simple cohorts.
+* **Live Cohort Lifecycle Monitoring:** Monitor real-time enrollment counts, syllabus completion percentages, status indicators, and university affiliations pulled dynamically from the live cohort database (`/api/cohorts`).
 * **Broadcast Board:** Post urgent bulletins, extend deadlines, and publish announcements visible across all user dashboards.
 
 ### 4. Administrator Console
@@ -38,10 +38,11 @@ Offers full administrative control over platform security and data operations.
 * **Database Backup & Management:** Secure control dashboard to trigger database backups, manage `.sqlite` backup files, and instantly download them.
 * **Security & Compliance Panel:** Toggle mock SSL Sandboxing or enforce weekly NGO Compliance logging variables on the fly.
 
-### 5. Dynamic AI Chatbot Assistant
-A context-aware, locally hosted AI chatbot that sits at the bottom-right of the portal.
-* **Role-Aware Assistance:** Tailors suggestions based on the logged-in role (e.g., reminding scholars about attendance, guiding teachers on lesson creation).
-* **Advanced UI Capabilities:** Renders Markdown (bold, lists, tables), supports chat log history export, provides one-click copy buttons, and remembers conversational context.
+### 5. Intelligent AI Program Assistant
+Integrated generative AI assistance (powered by Gemini & Groq with built-in resilient fallbacks) embedded directly within the Rise Her Program Suite:
+* **Participant Report Polish:** Helps scholars summarize milestones, challenges, and next-step development goals with AI guidance.
+* **Staff Feedback Drafting:** Produces constructive, encouraging review feedback on scholar reports and academic performance.
+* **Mentorship Goals & Cohort Missions:** Generates personalized roadmap goals, session targets, and cohort mission statements.
 
 ### 6. Interactive User Guide Section
 An integrated, beautiful guide hub located on the landing page.

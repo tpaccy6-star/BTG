@@ -10,6 +10,8 @@ Backend/database.sqlite
 # Local uploads
 uploads/
 **/uploads/
+private_uploads/
+**/private_uploads/
 
 # Build outputs
 dist/

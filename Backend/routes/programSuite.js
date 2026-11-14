@@ -12,11 +12,24 @@ import {
   Notification,
   ProgramReport,
   ProgramAcademicResult,
+  ProgramAcademicModule,
+  ProgramModuleTemplate,
   ProgramFriendlyWeek,
   ProgramMentorship,
   ProgramAssistance,
   ProgramAttachment
 } from '../models.js';
+import {
+  buildSubjectSummary,
+  computeAggregate,
+  computeTranscriptSummary,
+  normalizeAcademicYear,
+  normalizeAggregateInput,
+  parseRawModules,
+  parseTemplateModules,
+  roundTwo
+} from '../utils/academicUtils.js';
+import { buildTablePdfBuffer } from '../utils/pdfExport.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -96,6 +109,8 @@ function publicPerson(user) {
     full_name: person.name,
     email: person.email,
     role: person.role,
+    university: person.university || null,
+    year_level: person.yearLevel || null,
     is_active: true,
     cohort_id: person.cohortId
   };
@@ -127,22 +142,108 @@ function publicReport(record) {
   };
 }
 
+function publicAcademicModule(mod) {
+  const item = plain(mod);
+  const marks = Number(item.marks ?? 0);
+  const maxMarks = Number(item.maxMarks ?? 100) || 100;
+  const percentage = roundTwo(maxMarks > 0 ? (marks / maxMarks) * 100 : 0);
+  return {
+    id: item.id,
+    academic_result_id: item.academicResultId,
+    module_code: item.moduleCode,
+    module_name: item.moduleName || '',
+    credits: Number(item.credits ?? 0),
+    marks,
+    max_marks: maxMarks,
+    percentage,
+    aggregate: item.aggregate || computeAggregate(percentage),
+    sort_order: item.sortOrder ?? 0
+  };
+}
+
 function publicAcademicResult(record) {
   const result = plain(record);
+  const rawModules = [...(result.modules || [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const modules = rawModules.length
+    ? rawModules.map(publicAcademicModule)
+    : (result.subject
+      ? [{
+          id: result.id,
+          academic_result_id: result.id,
+          module_code: result.subject,
+          module_name: '',
+          credits: Number(result.totalCredits ?? 0),
+          marks: Number(result.score ?? 0),
+          max_marks: Number(result.maxScore ?? 100) || 100,
+          percentage: roundTwo(
+            (Number(result.maxScore ?? 100) || 100) > 0
+              ? (Number(result.score ?? 0) / (Number(result.maxScore ?? 100) || 100)) * 100
+              : 0
+          ),
+          aggregate: result.overallAggregate || computeAggregate(
+            (Number(result.maxScore ?? 100) || 100) > 0
+              ? (Number(result.score ?? 0) / (Number(result.maxScore ?? 100) || 100)) * 100
+              : 0
+          ),
+          sort_order: 0
+        }]
+      : []);
+
+  const computed = computeTranscriptSummary(modules);
+  const totalCredits = result.totalCredits != null ? Number(result.totalCredits) : computed.totalCredits;
+  const averageScore = result.averageScore != null ? Number(result.averageScore) : computed.averageScore;
+  const overallAggregate = result.overallAggregate || computeAggregate(averageScore);
+  const verdict = result.verdict || computed.suggestedVerdict;
+
   return {
     id: result.id,
     beneficiary_id: result.beneficiaryId,
     beneficiary_name: result.beneficiary?.name,
+    beneficiary_email: result.beneficiary?.email,
+    beneficiary_university: result.beneficiary?.university || null,
+    beneficiary_year_level: result.beneficiary?.yearLevel || null,
     school: result.school,
+    campus: result.campus || '',
+    combination: result.combination || '',
+    year_level: result.yearLevel || '',
     academic_year: result.academicYear,
     term: result.term,
     subject: result.subject,
     score: result.score,
     max_score: result.maxScore,
+    total_credits: totalCredits,
+    average_score: averageScore,
+    overall_aggregate: overallAggregate,
+    verdict,
     status: result.status,
     staff_feedback: result.staffFeedback,
+    modules,
     created_at: result.createdAt,
+    updated_at: result.updatedAt,
     attachments: (result.attachments || []).map(publicAttachment)
+  };
+}
+
+function publicAcademicTemplate(record) {
+  const tpl = plain(record);
+  let modules = [];
+  try {
+    const parsed = JSON.parse(tpl.modulesJson || '[]');
+    if (Array.isArray(parsed)) modules = parsed;
+  } catch {
+    modules = [];
+  }
+  return {
+    id: tpl.id,
+    name: tpl.name,
+    school: tpl.school,
+    campus: tpl.campus || '',
+    combination: tpl.combination || '',
+    year_level: tpl.yearLevel || '',
+    term: tpl.term || '',
+    modules,
+    created_at: tpl.createdAt,
+    updated_at: tpl.updatedAt
   };
 }
 
@@ -183,13 +284,22 @@ function publicAssistance(record) {
   return {
     id: assistance.id,
     beneficiary_id: assistance.beneficiaryId,
-    beneficiary_name: assistance.beneficiary?.name,
+    beneficiary_name: assistance.beneficiary?.name || 'Scholar',
+    beneficiary_email: assistance.beneficiary?.email,
+    beneficiary_university: assistance.beneficiary?.university || 'University of Rwanda',
     support_type: assistance.supportType,
     amount: assistance.amount,
-    currency: assistance.currency,
+    currency: assistance.currency || 'RWF',
     support_date: assistance.supportDate,
+    disbursement_method: assistance.disbursementMethod || 'MTN Mobile Money',
+    recipient_account: assistance.recipientAccount || '',
+    reference_number: assistance.referenceNumber || '',
+    disbursed_by: assistance.disbursedBy || 'Generation Rise Foundation',
     details: assistance.details,
-    status: assistance.status,
+    status: assistance.status || 'Disbursed',
+    received_confirmed: Boolean(assistance.receivedConfirmed),
+    confirmed_at: assistance.confirmedAt || null,
+    confirmation_notes: assistance.confirmationNotes || '',
     created_at: assistance.createdAt
   };
 }
@@ -241,22 +351,13 @@ function attachmentSignatureIsValid(buffer, extension) {
   }
 }
 
-function escapeCsv(value) {
-  if (value === null || value === undefined) return '';
-  let text = value instanceof Date ? value.toISOString().slice(0, 10) : String(value);
-  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
-
-function sendCsv(res, filename, columns, rows) {
-  const lines = [
-    columns.map((column) => escapeCsv(column.label)).join(','),
-    ...rows.map((row) => columns.map((column) => escapeCsv(column.value(row))).join(','))
-  ];
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+function sendPdf(res, filename, pdfOptions) {
+  const safeName = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+  const pdfBuffer = buildTablePdfBuffer(pdfOptions);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
   res.setHeader('Cache-Control', 'no-store');
-  res.send(lines.join('\r\n'));
+  res.send(pdfBuffer);
 }
 
 async function generateText(prompt, fallback) {
@@ -504,64 +605,440 @@ router.post('/reports', asyncRoute(async (req, res) => {
 
 router.patch('/reports/:reportId', asyncRoute(async (req, res) => {
   if (!requireStaff(req, res)) return;
-  const { status, staff_feedback: feedback = null } = req.body || {};
-  if (!['Pending', 'Reviewed', 'Follow-up'].includes(status) || !optionalText(feedback, 10000)) {
-    return fail(res, 422, 'Enter a valid report status and feedback.');
+  const { status, staff_feedback: feedback } = req.body || {};
+  if (!['Pending', 'Viewed', 'Reviewed', 'Follow-up'].includes(status) || !optionalText(feedback, 10000)) {
+    return fail(res, 422, 'Enter a valid report status.');
   }
   const report = await ProgramReport.findByPk(req.params.reportId);
   if (!report) return fail(res, 404, 'Report not found.');
-  await report.update({ status, staffFeedback: feedback });
-  const feedbackSnippet = feedback ? ` Feedback: "${feedback.slice(0, 100)}${feedback.length > 100 ? '...' : ''}"` : '';
-  await notifyUser(report.beneficiaryId, 'Report reviewed',
-    `Your report "${report.title}" has been reviewed (${status}).${feedbackSnippet}`, 'reports', 'report');
+  const nextFeedback = feedback !== undefined ? feedback : report.staffFeedback;
+  await report.update({ status, staffFeedback: nextFeedback });
+  const feedbackSnippet = nextFeedback ? ` Feedback: "${nextFeedback.slice(0, 100)}${nextFeedback.length > 100 ? '...' : ''}"` : '';
+  await notifyUser(
+    report.beneficiaryId,
+    status === 'Viewed' ? 'Report viewed' : 'Report reviewed',
+    status === 'Viewed'
+      ? `Your report "${report.title}" has been viewed by the administration.`
+      : `Your report "${report.title}" has been reviewed (${status}).${feedbackSnippet}`,
+    'reports',
+    'report'
+  );
   res.json(publicReport(report));
 }));
+
+function academicInclude() {
+  return [
+    { model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university', 'yearLevel'] },
+    { model: ProgramAcademicModule, as: 'modules', required: false },
+    includeAttachments()
+  ];
+}
+
+function validateAndBuildAcademicPayload(body = {}) {
+  const rawSchool = body.school;
+  const campus = typeof body.campus === 'string' ? body.campus.trim() : '';
+  const combination = typeof body.combination === 'string' ? body.combination.trim() : '';
+  const yearLevel = typeof body.year_level === 'string' ? body.year_level.trim() : '';
+  const school = validText(rawSchool, 2, 160)
+    ? rawSchool.trim()
+    : (campus ? 'University of Rwanda' : '');
+  const academicYear = normalizeAcademicYear(String(body.academic_year || ''));
+  const term = typeof body.term === 'string' ? body.term.trim() : '';
+  const explicitVerdict = typeof body.verdict === 'string' ? body.verdict.trim() : '';
+
+  if (!validText(school, 2, 160) || !validText(academicYear, 4, 30) || !validText(term, 1, 80)) {
+    return { error: 'Enter a valid institution, academic year, and semester/term.' };
+  }
+  if (campus.length > 120 || combination.length > 120 || yearLevel.length > 60 || explicitVerdict.length > 80) {
+    return { error: 'Campus, combination, year level, or verdict exceeds maximum length.' };
+  }
+
+  let rawModules = body.modules;
+  if (!Array.isArray(rawModules) && body.subject !== undefined) {
+    rawModules = [{
+      module_code: body.subject,
+      credits: body.credits ?? 0,
+      marks: body.score,
+      max_marks: body.max_score ?? 100,
+      aggregate: body.aggregate
+    }];
+  }
+
+  const parsed = parseRawModules(rawModules);
+  if (parsed.error) return { error: parsed.error };
+
+  const summary = computeTranscriptSummary(parsed.modules);
+  const verdict = explicitVerdict || summary.suggestedVerdict;
+
+  return {
+    header: {
+      school,
+      campus: campus || null,
+      combination: combination || null,
+      yearLevel: yearLevel || null,
+      academicYear,
+      term,
+      subject: buildSubjectSummary(parsed.modules, combination),
+      score: summary.averageScore,
+      maxScore: 100,
+      totalCredits: summary.totalCredits,
+      averageScore: summary.averageScore,
+      overallAggregate: summary.overallAggregate,
+      verdict
+    },
+    modules: parsed.modules,
+    summary
+  };
+}
+
+function filterAcademicRecords(records, query = {}) {
+  const {
+    beneficiary_id: beneficiaryId,
+    campus,
+    combination,
+    year_level: yearLevel,
+    academic_year: academicYear,
+    term,
+    verdict,
+    status,
+    aggregate,
+    search
+  } = query;
+
+  const q = typeof search === 'string' ? search.trim().toLowerCase() : '';
+  const norm = (v) => String(v || '').trim().toLowerCase();
+
+  return records.filter((item) => {
+    if (beneficiaryId && beneficiaryId !== 'all' && item.beneficiary_id !== beneficiaryId) return false;
+    if (campus && campus !== 'all' && norm(item.campus) !== norm(campus)) return false;
+    if (combination && combination !== 'all' && norm(item.combination) !== norm(combination)) return false;
+    if (yearLevel && yearLevel !== 'all' && norm(item.year_level) !== norm(yearLevel)) return false;
+    if (academicYear && academicYear !== 'all' && norm(item.academic_year) !== norm(normalizeAcademicYear(academicYear))) return false;
+    if (term && term !== 'all' && norm(item.term) !== norm(term)) return false;
+    if (verdict && verdict !== 'all' && norm(item.verdict) !== norm(verdict)) return false;
+    if (status && status !== 'all' && norm(item.status) !== norm(status)) return false;
+    if (aggregate && aggregate !== 'all') {
+      const targetAgg = norm(aggregate);
+      const matchesOverall = norm(item.overall_aggregate) === targetAgg;
+      const matchesModule = (item.modules || []).some((m) => norm(m.aggregate) === targetAgg);
+      if (!matchesOverall && !matchesModule) return false;
+    }
+    if (q) {
+      const haystack = [
+        item.beneficiary_name,
+        item.beneficiary_email,
+        item.beneficiary_university,
+        item.school,
+        item.campus,
+        item.combination,
+        item.year_level,
+        item.academic_year,
+        item.term,
+        item.subject,
+        item.verdict,
+        item.status,
+        item.overall_aggregate,
+        item.staff_feedback,
+        ...(item.modules || []).flatMap((m) => [m.module_code, m.module_name, m.aggregate])
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+}
 
 // Academic results
 router.get('/academic-results', asyncRoute(async (req, res) => {
   if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
   const records = await ProgramAcademicResult.findAll({
     where: isStaff(req.user) ? {} : { beneficiaryId: req.user.id },
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }, includeAttachments()],
+    include: academicInclude(),
     order: [['createdAt', 'DESC']]
   });
-  res.json(records.map(publicAcademicResult));
+  const serialized = records.map(publicAcademicResult);
+  res.json(filterAcademicRecords(serialized, req.query));
 }));
 
 router.post('/academic-results', asyncRoute(async (req, res) => {
-  if (!isStaff(req.user) && !requireScholar(req, res)) return;
-  const { school, academic_year: academicYear, term, subject, score, max_score: maxScore } = req.body || {};
-  const beneficiaryId = req.user.role === 'scholar' ? req.user.id : req.body?.beneficiary_id;
-  if (!validText(school, 2, 160) || !validText(academicYear, 4, 20) ||
-      !validText(term, 1, 80) || !validText(subject, 1, 120) ||
-      typeof score !== 'number' || typeof maxScore !== 'number' ||
-      !Number.isFinite(score) || !Number.isFinite(maxScore) ||
-      score < 0 || maxScore <= 0 || score > maxScore) {
-    return fail(res, 422, 'Enter valid academic result details and scores.');
-  }
-  if (!validUuid(beneficiaryId) || !(await findScholar(beneficiaryId))) {
+  if (!requireScholar(req, res)) return;
+  const beneficiaryId = req.user.id;
+  if (!(await findScholar(beneficiaryId))) {
     return fail(res, 404, 'Scholar account not found.');
   }
-  const result = await ProgramAcademicResult.create({
-    beneficiaryId, school: school.trim(), academicYear: academicYear.trim(),
-    term: term.trim(), subject: subject.trim(), score, maxScore
+  const built = validateAndBuildAcademicPayload(req.body);
+  if (built.error) return fail(res, 422, built.error);
+
+  const created = await sequelize.transaction(async (transaction) => {
+    const result = await ProgramAcademicResult.create({
+      beneficiaryId,
+      ...built.header
+    }, { transaction });
+    await ProgramAcademicModule.bulkCreate(
+      built.modules.map((mod) => ({
+        academicResultId: result.id,
+        moduleCode: mod.moduleCode,
+        moduleName: mod.moduleName,
+        credits: mod.credits,
+        marks: mod.marks,
+        maxMarks: mod.maxMarks,
+        aggregate: mod.aggregate,
+        sortOrder: mod.sortOrder
+      })),
+      { transaction }
+    );
+    return result;
   });
-  res.status(201).json(publicAcademicResult(result));
+
+  const reloaded = await ProgramAcademicResult.findByPk(created.id, { include: academicInclude() });
+  await notifyStaff(
+    'Academic results submitted',
+    `${reloaded.beneficiary?.name || 'A scholar'} submitted ${reloaded.term} marks (${reloaded.yearLevel || reloaded.school} · ${reloaded.academicYear}).`,
+    'academic-results',
+    'academic'
+  );
+  res.status(201).json(publicAcademicResult(reloaded));
+}));
+
+router.put('/academic-results/:resultId', asyncRoute(async (req, res) => {
+  if (!requireScholar(req, res)) return;
+
+  const result = await ProgramAcademicResult.findByPk(req.params.resultId);
+  if (!result || result.beneficiaryId !== req.user.id) {
+    return fail(res, 404, 'Academic result not found.');
+  }
+
+  const beneficiaryId = result.beneficiaryId;
+  const built = validateAndBuildAcademicPayload(req.body);
+  if (built.error) return fail(res, 422, built.error);
+
+  const updates = {
+    beneficiaryId,
+    ...built.header,
+    status: 'Pending'
+  };
+
+  await sequelize.transaction(async (transaction) => {
+    await result.update(updates, { transaction });
+    await ProgramAcademicModule.destroy({
+      where: { academicResultId: result.id },
+      transaction
+    });
+    await ProgramAcademicModule.bulkCreate(
+      built.modules.map((mod) => ({
+        academicResultId: result.id,
+        moduleCode: mod.moduleCode,
+        moduleName: mod.moduleName,
+        credits: mod.credits,
+        marks: mod.marks,
+        maxMarks: mod.maxMarks,
+        aggregate: mod.aggregate,
+        sortOrder: mod.sortOrder
+      })),
+      { transaction }
+    );
+  });
+
+  const reloaded = await ProgramAcademicResult.findByPk(result.id, { include: academicInclude() });
+  res.json(publicAcademicResult(reloaded));
 }));
 
 router.patch('/academic-results/:resultId', asyncRoute(async (req, res) => {
   if (!requireStaff(req, res)) return;
-  const { status, staff_feedback: feedback = null } = req.body || {};
-  if (!['Pending', 'Reviewed', 'Follow-up'].includes(status) || !optionalText(feedback, 10000)) {
-    return fail(res, 422, 'Enter a valid academic result status and feedback.');
+  const { status, staff_feedback: feedback, verdict } = req.body || {};
+  if (!['Pending', 'Viewed', 'Reviewed', 'Follow-up'].includes(status) || !optionalText(feedback, 10000) || !optionalText(verdict, 80)) {
+    return fail(res, 422, 'Enter a valid academic result status.');
   }
   const result = await ProgramAcademicResult.findByPk(req.params.resultId);
   if (!result) return fail(res, 404, 'Academic result not found.');
-  await result.update({ status, staffFeedback: feedback });
-  await notifyUser(result.beneficiaryId, 'Academic results reviewed',
-    `Your ${result.subject} result for ${result.term} has been reviewed (${status}).`,
-    'academic-results', 'academic');
-  res.json(publicAcademicResult(result));
+  const updates = {
+    status,
+    staffFeedback: feedback !== undefined ? feedback : result.staffFeedback
+  };
+  if (typeof verdict === 'string' && verdict.trim()) {
+    updates.verdict = verdict.trim();
+  }
+  await result.update(updates);
+  await notifyUser(
+    result.beneficiaryId,
+    status === 'Viewed' ? 'Academic results viewed' : 'Academic results reviewed',
+    status === 'Viewed'
+      ? `Your ${result.subject} transcript for ${result.term} has been viewed by the administration.`
+      : `Your ${result.subject} result for ${result.term} has been reviewed (${status}).`,
+    'academic-results',
+    'academic'
+  );
+  const reloaded = await ProgramAcademicResult.findByPk(result.id, { include: academicInclude() });
+  res.json(publicAcademicResult(reloaded));
+}));
+
+router.patch('/academic-results/:resultId/modules/:moduleId', asyncRoute(async (req, res) => {
+  if (!requireScholar(req, res)) return;
+
+  const result = await ProgramAcademicResult.findByPk(req.params.resultId, {
+    include: [{ model: ProgramAcademicModule, as: 'modules', required: false }]
+  });
+  if (!result || result.beneficiaryId !== req.user.id) {
+    return fail(res, 404, 'Academic result not found.');
+  }
+
+  const mod = (result.modules || []).find((m) => m.id === req.params.moduleId);
+  if (!mod) return fail(res, 404, 'Module not found on this academic result.');
+
+  const body = req.body || {};
+  const nextModuleCode = body.module_code !== undefined ? String(body.module_code || '').trim() : mod.moduleCode;
+  const nextModuleName = body.module_name !== undefined ? String(body.module_name || '').trim() : (mod.moduleName || '');
+  const nextCredits = body.credits !== undefined
+    ? (body.credits === '' || body.credits == null ? 0 : Number(body.credits))
+    : mod.credits;
+  const nextMarks = body.marks !== undefined ? Number(body.marks) : mod.marks;
+  const nextMaxMarks = body.max_marks !== undefined ? Number(body.max_marks) : mod.maxMarks;
+
+  if (!nextModuleCode || nextModuleCode.length > 60 || nextModuleName.length > 160) {
+    return fail(res, 422, 'Enter a valid module code and name.');
+  }
+  if (!Number.isFinite(nextCredits) || nextCredits < 0 || !Number.isFinite(nextMarks) || nextMarks < 0 ||
+      !Number.isFinite(nextMaxMarks) || nextMaxMarks <= 0 || nextMarks > nextMaxMarks) {
+    return fail(res, 422, 'Enter valid non-negative credits and marks.');
+  }
+
+  const pct = roundTwo((nextMarks / nextMaxMarks) * 100);
+  const nextAggregate = body.aggregate !== undefined
+    ? normalizeAggregateInput(body.aggregate, pct)
+    : (body.marks !== undefined || body.max_marks !== undefined ? computeAggregate(pct) : mod.aggregate);
+
+  await sequelize.transaction(async (transaction) => {
+    await mod.update({
+      moduleCode: nextModuleCode,
+      moduleName: nextModuleName || null,
+      credits: roundTwo(nextCredits),
+      marks: roundTwo(nextMarks),
+      maxMarks: roundTwo(nextMaxMarks),
+      aggregate: nextAggregate
+    }, { transaction });
+
+    const updatedModules = await ProgramAcademicModule.findAll({
+      where: { academicResultId: result.id },
+      order: [['sortOrder', 'ASC']],
+      transaction
+    });
+    const summary = computeTranscriptSummary(updatedModules);
+    const parentUpdates = {
+      subject: buildSubjectSummary(updatedModules, result.combination),
+      score: summary.averageScore,
+      maxScore: 100,
+      totalCredits: summary.totalCredits,
+      averageScore: summary.averageScore,
+      overallAggregate: summary.overallAggregate,
+      verdict: result.verdict && !['PASS', 'PROCEED WITH RETAKE', 'FAIL', 'PENDING'].includes(result.verdict)
+        ? result.verdict
+        : summary.suggestedVerdict
+    };
+    if (body.marks !== undefined || body.max_marks !== undefined || body.module_code !== undefined) {
+      parentUpdates.status = 'Pending';
+    }
+    await result.update(parentUpdates, { transaction });
+  });
+
+  const reloaded = await ProgramAcademicResult.findByPk(result.id, { include: academicInclude() });
+  res.json(publicAcademicResult(reloaded));
+}));
+
+router.delete('/academic-results/:resultId', asyncRoute(async (req, res) => {
+  if (!requireScholar(req, res)) return;
+
+  const result = await ProgramAcademicResult.findByPk(req.params.resultId, {
+    include: [includeAttachments()]
+  });
+  if (!result || result.beneficiaryId !== req.user.id) {
+    return fail(res, 404, 'Academic result not found.');
+  }
+  if (result.status !== 'Pending') {
+    return fail(res, 403, 'Only pending academic results can be deleted by a scholar.');
+  }
+
+  const attachments = result.attachments || [];
+  await sequelize.transaction(async (transaction) => {
+    await ProgramAcademicModule.destroy({ where: { academicResultId: result.id }, transaction });
+    await ProgramAttachment.destroy({ where: { academicResultId: result.id }, transaction });
+    await result.destroy({ transaction });
+  });
+
+  await Promise.all(
+    attachments.map((file) =>
+      fs.unlink(path.join(attachmentDirectory, path.basename(file.storageKey))).catch(() => null)
+    )
+  );
+
+  res.json({ success: true, message: 'Academic result deleted.' });
+}));
+
+// Academic module templates
+router.get('/academic-templates', asyncRoute(async (req, res) => {
+  if (!isStaff(req.user) && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
+  const templates = await ProgramModuleTemplate.findAll({
+    order: [['name', 'ASC']]
+  });
+  res.json(templates.map(publicAcademicTemplate));
+}));
+
+router.post('/academic-templates', asyncRoute(async (req, res) => {
+  if (!requireStaff(req, res)) return;
+  const { name, school = 'University of Rwanda', campus = '', combination = '', year_level: yearLevel = '', term = '', modules } = req.body || {};
+  if (!validText(name, 2, 160) || !validText(school, 2, 160) ||
+      !optionalText(campus, 120) || !optionalText(combination, 120) ||
+      !optionalText(yearLevel, 60) || !optionalText(term, 80)) {
+    return fail(res, 422, 'Enter a valid template name and metadata.');
+  }
+  const parsed = parseTemplateModules(modules);
+  if (parsed.error) return fail(res, 422, parsed.error);
+
+  const created = await ProgramModuleTemplate.create({
+    name: name.trim(),
+    school: school.trim(),
+    campus: campus?.trim() || null,
+    combination: combination?.trim() || null,
+    yearLevel: yearLevel?.trim() || null,
+    term: term?.trim() || null,
+    modulesJson: JSON.stringify(parsed.modules),
+    createdById: req.user.id
+  });
+  res.status(201).json(publicAcademicTemplate(created));
+}));
+
+router.put('/academic-templates/:templateId', asyncRoute(async (req, res) => {
+  if (!requireStaff(req, res)) return;
+  const template = await ProgramModuleTemplate.findByPk(req.params.templateId);
+  if (!template) return fail(res, 404, 'Module template not found.');
+  const { name, school = 'University of Rwanda', campus = '', combination = '', year_level: yearLevel = '', term = '', modules } = req.body || {};
+  if (!validText(name, 2, 160) || !validText(school, 2, 160) ||
+      !optionalText(campus, 120) || !optionalText(combination, 120) ||
+      !optionalText(yearLevel, 60) || !optionalText(term, 80)) {
+    return fail(res, 422, 'Enter a valid template name and metadata.');
+  }
+  const parsed = parseTemplateModules(modules);
+  if (parsed.error) return fail(res, 422, parsed.error);
+
+  await template.update({
+    name: name.trim(),
+    school: school.trim(),
+    campus: campus?.trim() || null,
+    combination: combination?.trim() || null,
+    yearLevel: yearLevel?.trim() || null,
+    term: term?.trim() || null,
+    modulesJson: JSON.stringify(parsed.modules)
+  });
+  res.json(publicAcademicTemplate(template));
+}));
+
+router.delete('/academic-templates/:templateId', asyncRoute(async (req, res) => {
+  if (!requireStaff(req, res)) return;
+  const template = await ProgramModuleTemplate.findByPk(req.params.templateId);
+  if (!template) return fail(res, 404, 'Module template not found.');
+  await template.destroy();
+  res.json({ success: true, message: 'Module template deleted.' });
 }));
 
 // Private document attachments for reports and academic results.
@@ -576,8 +1053,11 @@ async function addAttachment(req, res, recordType) {
   if (!file) return fail(res, 400, 'Choose an attachment to upload.');
   const fileName = path.basename(file.originalname || '').replace(/[^A-Za-z0-9._ -]/g, '_').slice(0, 255);
   const extension = path.extname(fileName).toLowerCase();
+  if (recordType === 'report' && extension !== '.pdf') {
+    return fail(res, 415, 'Reports are limited to PDF files only (.pdf).');
+  }
   const contentType = attachmentTypes.get(extension);
-  if (!fileName || !contentType) return fail(res, 415, 'Choose a Word, PDF, PowerPoint, or Excel document.');
+  if (!fileName || !contentType) return fail(res, 415, 'Choose a valid supported document.');
   if (!file.size || !attachmentSignatureIsValid(file.buffer, extension)) {
     return fail(res, 400, 'The file contents do not match the selected document type.');
   }
@@ -610,7 +1090,18 @@ router.get('/attachments/:attachmentId/download', asyncRoute(async (req, res) =>
     return fail(res, 404, 'Attachment not found.');
   }
   const location = path.join(attachmentDirectory, path.basename(attachment.storageKey));
+  const isInline = req.query.inline === '1' || req.query.inline === 'true';
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (isInline) {
+    const safeFileName = String(attachment.fileName || 'document.pdf').replace(/"/g, '');
+    res.setHeader('Content-Type', attachment.contentType || 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${safeFileName}"`);
+    return res.sendFile(location, (error) => {
+      if (error && !res.headersSent) {
+        res.status(error.code === 'ENOENT' ? 404 : 500).json({ detail: 'Attachment could not be opened.' });
+      }
+    });
+  }
   res.download(location, attachment.fileName, (error) => {
     if (error && !res.headersSent) res.status(error.code === 'ENOENT' ? 404 : 500).json({ detail: 'Attachment could not be downloaded.' });
   });
@@ -850,119 +1341,291 @@ router.patch('/mentorship/:mentorshipId', asyncRoute(async (req, res) => {
   res.json(publicMentorship(updated));
 }));
 
-// Support and financial assistance (Admin only coordinates and views)
+// Support and financial assistance (Read-only for scholars, full CRUD for Admin)
 router.get('/financial-assistance', asyncRoute(async (req, res) => {
-  if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can view beneficiary support requests.');
+  const isScholar = req.user.role === 'scholar' || req.user.role === 'beneficiary';
+  const isStaff = ['admin', 'staff', 'teacher', 'mentor'].includes(req.user.role);
+  if (!isScholar && !isStaff) return fail(res, 403, 'Access denied.');
+
+  const where = isScholar ? { beneficiaryId: req.user.id } : {};
   const records = await ProgramAssistance.findAll({
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }],
+    where,
+    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university'] }],
     order: [['supportDate', 'DESC'], ['createdAt', 'DESC']]
   });
   res.json(records.map(publicAssistance));
 }));
 
 router.get('/financial-assistance/summary', asyncRoute(async (req, res) => {
-  if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can view assistance summaries.');
+  const isScholar = req.user.role === 'scholar' || req.user.role === 'beneficiary';
+  const isStaff = ['admin', 'staff', 'teacher', 'mentor'].includes(req.user.role);
+  if (!isScholar && !isStaff) return fail(res, 403, 'Access denied.');
+
+  const where = isScholar ? { beneficiaryId: req.user.id } : {};
   const records = await ProgramAssistance.findAll({
-    attributes: ['currency', 'amount']
+    where,
+    attributes: ['currency', 'amount', 'supportType', 'disbursementMethod', 'status']
   });
+
   const totals = {};
-  let inKindCount = 0;
+  const byMethod = {};
+  const byCategory = {};
+  let totalDisbursedRwf = 0;
+
   records.forEach((record) => {
     const amount = Number(record.amount) || 0;
-    if (amount > 0) totals[record.currency] = (totals[record.currency] || 0) + amount;
-    else inKindCount += 1;
+    const curr = record.currency || 'RWF';
+    totals[curr] = (totals[curr] || 0) + amount;
+    if (curr === 'RWF') totalDisbursedRwf += amount;
+
+    const method = record.disbursementMethod || 'MTN Mobile Money';
+    byMethod[method] = (byMethod[method] || 0) + amount;
+
+    const cat = record.supportType || 'General Support';
+    byCategory[cat] = (byCategory[cat] || 0) + amount;
   });
-  res.json({ record_count: records.length, totals_by_currency: totals, in_kind_count: inKindCount });
+
+  res.json({
+    record_count: records.length,
+    total_rwf: totalDisbursedRwf,
+    totals_by_currency: totals,
+    by_method: byMethod,
+    by_category: byCategory
+  });
 }));
 
+// Admin CRUD: Create Disbursement (Strictly admin/staff only, read-only for scholars)
 router.post('/financial-assistance', asyncRoute(async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'scholar') {
-    return fail(res, 403, 'Access denied. Only administrators can manage support and assistance.');
+  if (req.user.role !== 'admin' && !staffRoles.has(req.user.role)) {
+    return fail(res, 403, 'Access denied. Stipend records are read-only for scholars and managed exclusively by administrators.');
   }
-  const { beneficiary_id: suppliedId, support_type: supportType, amount, currency = 'RWF',
-    support_date: suppliedDate, details } = req.body || {};
-  const beneficiaryId = req.user.role === 'scholar' ? req.user.id : suppliedId;
+  const {
+    beneficiary_id: beneficiaryId,
+    support_type: supportType,
+    amount,
+    currency = 'RWF',
+    support_date: supportDate = new Date().toISOString().slice(0, 10),
+    disbursement_method: disbursementMethod = 'MTN Mobile Money',
+    recipient_account: recipientAccount = '',
+    reference_number: referenceNumber = '',
+    disbursed_by: disbursedBy = 'Generation Rise Foundation',
+    status = 'Disbursed',
+    details
+  } = req.body || {};
+
   const numericAmount = amount === '' || amount == null ? 0 : Number(amount);
   const finalCurrency = String(currency).trim().toUpperCase();
-  const supportDate = req.user.role === 'scholar'
-    ? (suppliedDate || new Date().toISOString().slice(0, 10)) : suppliedDate;
+
+  // Support Bulk Disbursement to ALL scholars
+  if (beneficiaryId === 'ALL') {
+    if (!validText(supportType, 2, 100) ||
+        !Number.isFinite(numericAmount) || numericAmount < 0 ||
+        !/^[A-Z]{3}$/.test(finalCurrency) || !validDate(supportDate) || !optionalText(details, 5000)) {
+      return fail(res, 422, 'Enter valid disbursement and support details.');
+    }
+    const allScholars = await User.findAll({ where: { role: 'scholar' } });
+    if (!allScholars.length) return fail(res, 404, 'No active scholars found to disburse to.');
+
+    const createdList = [];
+    for (const sc of allScholars) {
+      const rec = await ProgramAssistance.create({
+        beneficiaryId: sc.id,
+        supportType: supportType.trim(),
+        amount: numericAmount,
+        currency: finalCurrency,
+        supportDate,
+        disbursementMethod: String(disbursementMethod || 'MTN Mobile Money').trim(),
+        recipientAccount: String(recipientAccount || sc.email || '').trim(),
+        referenceNumber: String(referenceNumber || `BULK-${Date.now().toString().slice(-6)}`).trim(),
+        disbursedBy: String(disbursedBy || 'Generation Rise Foundation').trim(),
+        details: details?.trim() || null,
+        status: status.trim() || 'Disbursed',
+        receivedConfirmed: true,
+        confirmedAt: new Date()
+      });
+      createdList.push(rec);
+      await notifyUser(
+        sc.id,
+        'Financial Support Recorded',
+        `A disbursement of ${numericAmount.toLocaleString()} ${finalCurrency} via ${rec.disbursementMethod} was recorded by Generation Rise Foundation.`,
+        'assistance',
+        'support'
+      );
+    }
+    return res.status(201).json(publicAssistance(await ProgramAssistance.findByPk(createdList[0].id, {
+      include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university'] }]
+    })));
+  }
+
   if (!validUuid(beneficiaryId) || !validText(supportType, 2, 100) ||
       !Number.isFinite(numericAmount) || numericAmount < 0 ||
       !/^[A-Z]{3}$/.test(finalCurrency) || !validDate(supportDate) || !optionalText(details, 5000)) {
-    return fail(res, 422, 'Enter valid support and assistance details.');
+    return fail(res, 422, 'Enter valid disbursement and support details.');
   }
+
   const scholar = await findScholar(beneficiaryId);
   if (!scholar) return fail(res, 404, 'Scholar account not found.');
-  const isRequest = req.user.role === 'scholar';
+
   const record = await ProgramAssistance.create({
-    beneficiaryId, supportType: supportType.trim(), amount: numericAmount, currency: finalCurrency,
-    supportDate, details: details?.trim() || null, status: isRequest ? 'Requested' : 'Delivered'
+    beneficiaryId,
+    supportType: supportType.trim(),
+    amount: numericAmount,
+    currency: finalCurrency,
+    supportDate,
+    disbursementMethod: String(disbursementMethod || 'MTN Mobile Money').trim(),
+    recipientAccount: String(recipientAccount || '').trim(),
+    referenceNumber: String(referenceNumber || '').trim(),
+    disbursedBy: String(disbursedBy || 'Generation Rise Foundation').trim(),
+    details: details?.trim() || null,
+    status: status.trim() || 'Disbursed',
+    receivedConfirmed: true,
+    confirmedAt: new Date()
   });
-  if (isRequest) {
-    // Only Admin receives notification for support requests
-    await notifyStaff('New support request', `${scholar.name} requested ${supportType.trim()}.`, 'assistance', 'support');
-  }
+
+  await notifyUser(
+    beneficiaryId,
+    'Financial Support Recorded',
+    `A disbursement of ${numericAmount.toLocaleString()} ${finalCurrency} via ${record.disbursementMethod} was recorded by Generation Rise Foundation.`,
+    'programs',
+    'support'
+  );
+
   res.status(201).json(publicAssistance(await ProgramAssistance.findByPk(record.id, {
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }]
+    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university'] }]
   })));
 }));
 
+// Admin CRUD: Update Disbursement
 router.patch('/financial-assistance/:id', asyncRoute(async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return fail(res, 403, 'Access denied. Only administrators can update support requests.');
+  if (req.user.role !== 'admin' && !staffRoles.has(req.user.role)) {
+    return fail(res, 403, 'Access denied. Only administrators can update disbursement records.');
   }
   const record = await ProgramAssistance.findByPk(req.params.id);
-  if (!record) return fail(res, 404, 'Support record not found.');
-  const { status, details } = req.body || {};
-  if (!validText(status, 2, 50) || !optionalText(details, 5000)) return fail(res, 422, 'Enter valid support status and details.');
-  await record.update({ status: status.trim(), ...(details !== undefined ? { details: details?.trim() || null } : {}) });
-  // Per specification, responses are strictly managed by Admin and not broadcast to other users
+  if (!record) return fail(res, 404, 'Disbursement record not found.');
+
+  const {
+    status,
+    details,
+    amount,
+    currency,
+    support_type: supportType,
+    support_date: supportDate,
+    disbursement_method: disbursementMethod,
+    recipient_account: recipientAccount,
+    reference_number: referenceNumber,
+    disbursed_by: disbursedBy
+  } = req.body || {};
+
+  const updates = {};
+  if (status !== undefined && validText(status, 2, 50)) updates.status = status.trim();
+  if (details !== undefined) updates.details = details?.trim() || null;
+  if (supportType !== undefined && validText(supportType, 2, 100)) updates.supportType = supportType.trim();
+  if (amount !== undefined && Number.isFinite(Number(amount)) && Number(amount) >= 0) updates.amount = Number(amount);
+  if (currency !== undefined && /^[A-Z]{3}$/.test(String(currency).trim().toUpperCase())) updates.currency = String(currency).trim().toUpperCase();
+  if (supportDate !== undefined && validDate(supportDate)) updates.supportDate = supportDate;
+  if (disbursementMethod !== undefined) updates.disbursementMethod = String(disbursementMethod).trim();
+  if (recipientAccount !== undefined) updates.recipientAccount = String(recipientAccount).trim();
+  if (referenceNumber !== undefined) updates.referenceNumber = String(referenceNumber).trim();
+  if (disbursedBy !== undefined) updates.disbursedBy = String(disbursedBy).trim();
+
+  await record.update(updates);
+
   const updated = await ProgramAssistance.findByPk(record.id, {
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }]
+    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university'] }]
   });
   res.json(publicAssistance(updated));
 }));
 
-// CSV exports
+// Admin CRUD: Delete Disbursement
+router.delete('/financial-assistance/:id', asyncRoute(async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return fail(res, 403, 'Access denied. Only administrators can delete disbursement records.');
+  }
+  const record = await ProgramAssistance.findByPk(req.params.id);
+  if (!record) return fail(res, 404, 'Disbursement record not found.');
+  await record.destroy();
+  res.json({ success: true, message: 'Disbursement record deleted successfully.' });
+}));
+
+// PDF exports
 router.get('/academic-results/export', asyncRoute(async (req, res) => {
-  if (!requireStaff(req, res)) return;
+  const staff = isStaff(req.user);
+  if (!staff && req.user.role !== 'scholar') return fail(res, 403, 'Access denied.');
   const records = await ProgramAcademicResult.findAll({
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email'] }],
+    where: staff ? {} : { beneficiaryId: req.user.id },
+    include: academicInclude(),
     order: [['createdAt', 'DESC']]
   });
-  sendCsv(res, `academic-results-${new Date().toISOString().slice(0, 10)}.csv`, [
-    { label: 'Result ID', value: (row) => row.id },
-    { label: 'Scholar', value: (row) => row.beneficiary?.name },
-    { label: 'Email', value: (row) => row.beneficiary?.email },
-    { label: 'School', value: (row) => row.school },
-    { label: 'Academic Year', value: (row) => row.academicYear },
-    { label: 'Term', value: (row) => row.term },
-    { label: 'Subject', value: (row) => row.subject },
-    { label: 'Score', value: (row) => row.score },
-    { label: 'Maximum', value: (row) => row.maxScore },
-    { label: 'Status', value: (row) => row.status },
-    { label: 'Feedback', value: (row) => row.staffFeedback },
-    { label: 'Recorded', value: (row) => row.createdAt }
-  ], records);
+  const filtered = filterAcademicRecords(records.map(publicAcademicResult), req.query);
+  const dateStamp = new Date().toISOString().slice(0, 10);
+
+  if (req.query.mode === 'summary') {
+    return sendPdf(res, `academic-results-summary-${dateStamp}.pdf`, {
+      title: 'Academic Results Transcripts Report',
+      subtitle: `Generated ${dateStamp} · ${filtered.length} transcript(s)`,
+      columns: [
+        { label: 'Scholar', weight: 1.5, value: (row) => row.beneficiary_name },
+        { label: 'Campus', weight: 1, value: (row) => row.campus || '-' },
+        { label: 'Combo', weight: 0.9, value: (row) => row.combination || '-' },
+        { label: 'Year', weight: 0.8, value: (row) => row.year_level || '-' },
+        { label: 'Ac. Year', weight: 0.9, value: (row) => row.academic_year },
+        { label: 'Semester', weight: 1, value: (row) => row.term },
+        { label: 'Mods', weight: 0.6, value: (row) => (row.modules || []).length },
+        { label: 'Credits', weight: 0.7, value: (row) => row.total_credits },
+        { label: 'Avg %', weight: 0.8, value: (row) => `${Number(row.average_score ?? 0).toFixed(2)}%` },
+        { label: 'Grade', weight: 0.6, value: (row) => row.overall_aggregate },
+        { label: 'Verdict', weight: 1.3, value: (row) => row.verdict },
+        { label: 'Status', weight: 0.8, value: (row) => row.status }
+      ],
+      rows: filtered
+    });
+  }
+
+  const moduleRows = filtered.flatMap((row) =>
+    (row.modules || []).map((mod) => ({ row, mod }))
+  );
+  sendPdf(res, `academic-results-modules-${dateStamp}.pdf`, {
+    title: 'Academic Results Modules & Credits Report',
+    subtitle: `Generated ${dateStamp} · ${moduleRows.length} module row(s)`,
+    columns: [
+      { label: 'Scholar', weight: 1.5, value: ({ row }) => row.beneficiary_name },
+      { label: 'Campus', weight: 0.9, value: ({ row }) => row.campus || '-' },
+      { label: 'Combo', weight: 0.8, value: ({ row }) => row.combination || '-' },
+      { label: 'Year', weight: 0.7, value: ({ row }) => row.year_level || '-' },
+      { label: 'Semester', weight: 0.9, value: ({ row }) => row.term },
+      { label: 'Module', weight: 0.9, value: ({ mod }) => mod.module_code },
+      { label: 'Title', weight: 1.4, value: ({ mod }) => mod.module_name || '-' },
+      { label: 'Credits', weight: 0.6, value: ({ mod }) => mod.credits },
+      { label: 'Marks', weight: 0.8, value: ({ mod }) => `${mod.marks}/${mod.max_marks}` },
+      { label: 'Grade', weight: 0.6, value: ({ mod }) => mod.aggregate },
+      { label: 'Verdict', weight: 1.1, value: ({ row }) => row.verdict }
+    ],
+    rows: moduleRows
+  });
 }));
 
 router.get('/financial-assistance/export', asyncRoute(async (req, res) => {
   if (req.user.role !== 'admin') return fail(res, 403, 'Access denied. Only administrators can export support records.');
   const records = await ProgramAssistance.findAll({
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email'] }],
+    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name', 'email', 'university'] }],
     order: [['supportDate', 'DESC']]
   });
-  sendCsv(res, `support-records-${new Date().toISOString().slice(0, 10)}.csv`, [
-    { label: 'Record ID', value: (row) => row.id },
-    { label: 'Scholar', value: (row) => row.beneficiary?.name },
-    { label: 'Email', value: (row) => row.beneficiary?.email },
-    { label: 'Support Type', value: (row) => row.supportType },
-    { label: 'Amount', value: (row) => row.amount },
-    { label: 'Currency', value: (row) => row.currency },
-    { label: 'Status', value: (row) => row.status },
-    { label: 'Support Date', value: (row) => row.supportDate },
-    { label: 'Details', value: (row) => row.details }
-  ], records);
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  sendPdf(res, `support-disbursements-${dateStamp}.pdf`, {
+    title: 'Financial Support & Stipend Disbursements',
+    subtitle: `Generated ${dateStamp} · ${records.length} disbursement(s)`,
+    columns: [
+      { label: 'Scholar', weight: 1.5, value: (row) => row.beneficiary?.name },
+      { label: 'University', weight: 1.4, value: (row) => row.beneficiary?.university || 'University of Rwanda' },
+      { label: 'Category', weight: 1.4, value: (row) => row.supportType },
+      { label: 'Amount', weight: 0.9, value: (row) => `${row.amount} ${row.currency}` },
+      { label: 'Method', weight: 1.1, value: (row) => row.disbursementMethod },
+      { label: 'Reference', weight: 1.1, value: (row) => row.referenceNumber || '-' },
+      { label: 'Date', weight: 0.8, value: (row) => row.supportDate },
+      { label: 'Status', weight: 0.8, value: (row) => row.status }
+    ],
+    rows: records
+  });
 }));
 
 router.get('/beneficiaries/export', asyncRoute(async (req, res) => {
@@ -972,14 +1635,19 @@ router.get('/beneficiaries/export', asyncRoute(async (req, res) => {
     include: [{ model: Cohort, as: 'cohort', attributes: ['id', 'name'], required: false }],
     order: [['name', 'ASC']]
   });
-  sendCsv(res, `participants-${new Date().toISOString().slice(0, 10)}.csv`, [
-    { label: 'Participant ID', value: (row) => row.id },
-    { label: 'Full Name', value: (row) => row.name },
-    { label: 'Email', value: (row) => row.email },
-    { label: 'Cohort', value: (row) => row.cohort?.name || 'Unassigned' },
-    { label: 'University', value: (row) => row.university || '' },
-    { label: 'Year level', value: (row) => row.yearLevel || '' }
-  ], people);
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  sendPdf(res, `participants-${dateStamp}.pdf`, {
+    title: 'Rise Her Scholars Roster',
+    subtitle: `Generated ${dateStamp} · ${people.length} scholar(s)`,
+    columns: [
+      { label: 'Full Name', weight: 1.6, value: (row) => row.name },
+      { label: 'Email', weight: 1.8, value: (row) => row.email },
+      { label: 'Cohort', weight: 1.2, value: (row) => row.cohort?.name || 'Unassigned' },
+      { label: 'University', weight: 1.5, value: (row) => row.university || '-' },
+      { label: 'Year Level', weight: 0.9, value: (row) => row.yearLevel || '-' }
+    ],
+    rows: people
+  });
 }));
 
 // AI assistance tools
@@ -1015,22 +1683,29 @@ router.post('/ai/report-feedback', asyncRoute(async (req, res) => {
 router.post('/ai/academic-feedback', asyncRoute(async (req, res) => {
   if (!requireStaff(req, res)) return;
   const result = req.body?.result_id ? await ProgramAcademicResult.findByPk(req.body.result_id, {
-    include: [{ model: User, as: 'beneficiary', attributes: ['id', 'name'] }]
+    include: [
+      { model: User, as: 'beneficiary', attributes: ['id', 'name'] },
+      { model: ProgramAcademicModule, as: 'modules', required: false }
+    ]
   }) : null;
   if (req.body?.result_id && !result) return fail(res, 404, 'Academic result not found.');
-  const subject = result?.subject || req.body?.subject;
-  const score = result?.score ?? req.body?.score;
-  const maxScore = result?.maxScore ?? req.body?.max_score;
+  const serialized = result ? publicAcademicResult(result) : null;
+  const subject = serialized?.subject || req.body?.subject || 'Academic Modules';
+  const score = serialized?.average_score ?? serialized?.score ?? req.body?.score;
+  const maxScore = serialized ? 100 : (req.body?.max_score ?? 100);
   if (!validText(subject, 1, 120) || !Number.isFinite(Number(score)) || !Number.isFinite(Number(maxScore)) || Number(maxScore) <= 0) {
     return fail(res, 422, 'Valid academic result details are required.');
   }
   const percentage = Math.round(Number(score) / Number(maxScore) * 100);
-  const name = result?.beneficiary?.name || req.body?.beneficiary_name || 'Scholar';
+  const name = serialized?.beneficiary_name || req.body?.beneficiary_name || 'Scholar';
+  const modulesDetail = serialized?.modules?.length
+    ? ` Modules: ${serialized.modules.map((m) => `${m.module_code} (${m.marks}%, ${m.aggregate}, ${m.credits} cr)`).join(', ')}. Total credits: ${serialized.total_credits}, Verdict: ${serialized.verdict}.`
+    : '';
   const feedback = await generateText(
-    `Write encouraging, constructive, two-sentence academic feedback for ${name}, scoring ${score}/${maxScore} (${percentage}%) in ${subject}.`,
+    `Write encouraging, constructive, two-sentence academic feedback for ${name}, achieving ${percentage}% overall in ${subject}.${modulesDetail}`,
     percentage >= 80
-      ? `Excellent work in ${subject}, ${name.split(' ')[0]}. Your result reflects strong preparation; consider sharing your study strategies with your peers.`
-      : `Thank you for sharing your ${subject} result, ${name.split(' ')[0]}. Review the topics you found difficult and set a focused practice goal for the next assessment.`
+      ? `Excellent work across ${subject}, ${name.split(' ')[0]} (${percentage}%). Your performance reflects strong preparation; consider sharing your study strategies with peers.`
+      : `Thank you for submitting your ${subject} results, ${name.split(' ')[0]} (${percentage}%). Keep building on your stronger modules and schedule targeted practice for lower-scoring units.`
   );
   res.json({ feedback });
 }));
@@ -1066,7 +1741,7 @@ router.get('/beneficiaries', asyncRoute(async (req, res) => {
   if (!requireStaff(req, res)) return;
   const people = await User.findAll({
     where: { role: 'scholar' },
-    attributes: ['id', 'name', 'email', 'role', 'cohortId'],
+    attributes: ['id', 'name', 'email', 'role', 'cohortId', 'university', 'yearLevel'],
     order: [['name', 'ASC']]
   });
   res.json(people.map(publicPerson));

@@ -26,8 +26,9 @@ export default function LandingPage({ onEnterPortal }) {
     }));
   };
 
+  const totalSectionsCount = Object.keys(completedSections).length;
   const completedCount = Object.values(completedSections).filter(Boolean).length;
-  const progressPercent = Math.round((completedCount / 5) * 100);
+  const progressPercent = totalSectionsCount > 0 ? Math.round((completedCount / totalSectionsCount) * 100) : 0;
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState('');

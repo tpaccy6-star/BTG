@@ -273,9 +273,9 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
               <p className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest leading-none">Weekly Leaderboard</p>
               <div className="space-y-2">
                 {[
-                  { rank: 1, name: 'Diane Tuyisingize', xp: 1450, active: false },
-                  { rank: 2, name: 'Alex Johnson (You)', xp: 1250, active: true },
-                  { rank: 3, name: 'Faith Umwari', xp: 1100, active: false }
+                  { rank: 1, name: 'Diane Tuyisingize', xp: Math.max(1450, totalXP + 150), active: false },
+                  { rank: 2, name: `${currentUser?.name || 'Scholar'} (You)`, xp: totalXP, active: true },
+                  { rank: 3, name: 'Faith Umwari', xp: Math.max(800, totalXP - 120), active: false }
                 ].map((user, idx) => (
                   <div key={idx} className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold ${
                     user.active ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-900 dark:text-yellow-450 border border-blue-100 dark:border-blue-900/30' : 'text-slate-600 dark:text-slate-350'
@@ -306,6 +306,66 @@ export default function ScholarDashboard({ currentUser, setCurrentView, lessons 
             )}
           </div>
 
+
+          {/* Academic Results Card */}
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-black text-slate-850 dark:text-white tracking-tight">Academic Results</h2>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Flexible Marks & Credits</p>
+              </div>
+              <span className="p-2 rounded-xl bg-blue-50 text-blue-900 dark:bg-blue-950/60 dark:text-yellow-400">
+                <BookOpen size={16} />
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Enter your semester modules, marks, and module credits, add or remove modules anytime, and view your Year averages.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setCurrentView('academic-results'); window.location.hash = '#/academic-results'; }}
+              className="w-full flex items-center justify-center space-x-2 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition-all text-xs"
+            >
+              <span>Enter / View My Marks →</span>
+            </button>
+          </div>
+
+          {/* Financial Support & Stipends Card */}
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-black text-slate-850 dark:text-white tracking-tight">Financial Support</h2>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">University of Rwanda · CST</p>
+              </div>
+              <span className="px-2.5 py-1 text-[10px] font-black rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                Active Scholar
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-150 dark:border-slate-800">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block">Total Support Disbursed</span>
+              <span className="text-2xl font-black text-blue-900 dark:text-yellow-400">920,000 RWF</span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Living Stipends, Tuition & Tech Hardware</p>
+            </div>
+
+            <div className="space-y-2 pt-1 text-xs">
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                <span className="font-semibold">Latest Transfer</span>
+                <span className="font-bold text-slate-900 dark:text-white">450,000 RWF</span>
+              </div>
+              <div className="flex justify-between items-center text-[11px] text-slate-400">
+                <span>Channel: Bank of Kigali</span>
+                <span>Ref: BK-UR-CST-992104</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => { setCurrentView('assistance'); window.location.hash = '#/assistance'; }}
+              className="w-full flex items-center justify-center space-x-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-900 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl transition-all text-xs"
+            >
+              <span>View Full Financial Ledger →</span>
+            </button>
+          </div>
 
           <div className="bg-gradient-to-br from-blue-900 to-blue-950 dark:from-slate-900 dark:to-slate-950 p-6 sm:p-8 rounded-[2rem] text-white border border-transparent dark:border-slate-800 relative overflow-hidden shadow-md">
             <div className="absolute top-0 right-0 p-4 opacity-5">

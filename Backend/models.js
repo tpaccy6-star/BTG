@@ -349,8 +349,21 @@ export const ProgramAcademicResult = sequelize.define('ProgramAcademicResult', {
     type: DataTypes.STRING(160),
     allowNull: false
   },
+  campus: {
+    type: DataTypes.STRING(120),
+    allowNull: true
+  },
+  combination: {
+    type: DataTypes.STRING(120),
+    allowNull: true
+  },
+  yearLevel: {
+    type: DataTypes.STRING(60),
+    allowNull: true,
+    field: 'year_level'
+  },
   academicYear: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(30),
     allowNull: false,
     field: 'academic_year'
   },
@@ -373,6 +386,27 @@ export const ProgramAcademicResult = sequelize.define('ProgramAcademicResult', {
     field: 'max_score',
     validate: { min: 0.000001 }
   },
+  totalCredits: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    defaultValue: 0,
+    field: 'total_credits',
+    validate: { min: 0 }
+  },
+  averageScore: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    field: 'average_score'
+  },
+  overallAggregate: {
+    type: DataTypes.STRING(10),
+    allowNull: true,
+    field: 'overall_aggregate'
+  },
+  verdict: {
+    type: DataTypes.STRING(80),
+    allowNull: true
+  },
   status: {
     type: DataTypes.STRING(20),
     allowNull: false,
@@ -384,6 +418,102 @@ export const ProgramAcademicResult = sequelize.define('ProgramAcademicResult', {
     field: 'staff_feedback'
   }
 }, { ...programTimestamps, tableName: 'program_academic_results' });
+
+export const ProgramAcademicModule = sequelize.define('ProgramAcademicModule', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  academicResultId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'academic_result_id'
+  },
+  moduleCode: {
+    type: DataTypes.STRING(60),
+    allowNull: false,
+    field: 'module_code'
+  },
+  moduleName: {
+    type: DataTypes.STRING(160),
+    allowNull: true,
+    field: 'module_name'
+  },
+  credits: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    defaultValue: 0,
+    validate: { min: 0 }
+  },
+  marks: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    validate: { min: 0 }
+  },
+  maxMarks: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    defaultValue: 100,
+    field: 'max_marks',
+    validate: { min: 0.000001 }
+  },
+  aggregate: {
+    type: DataTypes.STRING(10),
+    allowNull: false
+  },
+  sortOrder: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    field: 'sort_order'
+  }
+}, { ...programTimestamps, tableName: 'program_academic_modules' });
+
+export const ProgramModuleTemplate = sequelize.define('ProgramModuleTemplate', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  name: {
+    type: DataTypes.STRING(160),
+    allowNull: false
+  },
+  school: {
+    type: DataTypes.STRING(160),
+    allowNull: false,
+    defaultValue: 'University of Rwanda'
+  },
+  campus: {
+    type: DataTypes.STRING(120),
+    allowNull: true
+  },
+  combination: {
+    type: DataTypes.STRING(120),
+    allowNull: true
+  },
+  yearLevel: {
+    type: DataTypes.STRING(60),
+    allowNull: true,
+    field: 'year_level'
+  },
+  term: {
+    type: DataTypes.STRING(80),
+    allowNull: true
+  },
+  modulesJson: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    defaultValue: '[]',
+    field: 'modules_json'
+  },
+  createdById: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    field: 'created_by_id'
+  }
+}, { ...programTimestamps, tableName: 'program_module_templates' });
 
 export const ProgramFriendlyWeek = sequelize.define('ProgramFriendlyWeek', {
   id: {
@@ -497,7 +627,47 @@ export const ProgramAssistance = sequelize.define('ProgramAssistance', {
   status: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    defaultValue: 'Delivered'
+    defaultValue: 'Disbursed'
+  },
+  disbursementMethod: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    defaultValue: 'MTN Mobile Money',
+    field: 'disbursement_method'
+  },
+  recipientAccount: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: '',
+    field: 'recipient_account'
+  },
+  referenceNumber: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: '',
+    field: 'reference_number'
+  },
+  disbursedBy: {
+    type: DataTypes.STRING(150),
+    allowNull: false,
+    defaultValue: 'Generation Rise Foundation',
+    field: 'disbursed_by'
+  },
+  receivedConfirmed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'received_confirmed'
+  },
+  confirmedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'confirmed_at'
+  },
+  confirmationNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'confirmation_notes'
   }
 }, { ...programTimestamps, tableName: 'program_assistance' });
 
@@ -581,9 +751,19 @@ ProgramAttachment.belongsTo(ProgramReport, { foreignKey: 'reportId', as: 'report
 
 User.hasMany(ProgramAcademicResult, { foreignKey: 'beneficiaryId', as: 'programAcademicResults' });
 ProgramAcademicResult.belongsTo(User, { foreignKey: 'beneficiaryId', as: 'beneficiary' });
+ProgramAcademicResult.hasMany(ProgramAcademicModule, {
+  foreignKey: 'academicResultId',
+  as: 'modules',
+  onDelete: 'CASCADE',
+  hooks: true
+});
+ProgramAcademicModule.belongsTo(ProgramAcademicResult, { foreignKey: 'academicResultId', as: 'academicResult' });
 ProgramAcademicResult.hasMany(ProgramAttachment, { foreignKey: 'academicResultId', as: 'attachments' });
 ProgramAttachment.belongsTo(ProgramAcademicResult, { foreignKey: 'academicResultId', as: 'academicResult' });
 ProgramAttachment.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploadedBy' });
+
+User.hasMany(ProgramModuleTemplate, { foreignKey: 'createdById', as: 'academicTemplates' });
+ProgramModuleTemplate.belongsTo(User, { foreignKey: 'createdById', as: 'createdBy' });
 
 User.hasMany(ProgramFriendlyWeek, { foreignKey: 'beneficiaryOneId', as: 'friendlyWeeksAsFirst' });
 User.hasMany(ProgramFriendlyWeek, { foreignKey: 'beneficiaryTwoId', as: 'friendlyWeeksAsSecond' });
@@ -600,6 +780,6 @@ ProgramAssistance.belongsTo(User, { foreignKey: 'beneficiaryId', as: 'beneficiar
 
 export default {
   User, Lesson, Submission, Message, Attendance, Announcement, Notification, Cohort,
-  ProgramReport, ProgramAcademicResult, ProgramFriendlyWeek, ProgramMentorship,
-  ProgramAssistance, ProgramAttachment
+  ProgramReport, ProgramAcademicResult, ProgramAcademicModule, ProgramModuleTemplate,
+  ProgramFriendlyWeek, ProgramMentorship, ProgramAssistance, ProgramAttachment
 };

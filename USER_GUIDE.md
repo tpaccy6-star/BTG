@@ -36,9 +36,8 @@ Designed to be engaging, encouraging, and easy to navigate for scholars on any d
   - **Auto-Check Progress:** Watching a video past 90% progress automatically checks the "Watch Video" box for the scholar.
 * **Homework Submissions:**
   - Submit documents, PDF templates, or PNG images (up to 5MB) for grading.
-* **QR Attendance & Study Streak Tracker:**
-  - Simulates scanning a classroom QR code to log daily attendance.
-  - Features an active streak counter that grows with daily check-ins to build study habits.
+* **Daily Study Streak Tracker:**
+  - Features an active streak counter and gamified badges that grow with daily logins and completions to build lasting study habits.
 * **Direct Mentor Chat:**
   - Real-time chat channel with assigned mentors for guidance.
 
@@ -64,8 +63,8 @@ Empowers curriculum developers and program directors to configure learning mater
   - **Rich Text Notes Editor:** Build detailed study guides with formatting (headers, bold, lists, and links) and view a live preview before publishing.
   - **Lesson Cover Photos:** Upload lesson backdrops or paste image URLs to customize the lecture player splash screens.
   - **Resource Attachments:** Upload files and worksheets directly to lessons.
-* **Cohort Administration:**
-  - Trace simple Cohorts (Cohort 1 through Cohort 4) to monitor enrollment metrics and average attendance.
+* **Live Cohort Lifecycle Management:**
+  - Real-time monitoring across all registered cohorts via `/api/cohorts`, including active enrollment headcounts, syllabus completion percentages, and university affiliations.
 * **Broadcast Board:**
   - Post urgent bulletins, extend deadlines, and announce announcements visible on all user dashboards.
 
@@ -82,20 +81,19 @@ Offers full administrative control over the platform's security and directory co
 
 ---
 
-## 🤖 Dynamic AI Chatbot Assistant
-Visible to all logged-in users, the chatbot floats at the bottom-right of the portal and adapts contextually to the user's role.
+## 🤖 Intelligent AI Program Assistant
+Integrated directly into the Rise Her Program Suite, providing generative assistance powered by Gemini & Groq with built-in resilient offline fallbacks.
 
 > [!TIP]
-> The chatbot runs **locally and securely** on your hosted backend with 0ms network latency. It does not require external billing, setup, or third-party API keys.
+> The AI assistant supports both live cloud LLM generation (when `GEMINI_API_KEY` or `GROQ_API_KEY` is configured) and deterministic high-quality offline fallbacks, ensuring reliable operation without breaking when external API connectivity is absent.
 
-* **Scholar Mode:** Welcomes the scholar by name and offers quick questions about task submissions, logging attendance, and streak points.
-* **Mentor Mode:** Offers suggestions regarding evaluation logs, scholar checklist trackers, and chat rooms.
-* **Teacher Mode:** Directs the teacher on configuring lessons, managing simple cohorts, and sending broadcasts.
-* **Admin Mode:** Suggests quick actions for database resets, user directory additions, and compliance settings.
+* **Participant Report Polish:** Helps scholars summarize milestones, challenges, and next-step goals with AI drafting.
+* **Staff Feedback Generation:** Assists educators and mentors in authoring constructive review feedback on student reports and academic results.
+* **Mentorship Objectives:** Formulates structured session roadmaps and cohort mission statements.
 
 ---
 
 ## 📱 Mobile-First Optimizations
 The entire portal is optimized for mobile-first workflows:
 * **Smart Mobile Bypass:** Hitting the site on a mobile device immediately bypasses the landing page to load the login screen directly, helping scholars access their dashboard quickly on the go.
-* **Responsive Spacing:** Floating widgets (like the AI Chatbot) automatically shift positions (`bottom-[88px]` instead of `bottom-6`) on mobile viewports to hover cleanly above the bottom navigation row without overlapping.
+* **Responsive Layout:** Bottom navigation bars and floating overlays dynamically adjust positions on mobile viewports to prevent screen overlap.

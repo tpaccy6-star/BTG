@@ -9,15 +9,31 @@ const router = express.Router();
 router.get('/submissions', authenticateToken, async (req, res) => {
   try {
     const filter = {};
-    if (req.user.role === 'scholar') {
+    const scholarFilter = {};
+
+    if (req.user.role === 'scholar' || req.user.role === 'beneficiary') {
       filter.scholarId = req.user.id;
+    } else if (req.user.role === 'mentor') {
+      scholarFilter.assignedMentorId = req.user.id;
     }
+
     const submissions = await Submission.findAll({
       where: filter,
-      include: [{ model: Lesson, as: 'lesson' }]
+      include: [
+        { model: Lesson, as: 'lesson' },
+        {
+          model: User,
+          as: 'scholar',
+          attributes: ['id', 'name', 'email', 'initials', 'university', 'assignedMentorId'],
+          where: Object.keys(scholarFilter).length > 0 ? scholarFilter : undefined,
+          required: Object.keys(scholarFilter).length > 0
+        }
+      ],
+      order: [['submittedAt', 'DESC']]
     });
     res.json(submissions);
   } catch (err) {
+    console.error('Error fetching submissions:', err);
     res.status(500).json({ error: 'Error fetching submissions.' });
   }
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Users, Megaphone, Settings, RefreshCcw } from 'lucide-react';
+import { Database, Users, Megaphone, Settings, RefreshCcw, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AdminDashboard({ currentUser, setCurrentView }) {
@@ -15,8 +15,11 @@ export default function AdminDashboard({ currentUser, setCurrentView }) {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Platform Operations</h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">High-level NGO impact and system integrity monitoring.</p>
         </div>
-        <button className="px-5 py-3 bg-yellow-400 hover:bg-yellow-350 text-blue-950 rounded-xl font-bold shadow-md transition-all flex items-center text-[10px] uppercase tracking-widest border border-yellow-300">
-          <Database size={14} className="mr-1.5" /> Master Export
+        <button 
+          onClick={() => { setCurrentView('settings'); window.location.hash = '#/settings'; }}
+          className="px-5 py-3 bg-yellow-400 hover:bg-yellow-350 text-blue-950 rounded-xl font-bold shadow-md transition-all flex items-center text-[10px] uppercase tracking-widest border border-yellow-300 cursor-pointer"
+        >
+          <Database size={14} className="mr-1.5" /> Database & Backups
         </button>
       </div>
 
@@ -26,8 +29,8 @@ export default function AdminDashboard({ currentUser, setCurrentView }) {
           <div className="space-y-5">
             {[
               { user: 'Sarah Miller', action: 'Synced Curriculum Registry', time: '12m ago', icon: RefreshCcw, color: 'text-blue-600 dark:text-blue-400' },
-              { user: 'System', action: 'NGO Quarterly Backup Success', time: '1h ago', icon: Database, color: 'text-emerald-600 dark:text-emerald-450' },
-              { user: 'Robert Mugabe', action: 'Global Broadcast: Deadline Extended', time: '2h ago', icon: Megaphone, color: 'text-orange-600 dark:text-orange-450' },
+              { user: 'System', action: 'NGO Automated Health Sync', time: '1h ago', icon: Database, color: 'text-emerald-600 dark:text-emerald-450' },
+              { user: 'Prof. Robert', action: 'Global Broadcast: Lecture Schedule Updated', time: '2h ago', icon: Megaphone, color: 'text-orange-600 dark:text-orange-450' },
             ].map((act, i) => (
               <div key={i} className="flex items-center space-x-4 group cursor-default">
                 <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 ${act.color} group-hover:scale-105 transition-transform`}>
@@ -41,17 +44,23 @@ export default function AdminDashboard({ currentUser, setCurrentView }) {
               </div>
             ))}
           </div>
-          <button className="w-full mt-8 py-3 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-350 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:text-blue-900 dark:hover:text-white transition-all">Audit Full Logs</button>
+          <button 
+            onClick={() => { setCurrentView('settings'); window.location.hash = '#/settings'; }}
+            className="w-full mt-8 py-3 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-350 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:text-blue-900 dark:hover:text-white transition-all cursor-pointer"
+          >
+            Audit System Settings & Logs
+          </button>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-6 tracking-tight">System Controls</h2>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'Entity Manager', icon: Users, view: 'users' },
+              { label: 'User Directory', icon: Users, view: 'users' },
+              { label: 'Academic Results', icon: BookOpen, view: 'academic-results' },
+              { label: 'Cohorts Ops', icon: Users, view: 'cohorts' },
               { label: 'Curriculum Ops', icon: Database, view: 'curriculum' },
-              { label: 'Security Panel', icon: Settings, view: 'settings' },
-              { label: 'System Config', icon: Settings, view: 'settings' }
+              { label: 'Security & Config', icon: Settings, view: 'settings' }
             ].map((c, i) => (
               <button 
                 key={i} 

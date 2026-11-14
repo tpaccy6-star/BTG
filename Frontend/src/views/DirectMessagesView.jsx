@@ -49,7 +49,11 @@ export default function DirectMessagesView({ currentUser, userRole }) {
         if (!active) return;
         setContacts(contactData);
         setMessages(messageData);
-        setActiveContactId(current => current || (
+        const savedChannel = localStorage.getItem('activeChatChannel');
+        if (savedChannel) {
+          localStorage.removeItem('activeChatChannel');
+        }
+        setActiveContactId(current => savedChannel || current || (
           userRole === 'mentor' ? contactData[0]?.id || null : 'group-all'
         ));
       } catch (loadError) {

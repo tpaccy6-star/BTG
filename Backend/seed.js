@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import sequelize from './database.js';
 import { User, Lesson, Message, Submission, Announcement, Cohort } from './models.js';
+import { seedAcademicTemplatesAndSample } from './utils/academicSeed.js';
 
 const seedDatabase = async () => {
   try {
@@ -8,14 +9,40 @@ const seedDatabase = async () => {
     await sequelize.sync({ force: true });
     console.log('Database synced successfully.');
 
-    // --- Seed Cohorts ---
+    // --- Seed Cohorts (University of Rwanda Cross-Campus Promotions) ---
     const cohorts = await Cohort.bulkCreate([
-      { id: 1, name: 'Cohort 1', scholars: 150, progress: 45, status: 'Needs Attention', attendance: 78, university: 'INES-Ruhengeri' },
-      { id: 2, name: 'Cohort 2', scholars: 130, progress: 80, status: 'Excelling', attendance: 95, university: 'UR Huye Campus' },
-      { id: 3, name: 'Cohort 3', scholars: 120, progress: 20, status: 'Just Started', attendance: 88, university: 'UTB Gisenyi' },
-      { id: 4, name: 'Cohort 4', scholars: 120, progress: 75, status: 'Excelling', attendance: 92, university: 'University of Rwanda' }
+      { 
+        id: 1, 
+        name: 'Cohort 1 (2024 Promotion)', 
+        scholars: 150, 
+        progress: 82, 
+        status: 'Excelling', 
+        attendance: 96, 
+        university: 'University of Rwanda (Cross-Campus)',
+        description: 'Scholars across CST, Huye, Remera, Rukara, and Gikondo campuses' 
+      },
+      { 
+        id: 2, 
+        name: 'Cohort 2 (2025 Promotion)', 
+        scholars: 130, 
+        progress: 80, 
+        status: 'Excelling', 
+        attendance: 95, 
+        university: 'University of Rwanda (Cross-Campus)',
+        description: 'Scholars across CST, Huye, Remera, Rukara, and Gikondo campuses' 
+      },
+      { 
+        id: 3, 
+        name: 'Cohort 3 (2026 Promotion)', 
+        scholars: 120, 
+        progress: 74, 
+        status: 'Active', 
+        attendance: 91, 
+        university: 'University of Rwanda (Cross-Campus)',
+        description: 'Scholars across CST, Huye, Remera, Rukara, and Gikondo campuses' 
+      }
     ]);
-    console.log('Default cohorts seeded.');
+    console.log('Default University of Rwanda cross-campus promotion cohorts seeded.');
 
     // --- Seed Users ---
     const passwordHash = bcrypt.hashSync('password123', 10);
@@ -25,12 +52,12 @@ const seedDatabase = async () => {
         email: 'scholar@generationrise.org',
         passwordHash,
         role: 'scholar',
-        name: 'Alex Johnson',
-        initials: 'AJ',
-        university: 'University of Rwanda',
-        yearLevel: 'Year 2 Scholar',
+        name: 'Tuyisabe Rahab',
+        initials: 'TR',
+        university: 'University of Rwanda - CST (Kigali)',
+        yearLevel: 'Year 2 Scholar (Software Engineering)',
         streakDays: 14,
-        cohortId: 4
+        cohortId: 1
       },
       {
         email: 'mentor@generationrise.org',
@@ -551,6 +578,9 @@ const seedDatabase = async () => {
       }
     ]);
     console.log('Default announcements seeded.');
+
+    await seedAcademicTemplatesAndSample();
+    console.log('Default academic templates seeded.');
 
     console.log('Seeding completed successfully.');
 

@@ -13,8 +13,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import sequelize from './database.js';
-import { User, Lesson, Submission, Message, Attendance, Announcement, Notification, Cohort } from './models.js';
+import {
+  User,
+  Lesson,
+  Submission,
+  Message,
+  Attendance,
+  Announcement,
+  Notification,
+  Cohort,
+  ProgramAcademicResult
+} from './models.js';
 import seedDatabase from './seed.js';
+import { seedAcademicTemplatesAndSample } from './utils/academicSeed.js';
 
 import { authenticateToken } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
@@ -364,12 +375,49 @@ const initApp = async () => {
       console.log('Database empty. Seeding initial data...');
       await seedDatabase();
     } else {
-      try {
-        await sequelize.query('ALTER TABLE Users ADD COLUMN assignedMentorId CHAR(36);');
-      } catch (e) {
-        // Ignore if column already exists
+      const qi = sequelize.getQueryInterface();
+      const rawTables = await qi.showAllTables();
+      const existingTables = new Set(
+        rawTables.map((t) => String(typeof t === 'string' ? t : t.tableName || t.name || '').toLowerCase())
+      );
+
+      const userTable = await qi.describeTable('Users');
+      if (!userTable.assignedMentorId) {
+        await qi.addColumn('Users', 'assignedMentorId', { type: User.rawAttributes.assignedMentorId.type, allowNull: true });
       }
+      if (!userTable.phone) {
+        await qi.addColumn('Users', 'phone', { type: User.rawAttributes.phone.type, allowNull: true });
+      }
+      if (!userTable.bio) {
+        await qi.addColumn('Users', 'bio', { type: User.rawAttributes.bio.type, allowNull: true });
+      }
+
+      if (existingTables.has('program_academic_results')) {
+        const academicTableName = ProgramAcademicResult.getTableName();
+        const academicTable = await qi.describeTable(academicTableName);
+        const academicAdditions = [
+          { column: 'campus', attr: 'campus' },
+          { column: 'combination', attr: 'combination' },
+          { column: 'year_level', attr: 'yearLevel' },
+          { column: 'total_credits', attr: 'totalCredits' },
+          { column: 'average_score', attr: 'averageScore' },
+          { column: 'overall_aggregate', attr: 'overallAggregate' },
+          { column: 'verdict', attr: 'verdict' }
+        ];
+        for (const { column, attr } of academicAdditions) {
+          if (!academicTable[column]) {
+            const spec = ProgramAcademicResult.rawAttributes[attr];
+            await qi.addColumn(academicTableName, column, {
+              type: spec.type,
+              allowNull: spec.allowNull !== false,
+              ...(spec.defaultValue !== undefined ? { defaultValue: spec.defaultValue } : {})
+            });
+          }
+        }
+      }
+
       await sequelize.sync();
+      await seedAcademicTemplatesAndSample();
       console.log('Database schemas verified.');
     }
 

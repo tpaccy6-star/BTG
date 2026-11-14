@@ -39,6 +39,14 @@ This document summarizes the changes made to the full-stack portal to support da
 
 ---
 
+## 👥 5. Live Cohort Synchronization on Teacher Dashboard
+* **Dynamic API Integration:** Replaced the static, hardcoded `cohortList` mock array in `TeacherDashboard.jsx` with a dynamic `fetch('/api/cohorts')` call using the authenticated user session.
+* **Resilient UI States:** Added a pulse loading skeleton during data retrieval, error banner handling, and an empty state banner when no cohorts are registered.
+* **Real-time Lifecycle Metrics:** Live cards reflect actual database values for cohort name, enrolled scholar headcount, progress completion percentages, status badges, and assigned university campuses.
+* **Documentation Alignment:** Synchronized `ReadMe.md`, `USER_GUIDE.md`, and system walkthroughs to accurately reflect the active feature set (including live cohort lifecycle monitoring, study streak tracking, and the embedded Rise Her AI program assistant).
+
+---
+
 ## 🚀 Verification Checks
 * **Local Compilation:** Built and bundled successfully:
   ```powershell

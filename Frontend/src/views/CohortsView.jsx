@@ -341,7 +341,17 @@ export default function CohortsView({ currentUser, userRole }) {
                       </div>
    
                       <h3 className="text-xs sm:text-base font-bold tracking-tight leading-tight">{c.name}</h3>
-                      <p className={`text-[8px] sm:text-[9px] font-bold uppercase mt-1 tracking-widest ${
+                      {c.university && (
+                        <p className={`text-[8px] sm:text-[9px] font-bold uppercase mt-1 tracking-widest ${
+                          isSelected ? 'text-yellow-300' : 'text-blue-900 dark:text-yellow-400'
+                        }`}>{c.university}</p>
+                      )}
+                      {c.description && (
+                        <p className={`text-[9px] mt-1 leading-snug font-medium ${
+                          isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'
+                        }`}>{c.description}</p>
+                      )}
+                      <p className={`text-[8px] sm:text-[9px] font-bold uppercase mt-2 tracking-widest ${
                         isSelected ? 'text-blue-200' : 'text-slate-400 dark:text-slate-500'
                       }`}>{c.scholars} Scholars</p>
                     </div>
@@ -447,6 +457,9 @@ export default function CohortsView({ currentUser, userRole }) {
                           <div className="min-w-0">
                             <p className="font-bold text-slate-800 dark:text-white truncate">{member.name}</p>
                             <p className="text-[10px] text-slate-400 truncate">{member.email}</p>
+                            {member.university && (
+                              <p className="text-[9px] font-bold text-blue-900 dark:text-yellow-400 truncate mt-0.5">{member.university}</p>
+                            )}
                           </div>
                         </div>
                         {userRole === 'admin' && (
