@@ -89,12 +89,12 @@ function StudentExpandedMiniTable({
   const modules = record.modules || [];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       {/* Student / Transcript Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-950/60">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-black text-slate-900 dark:text-white">
+      <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/70 px-3.5 py-3 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-row sm:items-start sm:justify-between sm:px-4 sm:py-3.5">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white break-words">
               {record.beneficiary_name || 'Scholar'}
             </h3>
             <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-blue-900 dark:bg-blue-950 dark:text-yellow-400">
@@ -103,13 +103,13 @@ function StudentExpandedMiniTable({
             <VerdictBadge verdict={record.verdict} />
             <ReviewStatusBadge value={record.status} />
           </div>
-          <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <p className="mt-1 break-words text-[11px] font-semibold text-slate-500 dark:text-slate-400 sm:text-xs">
             {record.beneficiary_email ? `${record.beneficiary_email} · ` : ''}
             {record.school || 'University of Rwanda'} · {record.year_level || 'Study Year'} · {record.academic_year} · {record.term}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0">
           {isStaff && record.status !== 'Viewed' && (
             <button
               type="button"
@@ -151,23 +151,30 @@ function StudentExpandedMiniTable({
         </div>
       </div>
 
+      {modules.length > 2 && (
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/40 px-3.5 py-1 text-[10px] font-semibold text-slate-400 dark:border-slate-800 dark:bg-slate-950/30 sm:hidden">
+          <span>{modules.length} modules recorded</span>
+          <span>Swipe table horizontally →</span>
+        </div>
+      )}
+
       {/* Horizontal Mini-Table: Modules as Columns, Credits / Marks / Aggregate as Rows */}
-      <div className="overflow-x-auto">
+      <div className="w-full overflow-x-auto">
         <table className="w-full text-center text-xs">
           <tbody>
             <tr className="border-b border-slate-200 bg-blue-950 text-white dark:border-slate-800">
-              <th className="sticky left-0 min-w-[110px] bg-blue-950 px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider">
+              <th className="sticky left-0 z-10 min-w-[82px] border-r border-blue-900/60 bg-blue-950 px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider sm:min-w-[110px] sm:px-3">
                 MODULE
               </th>
               {modules.map((mod, idx) => (
                 <th
                   key={mod.id || `${mod.module_code}_${idx}`}
-                  className="min-w-[100px] border-l border-blue-900/60 px-3 py-2 font-black"
+                  className="min-w-[86px] border-l border-blue-900/60 px-2 py-2 font-black sm:min-w-[100px] sm:px-3"
                 >
                   <div>{mod.module_code}</div>
                   {mod.module_name && (
                     <div
-                      className="mx-auto mt-0.5 max-w-[115px] truncate text-[10px] font-normal text-blue-200"
+                      className="mx-auto mt-0.5 max-w-[92px] truncate text-[10px] font-normal text-blue-200 sm:max-w-[115px]"
                       title={mod.module_name}
                     >
                       {mod.module_name}
@@ -175,13 +182,13 @@ function StudentExpandedMiniTable({
                   )}
                 </th>
               ))}
-              <th className="min-w-[110px] border-l border-blue-800 bg-blue-900 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-yellow-300">
+              <th className="min-w-[94px] border-l border-blue-800 bg-blue-900 px-2.5 py-2 text-[10px] font-black uppercase tracking-wider text-yellow-300 sm:min-w-[110px] sm:px-3">
                 TOTAL / AVG
               </th>
             </tr>
 
-            <tr className="border-b border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950">
-              <th className="sticky left-0 bg-slate-50 px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+            <tr className="border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+              <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-slate-50 px-2.5 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                 CREDITS
               </th>
               {modules.map((mod, idx) => {
@@ -245,13 +252,13 @@ function StudentExpandedMiniTable({
             </tr>
 
             <tr className="border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-              <th className="sticky left-0 bg-white px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-white px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                 MARKS
               </th>
               {modules.map((mod, idx) => (
                 <td
                   key={`${mod.id || mod.module_code}_mk_${idx}`}
-                  className="border-l border-slate-100 px-2.5 py-2.5 font-black text-slate-900 dark:border-slate-800 dark:text-white"
+                  className="border-l border-slate-100 px-2 py-2.5 font-black text-slate-900 dark:border-slate-800 dark:text-white sm:px-2.5"
                 >
                   {Number(mod.marks).toFixed(2)}
                   {Number(mod.max_marks ?? 100) !== 100 && (
@@ -259,24 +266,24 @@ function StudentExpandedMiniTable({
                   )}
                 </td>
               ))}
-              <td className="border-l border-slate-200 bg-slate-50 px-3 py-2.5 font-black text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+              <td className="border-l border-slate-200 bg-slate-50 px-2.5 py-2.5 font-black text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white sm:px-3">
                 {Number(record.average_score ?? 0).toFixed(2)}%
               </td>
             </tr>
 
             <tr className="bg-white dark:bg-slate-900">
-              <th className="sticky left-0 bg-white px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-white px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                 AGGREGATES
               </th>
               {modules.map((mod, idx) => (
                 <td
                   key={`${mod.id || mod.module_code}_ag_${idx}`}
-                  className="border-l border-slate-100 px-2.5 py-2.5 dark:border-slate-800"
+                  className="border-l border-slate-100 px-2 py-2.5 dark:border-slate-800 sm:px-2.5"
                 >
                   <GradeBadge grade={mod.aggregate || computeAggregate(mod.percentage ?? mod.marks)} />
                 </td>
               ))}
-              <td className="border-l border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950">
+              <td className="border-l border-slate-200 bg-slate-50 px-2.5 py-2.5 dark:border-slate-800 dark:bg-slate-950 sm:px-3">
                 <GradeBadge grade={record.overall_aggregate} />
               </td>
             </tr>
@@ -285,11 +292,11 @@ function StudentExpandedMiniTable({
       </div>
 
       {yearSummary && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-blue-50/40 px-4 py-2 text-[11px] dark:border-slate-800 dark:bg-blue-950/20">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-blue-50/40 px-3.5 py-2 text-[11px] dark:border-slate-800 dark:bg-blue-950/20 sm:px-4">
           <span className="font-black uppercase tracking-wider text-blue-950 dark:text-yellow-400">
             AVERAGE OF {yearSummary.year_level.toUpperCase()} ({yearSummary.academic_year})
           </span>
-          <div className="flex flex-wrap items-center gap-3 font-bold text-slate-700 dark:text-slate-200">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-bold text-slate-700 dark:text-slate-200">
             <span>Total Credits: {yearSummary.totalCredits}</span>
             <span>Average: {yearSummary.averageScore.toFixed(2)}% ({yearSummary.overallAggregate})</span>
             <VerdictBadge verdict={yearSummary.yearVerdict} />
@@ -622,11 +629,11 @@ export default function AcademicResultsSection({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-4 sm:space-y-5">
       {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-4">
         {isStaff ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-900 dark:bg-blue-950 dark:text-yellow-400">
               Admin View-Only Academic Reports
             </span>
@@ -635,14 +642,14 @@ export default function AcademicResultsSection({
             </p>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
             <button
               type="button"
               onClick={() => {
                 setEditingRecord(null);
                 setShowEditor((prev) => (editingRecord ? true : !prev));
               }}
-              className={academicPrimaryButtonClass}
+              className={`${academicPrimaryButtonClass} w-full sm:w-auto`}
             >
               <Plus size={15} />
               Add My Academic Marks
@@ -653,8 +660,8 @@ export default function AcademicResultsSection({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={handleExportPdf} className={academicQuietButtonClass}>
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
+          <button type="button" onClick={handleExportPdf} className={`${academicQuietButtonClass} w-full sm:w-auto`}>
             <ArrowDownToLine size={14} /> Export PDF ({isStaff ? (activeTab === 'modules' ? 'All Modules' : activeTab === 'years' ? 'Year Averages' : 'Summary') : 'My Results'})
           </button>
         </div>
@@ -676,50 +683,50 @@ export default function AcademicResultsSection({
       )}
 
       {/* KPI Summary Cards */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:text-[11px]">
             {isStaff ? 'Student Transcripts' : 'My Transcripts'}
           </p>
-          <p className="mt-1.5 text-2xl font-black text-blue-950 dark:text-white">{filteredRecords.length}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-1.5 text-xl font-black text-blue-950 dark:text-white sm:text-2xl">{filteredRecords.length}</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-slate-500">
             {isStaff ? `${kpis.uniqueScholars} scholar(s) · ${kpis.pendingCount} unviewed` : `${kpis.pendingCount} awaiting admin view`}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Modules Tracked</p>
-          <p className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white">{kpis.totalModules}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:text-[11px]">Modules Tracked</p>
+          <p className="mt-1.5 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">{kpis.totalModules}</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-slate-500">
             {kpis.missingCreditsModules > 0
               ? <span className="font-bold text-amber-600 dark:text-amber-400">{kpis.missingCreditsModules} module(s) need credits</span>
               : 'All modules have credits'}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Credits</p>
-          <p className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white">{kpis.totalCredits}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">{yearSummaries.length} study-year summary group(s)</p>
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:text-[11px]">Total Credits</p>
+          <p className="mt-1.5 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">{kpis.totalCredits}</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{yearSummaries.length} study-year summary group(s)</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Overall Average</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:text-[11px]">Overall Average</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
               {kpis.avgOverall == null ? '—' : `${kpis.avgOverall.toFixed(2)}%`}
             </span>
             {kpis.avgOverall != null && <GradeBadge grade={computeAggregate(kpis.avgOverall)} />}
           </div>
-          <p className="mt-0.5 text-[11px] text-slate-500">{kpis.passCount} pass verdict(s)</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{kpis.passCount} pass verdict(s)</p>
         </div>
       </div>
 
       {/* Admin Only: Search, Multi-Filters, and Report View Tabs */}
       {isStaff && (
-        <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="relative min-w-[240px] flex-1">
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+            <div className="relative w-full min-w-0 flex-1 sm:min-w-[240px]">
               <Search size={15} className="absolute left-3.5 top-3 text-slate-400" />
               <input
                 type="text"
@@ -731,7 +738,7 @@ export default function AcademicResultsSection({
               />
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
               <span>
                 Showing {filteredRecords.length} of {records.length} transcripts ({filteredModuleRows.length} modules)
               </span>
@@ -743,12 +750,12 @@ export default function AcademicResultsSection({
             </div>
           </div>
 
-          <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
             <select
               aria-label="Filter by scholar"
               value={filters.scholarId}
               onChange={(e) => setFilters((prev) => ({ ...prev, scholarId: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Scholars</option>
               {filterOptions.scholars.map((s) => (
@@ -760,7 +767,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by campus"
               value={filters.campus}
               onChange={(e) => setFilters((prev) => ({ ...prev, campus: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Campuses</option>
               {filterOptions.campuses.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -770,7 +777,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by combination"
               value={filters.combination}
               onChange={(e) => setFilters((prev) => ({ ...prev, combination: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Combinations</option>
               {filterOptions.combinations.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -780,7 +787,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by year of study"
               value={filters.yearLevel}
               onChange={(e) => setFilters((prev) => ({ ...prev, yearLevel: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Study Years</option>
               {filterOptions.yearLevels.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -790,7 +797,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by academic year"
               value={filters.academicYear}
               onChange={(e) => setFilters((prev) => ({ ...prev, academicYear: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Academic Years</option>
               {filterOptions.academicYears.map((ay) => <option key={ay} value={ay}>{ay}</option>)}
@@ -800,7 +807,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by semester"
               value={filters.term}
               onChange={(e) => setFilters((prev) => ({ ...prev, term: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Semesters</option>
               {filterOptions.terms.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -810,7 +817,7 @@ export default function AcademicResultsSection({
               aria-label="Filter by aggregate grade"
               value={filters.aggregate}
               onChange={(e) => setFilters((prev) => ({ ...prev, aggregate: e.target.value }))}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Aggregates</option>
               {['A', 'B', 'C', 'D', 'F'].map((g) => <option key={g} value={g}>Grade {g}</option>)}
@@ -829,7 +836,7 @@ export default function AcademicResultsSection({
                   setFilters((prev) => ({ ...prev, verdict: 'all', status: val.slice(7) }));
                 }
               }}
-              className={academicCompactInputClass}
+              className={`${academicCompactInputClass} min-w-0`}
             >
               <option value="all">All Verdicts & Status</option>
               <optgroup label="Verdicts">
@@ -843,7 +850,7 @@ export default function AcademicResultsSection({
             </select>
           </div>
 
-          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+          <div className="grid grid-cols-1 gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800 sm:flex sm:flex-wrap sm:gap-2">
             {[
               { id: 'modules', label: `All Modules · Full Students (${filteredRecords.length})` },
               { id: 'transcripts', label: `Transcripts Summary (${filteredRecords.length})` },
@@ -853,7 +860,7 @@ export default function AcademicResultsSection({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-xl px-3.5 py-2 text-xs font-black transition ${activeTab === tab.id
+                className={`rounded-xl px-3.5 py-2 text-left text-xs font-black transition sm:text-center ${activeTab === tab.id
                   ? 'bg-blue-900 text-white shadow-sm dark:bg-yellow-400 dark:text-slate-950'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                   }`}
@@ -934,8 +941,104 @@ export default function AcademicResultsSection({
         </div>
       ) : activeTab === 'transcripts' ? (
         /* ADMIN TAB 2: COMPACT TRANSCRIPTS SUMMARY TABLE (VIEW + MARK AS VIEWED ONLY) */
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Mobile Cards View */}
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 md:hidden">
+            {sortedTranscripts.map((rec) => {
+              const modList = rec.modules || [];
+              return (
+                <div key={rec.id} className="space-y-3 p-3.5">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words text-sm font-black text-slate-900 dark:text-white">
+                        {rec.beneficiary_name || 'Scholar'}
+                      </p>
+                      <p className="break-words text-[11px] text-slate-500 dark:text-slate-400">
+                        {rec.beneficiary_email || rec.school}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                      <VerdictBadge verdict={rec.verdict} />
+                      <ReviewStatusBadge value={rec.status} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2.5 text-[11px] dark:bg-slate-950">
+                    <div className="min-w-0">
+                      <span className="block text-[10px] font-black uppercase text-slate-400">Campus & Combo</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        {rec.campus || '—'} · {rec.combination || 'General'}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <span className="block text-[10px] font-black uppercase text-slate-400">Term</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        {rec.year_level || '—'} · {rec.academic_year} · {rec.term}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-black uppercase text-slate-400">Credits</span>
+                      <span className="font-black text-slate-900 dark:text-white">{rec.total_credits ?? 0}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] font-black uppercase text-slate-400">Average</span>
+                      <div className="inline-flex items-center gap-1.5">
+                        <span className="font-black text-slate-900 dark:text-white">
+                          {Number(rec.average_score ?? 0).toFixed(2)}%
+                        </span>
+                        <GradeBadge grade={rec.overall_aggregate} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {modList.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {modList.slice(0, 4).map((m) => (
+                        <span
+                          key={m.id || m.module_code}
+                          className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        >
+                          {m.module_code}: {Number(m.marks).toFixed(1)} ({m.aggregate})
+                        </span>
+                      ))}
+                      {modList.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={() => setViewingRecordId(rec.id)}
+                          className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-black text-blue-800 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-200"
+                        >
+                          +{modList.length - 4} more
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-0.5">
+                    {rec.status !== 'Viewed' && (
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => handleMarkViewed(rec.id)}
+                        className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                      >
+                        <Check size={13} /> Mark Viewed
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setViewingRecordId(rec.id)}
+                      className={academicQuietButtonClass}
+                    >
+                      <Eye size={13} /> View Sheet
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[960px] text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
@@ -1039,8 +1142,64 @@ export default function AcademicResultsSection({
         </div>
       ) : (
         /* ADMIN TAB 3: YEAR AVERAGES REPORT (AVERAGE OF YEAR X) */
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="overflow-x-auto">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Mobile Cards View */}
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 md:hidden">
+            {yearSummaries.map((item) => (
+              <div key={item.key} className="space-y-2.5 p-3.5">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-sm font-black text-slate-900 dark:text-white">{item.beneficiary_name}</p>
+                    <p className="break-words text-[11px] text-slate-500">{item.beneficiary_email}</p>
+                  </div>
+                  <VerdictBadge verdict={item.yearVerdict} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2.5 text-[11px] dark:bg-slate-950">
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-black uppercase text-slate-400">Campus & Combo</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {item.campus || '—'} · {item.combination || 'General'}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-black uppercase text-slate-400">Year / Ac. Year</span>
+                    <span className="font-black text-blue-950 dark:text-yellow-400">
+                      {item.year_level} ({item.academic_year})
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-black uppercase text-slate-400">Semesters</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-200">
+                      {item.semesterTerms.join(', ') || `${item.semesterCount} term(s)`} ({item.moduleCount} mods)
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-black uppercase text-slate-400">Credits & Average</span>
+                    <div className="inline-flex flex-wrap items-center gap-1.5">
+                      <span className="font-black text-slate-900 dark:text-white">
+                        {item.totalCredits} cr · {item.averageScore.toFixed(2)}%
+                      </span>
+                      <GradeBadge grade={item.overallAggregate} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setViewingRecordId(item.semesters[0]?.id)}
+                    className={academicQuietButtonClass}
+                  >
+                    <Eye size={13} /> Open
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[880px] text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">

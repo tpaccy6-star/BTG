@@ -472,28 +472,28 @@ export default function ProgramWorkspace({ currentView, setCurrentView, userRole
   }, [activeView, isStaff]);
 
   return (
-    <section className="mx-auto w-full max-w-7xl">
-      <div className="mb-6">
+    <section className="mx-auto w-full min-w-0 max-w-7xl">
+      <div className="mb-5 sm:mb-6">
         <p className="text-[10px] font-black uppercase tracking-[0.12em] text-blue-800 dark:text-yellow-400 sm:text-xs sm:tracking-[0.2em]">
           RISE HER · Generation Rise Foundation
         </p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">{title[0]}</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">{title[1]}</p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">{title[0]}</h1>
+            <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:mt-2 sm:text-sm">{title[1]}</p>
           </div>
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
+          <span className="max-w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
             {isScholar ? 'Rise Her Scholar Workspace' : 'Generation Rise Foundation Workspace'}
           </span>
         </div>
       </div>
 
-      <nav aria-label="Program features" className="mb-6 grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-3 lg:grid-cols-6">
+      <nav aria-label="Program features" className="mb-5 grid grid-cols-2 gap-1.5 rounded-2xl border border-slate-200 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900 sm:mb-6 sm:grid-cols-3 sm:gap-2 sm:p-2 lg:grid-cols-6">
         {availableViews.map(({ id, label, icon: Icon }) => (
           <button key={id} type="button" onClick={() => navigate(id)} aria-current={activeView === id ? 'page' : undefined}
-            className={`flex items-center justify-center gap-2 rounded-xl px-2 py-3 text-xs font-bold transition sm:text-sm ${activeView === id ? 'bg-blue-900 text-white shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-900 dark:text-slate-300 dark:hover:bg-slate-800'
+            className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:py-3 sm:text-sm ${activeView === id ? 'bg-blue-900 text-white shadow-sm' : 'text-slate-600 hover:bg-blue-50 hover:text-blue-900 dark:text-slate-300 dark:hover:bg-slate-800'
               }`}>
-            <Icon size={16} /> {label}
+            <Icon size={16} className="shrink-0" /> <span className="truncate">{label}</span>
           </button>
         ))}
       </nav>

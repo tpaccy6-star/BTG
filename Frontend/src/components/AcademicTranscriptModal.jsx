@@ -126,30 +126,30 @@ export default function AcademicTranscriptModal({
       role="dialog"
       aria-modal="true"
       aria-label="Academic Transcript Details"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-2.5 backdrop-blur-sm sm:p-4"
     >
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+      <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:p-6">
         {/* Top Modal Bar */}
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
-          <div>
+        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-800 dark:text-yellow-400">
               MARKS OF {(record.year_level || 'ACADEMIC TERM').toUpperCase()}
             </p>
-            <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-white">
+            <h2 className="mt-1 break-words text-lg font-black text-slate-900 dark:text-white sm:text-xl">
               {record.beneficiary_name || 'Scholar Transcript'}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 break-words text-xs text-slate-500 dark:text-slate-400">
               {record.school} · {record.campus || 'Campus not specified'} · {record.combination || 'General'} · {record.academic_year} · {record.term}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0 sm:justify-end sm:gap-2">
             <ReviewStatusBadge value={record.status} />
             {isStaff && onMarkViewed && record.status !== 'Viewed' && (
               <button
                 type="button"
                 disabled={isSaving}
                 onClick={() => onMarkViewed(record.id)}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50 sm:px-3.5 sm:py-2"
               >
                 <Check size={14} /> Mark as Viewed
               </button>
@@ -177,54 +177,59 @@ export default function AcademicTranscriptModal({
         </div>
 
         {/* Metadata Strip matching Transcript Sheet */}
-        <div className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-3 lg:grid-cols-5">
-          <div>
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-3 sm:p-3.5 lg:grid-cols-5">
+          <div className="min-w-0">
             <span className="block text-[10px] font-black uppercase text-slate-400">Names</span>
-            <span className="font-bold text-slate-900 dark:text-white">{record.beneficiary_name || 'You'}</span>
+            <span className="break-words font-bold text-slate-900 dark:text-white">{record.beneficiary_name || 'You'}</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="block text-[10px] font-black uppercase text-slate-400">Campus</span>
-            <span className="font-bold text-slate-900 dark:text-white">{record.campus || '—'}</span>
+            <span className="break-words font-bold text-slate-900 dark:text-white">{record.campus || '—'}</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="block text-[10px] font-black uppercase text-slate-400">Combination</span>
-            <span className="font-bold text-slate-900 dark:text-white">{record.combination || '—'}</span>
+            <span className="break-words font-bold text-slate-900 dark:text-white">{record.combination || '—'}</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="block text-[10px] font-black uppercase text-slate-400">Academic Year</span>
-            <span className="font-bold text-slate-900 dark:text-white">{record.academic_year}</span>
+            <span className="break-words font-bold text-slate-900 dark:text-white">{record.academic_year}</span>
           </div>
-          <div>
+          <div className="col-span-2 min-w-0 sm:col-span-1">
             <span className="block text-[10px] font-black uppercase text-slate-400">Semester</span>
-            <span className="font-bold text-slate-900 dark:text-white">{record.term}</span>
+            <span className="break-words font-bold text-slate-900 dark:text-white">{record.term}</span>
           </div>
         </div>
 
         {/* Horizontal Transcript Matrix */}
         <div className="mt-5">
-          <h3 className="mb-2 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Semester Modules Sheet ({modules.length} Modules)
-          </h3>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Semester Modules Sheet ({modules.length} Modules)
+            </h3>
+            {modules.length > 2 && (
+              <span className="text-[10px] font-semibold text-slate-400 sm:hidden">Swipe →</span>
+            )}
+          </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-center text-xs">
               <tbody>
                 <tr className="border-b border-slate-200 bg-blue-950 text-white dark:border-slate-800">
-                  <th className="sticky left-0 bg-blue-950 px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider">
+                  <th className="sticky left-0 z-10 min-w-[82px] border-r border-blue-900/60 bg-blue-950 px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider sm:min-w-[110px] sm:px-3">
                     MODULE
                   </th>
                   {modules.map((mod) => (
-                    <th key={mod.id || mod.module_code} className="min-w-[88px] px-3 py-2.5 font-black">
+                    <th key={mod.id || mod.module_code} className="min-w-[84px] px-2.5 py-2.5 font-black sm:min-w-[88px] sm:px-3">
                       <div>{mod.module_code}</div>
                       {mod.module_name && (
-                        <div className="mt-0.5 truncate max-w-[110px] text-[10px] font-normal text-blue-200" title={mod.module_name}>
+                        <div className="mx-auto mt-0.5 max-w-[92px] truncate text-[10px] font-normal text-blue-200 sm:max-w-[110px]" title={mod.module_name}>
                           {mod.module_name}
                         </div>
                       )}
                     </th>
                   ))}
                 </tr>
-                <tr className="border-b border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950">
-                  <th className="sticky left-0 bg-slate-50 px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+                <tr className="border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                  <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-slate-50 px-2.5 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                     CREDITS
                   </th>
                   {modules.map((mod) => {
@@ -285,11 +290,11 @@ export default function AcademicTranscriptModal({
                   })}
                 </tr>
                 <tr className="border-b border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-                  <th className="sticky left-0 bg-white px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                  <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-white px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                     MARKS
                   </th>
                   {modules.map((mod) => (
-                    <td key={`${mod.id || mod.module_code}-mk`} className="px-3 py-2.5 font-black text-slate-900 dark:text-white">
+                    <td key={`${mod.id || mod.module_code}-mk`} className="px-2.5 py-2.5 font-black text-slate-900 dark:text-white sm:px-3">
                       {Number(mod.marks).toFixed(2)}
                       {Number(mod.max_marks) !== 100 && (
                         <span className="text-[10px] font-normal text-slate-400">/{mod.max_marks}</span>
@@ -298,11 +303,11 @@ export default function AcademicTranscriptModal({
                   ))}
                 </tr>
                 <tr className="bg-white dark:bg-slate-900">
-                  <th className="sticky left-0 bg-white px-3 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                  <th className="sticky left-0 z-10 min-w-[82px] border-r border-slate-200 bg-white px-2.5 py-2.5 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 sm:min-w-[110px] sm:px-3">
                     AGGREGATES
                   </th>
                   {modules.map((mod) => (
-                    <td key={`${mod.id || mod.module_code}-ag`} className="px-3 py-2.5">
+                    <td key={`${mod.id || mod.module_code}-ag`} className="px-2.5 py-2.5 sm:px-3">
                       <GradeBadge grade={mod.aggregate} />
                     </td>
                   ))}
@@ -313,24 +318,24 @@ export default function AcademicTranscriptModal({
         </div>
 
         {/* Semester Summary + Average of Year */}
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+        <div className="mt-5 grid gap-3 sm:gap-4 md:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950 sm:p-4">
             <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {record.term} Summary
             </h4>
             <dl className="mt-3 space-y-2 text-xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <dt className="font-bold text-slate-500">TOTAL CREDITS</dt>
                 <dd className="text-sm font-black text-slate-900 dark:text-white">{record.total_credits ?? 0}</dd>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <dt className="font-bold text-slate-500">AVERAGE</dt>
                 <dd className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
                   {Number(record.average_score ?? 0).toFixed(2)}%
                   <GradeBadge grade={record.overall_aggregate} />
                 </dd>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <dt className="font-bold text-slate-500">VERDICT</dt>
                 <dd><VerdictBadge verdict={record.verdict} /></dd>
               </div>
@@ -338,7 +343,7 @@ export default function AcademicTranscriptModal({
           </div>
 
           {yearSummary && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 dark:border-blue-900 dark:bg-blue-950/30">
+            <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-3.5 dark:border-blue-900 dark:bg-blue-950/30 sm:p-4">
               <h4 className="text-[11px] font-black uppercase tracking-wider text-blue-900 dark:text-yellow-400">
                 AVERAGE OF {yearSummary.year_level.toUpperCase()} ({yearSummary.academic_year})
               </h4>
@@ -346,18 +351,18 @@ export default function AcademicTranscriptModal({
                 Combined across: {yearSummary.semesterTerms.join(' + ') || `${yearSummary.semesterCount} semester(s)`} ({yearSummary.moduleCount} modules)
               </p>
               <dl className="mt-3 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <dt className="font-bold text-slate-600 dark:text-slate-300">TOTAL CREDITS</dt>
                   <dd className="text-sm font-black text-blue-950 dark:text-white">{yearSummary.totalCredits}</dd>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <dt className="font-bold text-slate-600 dark:text-slate-300">AVERAGE</dt>
                   <dd className="flex items-center gap-2 text-sm font-black text-blue-950 dark:text-white">
                     {yearSummary.averageScore.toFixed(2)}%
                     <GradeBadge grade={yearSummary.overallAggregate} />
                   </dd>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <dt className="font-bold text-slate-600 dark:text-slate-300">VERDICT</dt>
                   <dd><VerdictBadge verdict={yearSummary.yearVerdict} /></dd>
                 </div>
@@ -374,9 +379,9 @@ export default function AcademicTranscriptModal({
                 key={file.id}
                 type="button"
                 onClick={() => onDownloadAttachment(file)}
-                className={academicQuietButtonClass}
+                className={`${academicQuietButtonClass} max-w-full`}
               >
-                <ArrowDownToLine size={14} /> {file.file_name}
+                <ArrowDownToLine size={14} className="shrink-0" /> <span className="truncate">{file.file_name}</span>
               </button>
             ))}
           </div>

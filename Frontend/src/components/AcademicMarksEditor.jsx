@@ -167,20 +167,20 @@ export default function AcademicMarksEditor({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      className="min-w-0 space-y-4 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:space-y-5 sm:p-5"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
-        <div>
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5 dark:border-slate-800 sm:items-center sm:pb-4">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base font-black text-slate-900 dark:text-white">
             {isEditing ? 'Edit Academic Marks & Module Credits' : 'Academic Marks Entry'}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {currentUser?.name
               ? `Submitting as ${currentUser.name} · Add modules with their code, name, credits, marks, max score, and aggregate.`
               : 'Add your semester details and each module with all of its attributes.'}
           </p>
         </div>
-        <button type="button" onClick={onCancel} className={academicQuietButtonClass}>
+        <button type="button" onClick={onCancel} className={`${academicQuietButtonClass} shrink-0`}>
           <X size={14} /> Close
         </button>
       </div>
@@ -192,7 +192,7 @@ export default function AcademicMarksEditor({
       )}
 
       {/* Semester & Program Metadata */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="block">
           <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Institution / School *</span>
           <input
@@ -293,10 +293,10 @@ export default function AcademicMarksEditor({
         </label>
       </div>
 
-      {/* Modules Entry Table with All Module Attributes */}
+      {/* Modules Entry Grid: Cards on Mobile/Tablet, Crisp Table Rows on Desktop */}
       <div className="space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200">
               Modules & Attributes ({modules.length} module{modules.length === 1 ? '' : 's'})
             </h3>
@@ -304,131 +304,164 @@ export default function AcademicMarksEditor({
               Fill all attributes for each module and click Add Module to add more rows.
             </p>
           </div>
-          <button type="button" onClick={addModule} className={academicPrimaryButtonClass}>
+          <button
+            type="button"
+            onClick={addModule}
+            className={`${academicPrimaryButtonClass} w-full shrink-0 sm:w-auto`}
+          >
             <Plus size={14} /> Add Module
           </button>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-          <table className="w-full min-w-[740px] text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-                <th className="w-10 px-3 py-2.5">#</th>
-                <th className="w-36 px-2 py-2.5">Module Code *</th>
-                <th className="px-2 py-2.5">Module Name / Title</th>
-                <th className="w-28 px-2 py-2.5">Credits</th>
-                <th className="w-28 px-2 py-2.5">Marks *</th>
-                <th className="w-24 px-2 py-2.5">Max Marks</th>
-                <th className="w-28 px-2 py-2.5">Aggregate</th>
-                <th className="w-16 px-2 py-2.5 text-center">Remove</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {modules.map((row, idx) => (
-                <tr key={row.localKey} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                  <td className="px-3 py-2 font-bold text-slate-400">{idx + 1}</td>
-                  <td className="px-2 py-2">
+        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+          {/* Desktop Column Headers */}
+          <div className="hidden border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 lg:grid lg:grid-cols-[28px_minmax(0,1fr)_minmax(0,1.6fr)_72px_76px_72px_112px_40px] lg:items-center lg:gap-2">
+            <span>#</span>
+            <span>Module Code *</span>
+            <span>Module Name / Title</span>
+            <span>Credits</span>
+            <span>Marks *</span>
+            <span>Max Marks</span>
+            <span>Aggregate</span>
+            <span className="text-center">Remove</span>
+          </div>
+
+          <div className="divide-y divide-slate-200 dark:divide-slate-800 lg:divide-slate-100">
+            {modules.map((row, idx) => (
+              <div
+                key={row.localKey}
+                className="grid grid-cols-2 gap-2.5 p-3 transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30 sm:gap-3 sm:p-3.5 lg:grid-cols-[28px_minmax(0,1fr)_minmax(0,1.6fr)_72px_76px_72px_112px_40px] lg:items-center lg:gap-2 lg:px-3 lg:py-2"
+              >
+                <div className="col-span-1 flex items-center text-xs font-black text-slate-500 dark:text-slate-400 lg:order-1 lg:font-bold">
+                  <span className="lg:hidden">Module #{idx + 1}</span>
+                  <span className="hidden lg:inline">{idx + 1}</span>
+                </div>
+
+                <div className="col-span-1 flex justify-end lg:order-8 lg:justify-center">
+                  <button
+                    type="button"
+                    title="Remove module"
+                    aria-label={`Remove module ${row.module_code || idx + 1}`}
+                    onClick={() => removeModule(row.localKey)}
+                    className="inline-flex rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                <label className="col-span-2 block min-w-0 sm:col-span-1 lg:order-2">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Module Code *
+                  </span>
+                  <input
+                    type="text"
+                    aria-label={`Module code ${idx + 1}`}
+                    value={row.module_code}
+                    onChange={(e) => updateModuleRow(row.localKey, 'module_code', e.target.value)}
+                    placeholder="e.g. PE80441"
+                    className={`${academicCompactInputClass} min-w-0`}
+                  />
+                </label>
+
+                <label className="col-span-2 block min-w-0 sm:col-span-1 lg:order-3">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Module Name / Title
+                  </span>
+                  <input
+                    type="text"
+                    aria-label={`Module name ${idx + 1}`}
+                    value={row.module_name}
+                    onChange={(e) => updateModuleRow(row.localKey, 'module_name', e.target.value)}
+                    placeholder="e.g. Software Engineering"
+                    className={`${academicCompactInputClass} min-w-0`}
+                  />
+                </label>
+
+                <label className="col-span-1 block min-w-0 lg:order-4">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Credits
+                  </span>
+                  <input
+                    type="number"
+                    aria-label={`Credits ${idx + 1}`}
+                    min="0"
+                    step="0.5"
+                    value={row.credits}
+                    onChange={(e) => updateModuleRow(row.localKey, 'credits', e.target.value)}
+                    placeholder="0"
+                    className={`${academicCompactInputClass} min-w-0`}
+                  />
+                </label>
+
+                <label className="col-span-1 block min-w-0 lg:order-5">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Marks *
+                  </span>
+                  <input
+                    type="number"
+                    aria-label={`Marks ${idx + 1}`}
+                    min="0"
+                    step="0.01"
+                    value={row.marks}
+                    onChange={(e) => updateModuleRow(row.localKey, 'marks', e.target.value)}
+                    placeholder="0.00"
+                    className={`${academicCompactInputClass} min-w-0`}
+                  />
+                </label>
+
+                <label className="col-span-1 block min-w-0 lg:order-6">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Max Marks
+                  </span>
+                  <input
+                    type="number"
+                    aria-label={`Max marks ${idx + 1}`}
+                    min="1"
+                    step="any"
+                    value={row.max_marks}
+                    onChange={(e) => updateModuleRow(row.localKey, 'max_marks', e.target.value)}
+                    className={`${academicCompactInputClass} min-w-0`}
+                  />
+                </label>
+
+                <div className="col-span-1 min-w-0 lg:order-7">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 lg:hidden">
+                    Aggregate
+                  </span>
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="text"
-                      aria-label={`Module code ${idx + 1}`}
-                      value={row.module_code}
-                      onChange={(e) => updateModuleRow(row.localKey, 'module_code', e.target.value)}
-                      placeholder="e.g. PE80441"
-                      className={academicCompactInputClass}
+                      aria-label={`Aggregate ${idx + 1}`}
+                      maxLength={10}
+                      value={row.aggregate}
+                      onChange={(e) => updateModuleRow(row.localKey, 'aggregate', e.target.value)}
+                      placeholder="Auto"
+                      className={`${academicCompactInputClass} w-14 min-w-0 flex-1 text-center uppercase lg:flex-none`}
                     />
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="text"
-                      aria-label={`Module name ${idx + 1}`}
-                      value={row.module_name}
-                      onChange={(e) => updateModuleRow(row.localKey, 'module_name', e.target.value)}
-                      placeholder="e.g. Software Engineering"
-                      className={academicCompactInputClass}
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="number"
-                      aria-label={`Credits ${idx + 1}`}
-                      min="0"
-                      step="0.5"
-                      value={row.credits}
-                      onChange={(e) => updateModuleRow(row.localKey, 'credits', e.target.value)}
-                      placeholder="0"
-                      className={academicCompactInputClass}
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="number"
-                      aria-label={`Marks ${idx + 1}`}
-                      min="0"
-                      step="0.01"
-                      value={row.marks}
-                      onChange={(e) => updateModuleRow(row.localKey, 'marks', e.target.value)}
-                      placeholder="0.00"
-                      className={academicCompactInputClass}
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="number"
-                      aria-label={`Max marks ${idx + 1}`}
-                      min="1"
-                      step="any"
-                      value={row.max_marks}
-                      onChange={(e) => updateModuleRow(row.localKey, 'max_marks', e.target.value)}
-                      className={academicCompactInputClass}
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        aria-label={`Aggregate ${idx + 1}`}
-                        maxLength={10}
-                        value={row.aggregate}
-                        onChange={(e) => updateModuleRow(row.localKey, 'aggregate', e.target.value)}
-                        placeholder="Auto"
-                        className={`${academicCompactInputClass} w-14 text-center uppercase`}
-                      />
-                      {row.aggregate && <GradeBadge grade={row.aggregate} />}
-                    </div>
-                  </td>
-                  <td className="px-2 py-2 text-center">
-                    <button
-                      type="button"
-                      title="Remove module"
-                      aria-label={`Remove module ${row.module_code || idx + 1}`}
-                      onClick={() => removeModule(row.localKey)}
-                      className="inline-flex rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {row.aggregate && <GradeBadge grade={row.aggregate} />}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Live Computed Summary Bar */}
-      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-4">
-        <div>
+      <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950 sm:grid-cols-4 sm:p-4">
+        <div className="min-w-0">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Modules</span>
-          <p className="mt-1 text-lg font-black text-slate-900 dark:text-white">
+          <p className="mt-1 text-base font-black text-slate-900 dark:text-white sm:text-lg">
             {summary.moduleCount}
-            <span className="ml-2 text-xs font-semibold text-slate-500">
+            <span className="ml-1.5 block text-[11px] font-semibold text-slate-500 sm:ml-2 sm:inline sm:text-xs">
               ({summary.passedCount} pass{summary.failedCount > 0 ? ` · ${summary.failedCount} fail` : ''})
             </span>
           </p>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Credits</span>
-          <p className="mt-1 text-lg font-black text-blue-950 dark:text-yellow-400">{summary.totalCredits}</p>
+          <p className="mt-1 text-base font-black text-blue-950 dark:text-yellow-400 sm:text-lg">{summary.totalCredits}</p>
           <p className="text-[10px] font-semibold text-slate-500">
             {summary.moduleCount > 0 && !summary.hasFullCredits
               ? `${summary.creditedCount}/${summary.moduleCount} modules credited`
@@ -436,10 +469,10 @@ export default function AcademicMarksEditor({
           </p>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Average & Grade</span>
-          <div className="mt-1 flex items-center gap-2">
-            <span className="text-lg font-black text-slate-900 dark:text-white">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-base font-black text-slate-900 dark:text-white sm:text-lg">
               {summary.moduleCount > 0 ? `${summary.averageScore.toFixed(2)}%` : '—'}
             </span>
             {summary.moduleCount > 0 && <GradeBadge grade={summary.overallAggregate} />}
@@ -449,7 +482,7 @@ export default function AcademicMarksEditor({
           </p>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Verdict</span>
           <div className="mt-1.5">
             <VerdictBadge verdict={effectiveVerdict} />
@@ -471,14 +504,14 @@ export default function AcademicMarksEditor({
         </label>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 pt-1">
-        <button type="submit" disabled={isSaving} className={academicPrimaryButtonClass}>
+      <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:flex-wrap sm:items-center">
+        <button type="button" onClick={onCancel} className={`${academicQuietButtonClass} w-full sm:order-2 sm:w-auto`}>
+          Cancel
+        </button>
+        <button type="submit" disabled={isSaving} className={`${academicPrimaryButtonClass} w-full sm:order-1 sm:w-auto`}>
           {isSaving && <LoaderCircle size={15} className="animate-spin" />}
           <Save size={15} />
           {isEditing ? 'Save Updated Marks & Credits' : 'Save Academic Transcript'}
-        </button>
-        <button type="button" onClick={onCancel} className={academicQuietButtonClass}>
-          Cancel
         </button>
       </div>
     </form>
