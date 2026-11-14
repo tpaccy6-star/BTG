@@ -7,6 +7,16 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const sqliteStoragePath = path.resolve(__dirname, 'database.sqlite');
+
+function createSqliteSequelize() {
+  return new Sequelize({
+    dialect: 'sqlite',
+    storage: sqliteStoragePath,
+    logging: false
+  });
+}
+
 let sequelize;
 
 const databaseUrl = process.env.DATABASE_URL?.trim();
@@ -16,26 +26,40 @@ if (databaseUrl) {
     process.env.NODE_ENV === 'production' ||
     /render\.com|sslmode=require/i.test(databaseUrl);
 
-  // Use PostgreSQL in production or when DATABASE_URL is set
-  sequelize = new Sequelize(databaseUrl, {
-    dialect: 'postgres',
-    logging: false,
-    dialectOptions: requiresSsl
-      ? {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false
-          }
-        }
-      : {}
-  });
+  let pgSequelize = null;
+  try {
+    pgSequelize = new Sequelize(databaseUrl, {
+      dialect: 'postgres',
+      logging: false,
+      dialectOptions: {
+        ...(requiresSsl
+          ? {
+              ssl: {
+                require: true,
+                rejectUnauthorized: false
+              }
+            }
+          : {}),
+        connectionTimeoutMillis: 5000
+      }
+    });
+    await pgSequelize.authenticate();
+    sequelize = pgSequelize;
+  } catch (err) {
+    if (pgSequelize) {
+      await pgSequelize.close().catch(() => {});
+    }
+    if (process.env.REQUIRE_POSTGRES === 'true') {
+      throw err;
+    }
+    const reason = err?.parent?.code || err?.original?.code || err?.message || 'connection error';
+    console.warn(
+      `PostgreSQL connection unavailable (${reason}); falling back to local SQLite (${sqliteStoragePath}).`
+    );
+    sequelize = createSqliteSequelize();
+  }
 } else {
-  // Fall back to SQLite for local development
-  sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: path.resolve(__dirname, 'database.sqlite'),
-    logging: false,
-  });
+  sequelize = createSqliteSequelize();
 }
 
 export default sequelize;

@@ -95,6 +95,17 @@ const seedDatabase = async () => {
         university: 'Operations Unit',
         yearLevel: 'System Admin',
         streakDays: 0
+      },
+      {
+        email: 'irra@gr.com',
+        passwordHash,
+        role: 'scholar',
+        name: 'Irra Rosine',
+        initials: 'IR',
+        university: 'University of Rwanda - Rukara',
+        yearLevel: 'Year 2 Scholar (CSE)',
+        streakDays: 12,
+        cohortId: 1
       }
     ]);
     console.log('Default users seeded.');
